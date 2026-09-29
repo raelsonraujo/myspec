@@ -1,0 +1,4 @@
+interface:
+  display_name: "Myspec Inspecionar"
+  short_description: "Revisar contra regras de produto e especificação"
+  default_prompt: "Use $myspec-inspecionar para revisar a implementação de uma spec nomeada contra seus requisitos e regras aprovadas."

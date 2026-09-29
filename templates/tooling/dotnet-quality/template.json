@@ -1,0 +1,6 @@
+{
+  "description": {
+    "en": ".NET cyclomatic complexity, line/branch test coverage, and CRAP score with Coverlet and ReportGenerator",
+    "pt": "Complexidade ciclomática, cobertura de linhas/ramos e CRAP score para .NET com Coverlet e ReportGenerator"
+  }
+}

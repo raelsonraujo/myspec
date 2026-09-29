@@ -1,0 +1,4 @@
+interface:
+  display_name: "Myspec Patch"
+  short_description: "Patch code within approved product rules"
+  default_prompt: "Use {{skill:myspec-patch}} to make this small code adjustment while preserving approved product directives and Myspec guidance."

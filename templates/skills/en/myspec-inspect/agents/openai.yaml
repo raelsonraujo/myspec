@@ -1,0 +1,4 @@
+interface:
+  display_name: "Myspec Inspect"
+  short_description: "Review against product and specification rules"
+  default_prompt: "Use {{skill:myspec-inspect}} to review a named spec implementation against its requirements, approved product directives, and repository rules."

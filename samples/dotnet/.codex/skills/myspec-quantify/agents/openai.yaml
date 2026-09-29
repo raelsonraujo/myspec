@@ -1,0 +1,4 @@
+interface:
+  display_name: "Myspec Quantify"
+  short_description: "Measure complexity and test coverage quality"
+  default_prompt: "Use $myspec-quantify to measure and review the selected spec implementation."

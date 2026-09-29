@@ -1,0 +1,4 @@
+interface:
+  display_name: "Myspec Prescrever"
+  short_description: "Definir specs de implementação focadas e testáveis"
+  default_prompt: "Use $myspec-prescrever para transformar esta solicitação de mudança em uma especificação focada."

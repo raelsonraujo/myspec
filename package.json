@@ -1,0 +1,33 @@
+{
+  "name": "myspec",
+  "version": "0.1.0",
+  "description": "Spec-driven development skills for AI coding agents (Codex, Claude Code).",
+  "type": "module",
+  "bin": {
+    "myspec": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test \"test/**/*.test.mjs\"",
+    "prepare": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "sdd",
+    "spec-driven-development",
+    "codex",
+    "claude-code",
+    "skills"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}

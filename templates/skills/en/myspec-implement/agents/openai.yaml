@@ -1,0 +1,4 @@
+interface:
+  display_name: "Myspec Implement"
+  short_description: "Implement specs within approved product rules"
+  default_prompt: "Use {{skill:myspec-implement}} to implement the selected spec with an approved file tree and product directives."

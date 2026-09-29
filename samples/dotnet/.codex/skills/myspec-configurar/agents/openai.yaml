@@ -1,0 +1,4 @@
+interface:
+  display_name: "Myspec Configurar"
+  short_description: "Definir regras de produto e engenharia do Myspec"
+  default_prompt: "Use $myspec-configurar para definir as ferramentas, diretrizes e orientações Myspec aprovadas deste repositório."
