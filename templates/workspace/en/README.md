@@ -8,16 +8,26 @@ Repository contract used by the Myspec skills. Every rule here starts as `Status
 | `product-directives/` | Product concepts, terminology, and invariants | `myspec-setup` |
 | `coding-practices/` | One repository coding practice per file | `myspec-setup` |
 | `general-guidelines/` | One guideline shared by all Myspec skills per file | `myspec-setup` |
-| `specs/NNN-<name>/` | `spec.md`, `file-tree.md`, and `quality-report.md` for each change | `myspec-prescribe`, `myspec-implement`, `myspec-quantify` |
+| `specs/NNN-<name>/` | `spec.md`, `file-tree.md`, `quality-report.md`, and `inspections/inspection-NNN.md` for each change | `myspec-prescribe`, `myspec-implement`, `myspec-quantify`, `myspec-inspect` |
 
 ## Workflow
 
-1. `myspec-setup` — define tooling, product directives, coding practices, and guidelines.
-2. `myspec-prescribe` — turn a change request into a testable spec.
-3. `myspec-implement` — propose and approve a file tree, then implement the spec.
-4. `myspec-inspect` — review the implementation against the spec and approved rules.
-5. `myspec-quantify` — measure complexity and coverage with the approved tooling.
-6. `myspec-patch` — make a small, bounded fix that does not justify a spec.
+| Skill | Role |
+| --- | --- |
+| `myspec-setup` | Define tooling, product directives, coding practices, and guidelines. |
+| `myspec-prescribe` | Turn a change request into a testable spec. |
+| `myspec-implement` | Propose and approve a file tree, then implement the spec. |
+| `myspec-inspect` | Review the implementation against the spec and approved rules, measure coverage and complexity, and record an inspection with a verdict. |
+| `myspec-patch` | Make a small fix of at most three files, including within an implemented spec. |
+| `myspec-quantify` | Measure only the complexity and coverage of a spec's code. |
+
+A typical cycle after setup:
+
+```text
+prescribe > implement (file tree) > implement > inspect > implement > inspect > patch > inspect
+```
+
+Repeat implement or patch followed by inspect as often as needed. A spec is complete, and work can advance to the next one, when its latest inspection is `Ready` or `Ready with observations`; the verdict never prevents running any skill. Prefer implement over patch when a change needs more than three files or affects a spec whose file tree has never been approved.
 
 Invoke a skill with `$name` in Codex or `/name` in Claude Code, e.g. `$myspec-setup` or `/myspec-setup`.
 

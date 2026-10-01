@@ -5,7 +5,7 @@ description: Mede complexidade ciclomática e cobertura de testes automatizados 
 
 # Myspec Quantificar
 
-Produza métricas de qualidade baseadas em evidências para o código implementado por uma spec e indique onde o esforço de melhoria compensa.
+Produza métricas de qualidade baseadas em evidências para o código implementado por uma spec e indique onde o esforço de melhoria compensa. `{{skill:myspec-inspecionar}}` mede as mesmas métricas em cada inspeção; use este skill quando o desenvolvedor quiser apenas as métricas de uma spec, sem revisão de conformidade.
 
 ## Portão obrigatório de orientações
 

@@ -5,7 +5,7 @@ description: Measure cyclomatic complexity and automated test coverage for code 
 
 # Myspec Quantify
 
-Produce evidence-based quality metrics for the code implemented by a spec and explain where improvement effort would pay off.
+Produce evidence-based quality metrics for the code implemented by a spec and explain where improvement effort would pay off. `{{skill:myspec-inspect}}` measures the same metrics as part of each inspection; use this skill when the developer wants only the metrics of a spec, without a conformance review.
 
 ## Mandatory Guidance Gate
 

@@ -36,14 +36,14 @@ On a later invocation, when the developer explicitly approves the proposal, chan
 
 ## Interactive Implementation
 
-1. Read the approved file tree, spec, repository instructions, and affected code.
+1. Read the approved file tree, spec, repository instructions, and affected code. When the spec folder has an `inspections/` folder, read its highest-numbered inspection and treat its open findings as input for this implementation; an inspection verdict never prevents implementing.
 2. Complete the Mandatory Guidance Gate, then read `my-specs/tooling.md` when present. Use it to identify quality tooling and any defined contract sections; do not treat it as a substitute for reading the directive and guidance files under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
 3. Map each acceptance criterion to implementation work, tests, and the approved product directives it affects. Preserve the directives even when an acceptance criterion omits the relevant invariant.
 4. Before source edits, tell the developer the intended first slice and raise material choices not settled by the spec or approved tree.
 5. Ask rather than assume when a choice changes public behavior, architecture, persistence, security, compatibility, or the approved tree.
 6. Implement in reviewable slices and report meaningful checkpoints. If evidence invalidates the approved tree, pause and propose an update.
 7. Run focused tests while iterating, then the relevant broader build and test suite.
-8. Report changed files, acceptance-criteria coverage, verification results, approved product-directive and guidance compliance, and any remaining risks.
+8. Report changed files, acceptance-criteria coverage, inspection findings addressed, verification results, approved product-directive and guidance compliance, and any remaining risks. Suggest `{{skill:myspec-inspect}}` to record the resulting state.
 
 Developer interaction is a design constraint. Do not silently fill important gaps merely to finish in one turn.
 

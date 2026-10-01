@@ -1,4 +1,4 @@
 interface:
   display_name: "Myspec Inspecionar"
-  short_description: "Revisar contra regras de produto e especificação"
+  short_description: "Inspecionar uma spec e decidir se pode avançar"
   default_prompt: "Use {{skill:myspec-inspecionar}} para revisar a implementação de uma spec nomeada contra seus requisitos e regras aprovadas."

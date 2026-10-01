@@ -8,16 +8,26 @@ Contrato do repositório usado pelos skills Myspec. Toda regra nasce como `Statu
 | `product-directives/` | Conceitos, terminologia e invariantes de produto | `myspec-configurar` |
 | `coding-practices/` | Uma prática de código do repositório por arquivo | `myspec-configurar` |
 | `general-guidelines/` | Uma orientação compartilhada por todos os skills Myspec por arquivo | `myspec-configurar` |
-| `specs/NNN-<nome>/` | `spec.md`, `file-tree.md` e `quality-report.md` de cada mudança | `myspec-prescrever`, `myspec-implementar`, `myspec-quantificar` |
+| `specs/NNN-<nome>/` | `spec.md`, `file-tree.md`, `quality-report.md` e `inspections/inspection-NNN.md` de cada mudança | `myspec-prescrever`, `myspec-implementar`, `myspec-quantificar`, `myspec-inspecionar` |
 
 ## Fluxo de trabalho
 
-1. `myspec-configurar` — define ferramentas, diretrizes de produto, práticas de código e orientações.
-2. `myspec-prescrever` — transforma uma solicitação de mudança em uma spec testável.
-3. `myspec-implementar` — propõe e aprova a árvore de arquivos e então implementa a spec.
-4. `myspec-inspecionar` — revisa a implementação contra a spec e as regras aprovadas.
-5. `myspec-quantificar` — mede complexidade e cobertura com as ferramentas aprovadas.
-6. `myspec-corrigir` — faz um ajuste pequeno e delimitado que não justifica uma spec.
+| Skill | Papel |
+| --- | --- |
+| `myspec-configurar` | Define ferramentas, diretrizes de produto, práticas de código e orientações. |
+| `myspec-prescrever` | Transforma uma solicitação de mudança em uma spec testável. |
+| `myspec-implementar` | Propõe e aprova a árvore de arquivos e então implementa a spec. |
+| `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede cobertura e complexidade e registra uma inspeção com veredito. |
+| `myspec-corrigir` | Faz um ajuste pequeno de no máximo três arquivos, inclusive dentro de uma spec implementada. |
+| `myspec-quantificar` | Mede apenas complexidade e cobertura do código de uma spec. |
+
+Um ciclo típico após a configuração:
+
+```text
+prescrever > implementar (árvore) > implementar > inspecionar > implementar > inspecionar > corrigir > inspecionar
+```
+
+Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Uma spec está concluída, e o trabalho pode avançar para a próxima, quando sua inspeção mais recente estiver `Apta` ou `Apta com ressalvas`; o veredito nunca impede a execução de nenhum skill. Prefira implementar a corrigir quando a mudança exigir mais de três arquivos ou afetar uma spec cuja árvore nunca foi aprovada.
 
 Invoque um skill com `$nome` no Codex ou `/nome` no Claude Code, por exemplo `$myspec-configurar` ou `/myspec-configurar`.
 

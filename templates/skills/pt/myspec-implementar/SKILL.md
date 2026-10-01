@@ -21,12 +21,12 @@ Se existir, mas não estiver `Approved`, revise-o frente à especificação e re
 
 ## Implementação interativa
 
-1. Leia árvore aprovada, especificação, instruções do repositório e código afetado. Após o portão, leia `my-specs/tooling.md` quando existir, sem que ele substitua as orientações.
+1. Leia árvore aprovada, especificação, instruções do repositório e código afetado. Se a pasta da spec tiver `inspections/`, leia a inspeção de maior número e use seus achados abertos como entrada; o veredito de uma inspeção nunca impede a implementação. Após o portão, leia `my-specs/tooling.md` quando existir, sem que ele substitua as orientações.
 2. Mapeie cada critério de aceitação para implementação, testes e diretrizes de produto afetadas.
 3. Antes de editar, informe a primeira fatia pretendida e levante escolhas materiais não resolvidas. Pergunte, em vez de supor, quando a escolha alterar comportamento público, arquitetura, persistência, segurança, compatibilidade ou a árvore aprovada.
 4. Implemente em fatias revisáveis; se evidência invalidar a árvore, pause e proponha atualização.
 5. Execute testes focados durante a iteração e, depois, o build e conjunto de testes mais amplo proporcionalmente relevante.
-6. Informe arquivos alterados, cobertura dos critérios com evidência de teste/verificação nomeada, resultados, conformidade e riscos restantes.
+6. Informe arquivos alterados, cobertura dos critérios com evidência de teste/verificação nomeada, achados de inspeção tratados, resultados, conformidade e riscos restantes. Sugira `{{skill:myspec-inspecionar}}` para registrar o estado resultante.
 
 ## Regras de código
 
