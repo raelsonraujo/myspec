@@ -60,12 +60,13 @@ describe('myspec install', () => {
     installOk(dir, '-p', 'claude/codex', '-l', 'en');
     const template = read(dir, '.claude/skills/myspec-inspect/assets/inspection-template.md');
     assert.match(template, /^## Verdict$/m);
-    assert.match(template, /^## Cyclomatic Complexity$/m);
+    assert.match(template, /^## Acceptance Criteria$/m);
+    assert.doesNotMatch(template, /version/i);
     assert.match(read(dir, '.claude/skills/myspec-inspect/SKILL.md'), /inspections\/inspection-<NNN>\.md/);
     assert.match(read(dir, '.claude/skills/myspec-patch/SKILL.md'), /more than three files/);
 
     installOk(dir, '-l', 'pt');
-    assert.match(read(dir, '.codex/skills/myspec-inspecionar/assets/inspection-template.md'), /^## Cobertura de testes$/m);
+    assert.match(read(dir, '.codex/skills/myspec-inspecionar/assets/inspection-template.md'), /^## Critérios de aceitação$/m);
     assert.match(read(dir, '.codex/skills/myspec-inspecionar/SKILL.md'), /pertence a `\$myspec-quantificar`/);
   });
 
