@@ -1,11 +1,9 @@
-# Implementation Quality Report
+# Project Quality Report
 
 ## Scope and Baseline
 
-- Spec: `<path>`
-- Baseline: `<commit, branch, diff, or approved file tree>`
-- Production files measured:
-  - `<path>`
+- Baseline: `<commit or branch>`
+- Measured on: `<date>`
 - Exclusions:
   - `<path or category>`: <reason>
 
@@ -15,33 +13,36 @@
 | --- | --- |
 | `<build or test command>` | <passed, failed, or partial> |
 
+## Project Summary
+
+| Metric | Current | Previous | Approved target |
+| --- | ---: | ---: | ---: |
+| Line coverage | `<covered>/<total> (<percentage>)` | `<value or —>` | `<target or —>` |
+| Branch coverage | `<covered>/<total> (<percentage>)` | `<value or —>` | `<target or —>` |
+| Highest cyclomatic complexity | `<value>` (`<member>`) | `<value or —>` | `<target or —>` |
+| Methods above the complexity target | `<count>` | `<value or —>` | — |
+
 ## Test Coverage
 
 - Tool and version: `<tool>`
-- Line coverage: `<covered>/<total> (<percentage>)`
-- Branch coverage: `<covered>/<total> (<percentage>)`
 
-| File or type | Line coverage | Branch coverage | Notable gaps |
-| --- | ---: | ---: | --- |
-| `<name>` | `<value>` | `<value>` | `<critical uncovered behavior>` |
+| Project, module, or file | Line coverage | Branch coverage | Related spec | Notable gaps |
+| --- | ---: | ---: | --- | --- |
+| `<name>` | `<value>` | `<value>` | `<NNN-name or —>` | `<critical uncovered behavior>` |
 
 ## Cyclomatic Complexity
 
 - Tool and version: `<tool>`
 
-| File or type | Method or function | Complexity | Observation |
-| --- | --- | ---: | --- |
-| `<name>` | `<member>` | `<value>` | `<reason this deserves attention, if any>` |
+| File or type | Method or function | Complexity | Related spec | Observation |
+| --- | --- | ---: | --- | --- |
+| `<name>` | `<member>` | `<value>` | `<NNN-name or —>` | `<target missed or reason this deserves attention>` |
 
-## Acceptance Criteria Evidence
+## Improvement Opportunities
 
-| Criterion | Test or verification evidence | Coverage gap |
-| --- | --- | --- |
-| `AC-01` | `<test name or command>` | `<none or gap>` |
-
-## Improvement Suggestions
-
-1. <Prioritized, evidence-based improvement and its expected metric effect.>
+| Priority | Opportunity | Affected code | Related spec | Expected effect | Next skill |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | <evidence-based improvement> | `<path or member>` | `<NNN-name or —>` | <expected metric effect> | `{{skill:myspec-prescribe}}` or `{{skill:myspec-patch}}` |
 
 ## Limitations
 

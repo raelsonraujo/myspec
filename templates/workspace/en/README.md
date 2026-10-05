@@ -8,7 +8,8 @@ Repository contract used by the Myspec skills. Every rule here starts as `Status
 | `product-directives/` | Product concepts, terminology, and invariants | `myspec-setup` |
 | `coding-practices/` | One repository coding practice per file | `myspec-setup` |
 | `general-guidelines/` | One guideline shared by all Myspec skills per file | `myspec-setup` |
-| `specs/NNN-<name>/` | `spec.md`, `file-tree.md`, `quality-report.md`, and `inspections/inspection-NNN.md` for each change | `myspec-prescribe`, `myspec-implement`, `myspec-quantify`, `myspec-inspect` |
+| `quality-report.md` | Project-wide complexity and coverage with improvement opportunities | `myspec-quantify` |
+| `specs/NNN-<name>/` | `spec.md`, `file-tree.md`, and `inspections/inspection-NNN.md` for each change | `myspec-prescribe`, `myspec-implement`, `myspec-inspect` |
 
 ## Workflow
 
@@ -19,7 +20,7 @@ Repository contract used by the Myspec skills. Every rule here starts as `Status
 | `myspec-implement` | Propose and approve a file tree, then implement the spec. |
 | `myspec-inspect` | Review the implementation against the spec and approved rules, measure coverage and complexity, and record an inspection with a verdict. |
 | `myspec-patch` | Make a small fix of at most three files, including within an implemented spec. |
-| `myspec-quantify` | Measure only the complexity and coverage of a spec's code. |
+| `myspec-quantify` | Judge the whole project's complexity and coverage and suggest improvements that can start new specs. |
 
 A typical cycle after setup:
 

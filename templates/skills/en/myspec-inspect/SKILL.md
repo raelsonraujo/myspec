@@ -41,7 +41,7 @@ Measurement rules:
 - Scope metrics to the spec's implemented production code, identified from the approved file tree, version-control evidence, and repository evidence. When tooling cannot isolate that code, report the whole-project value and mark it `(project)`.
 - Treat failed or skipped tests as findings; never present their coverage run as clean verification.
 - Never invent, estimate manually, install, or substitute a metric tool, and ask before changing dependencies, commands, or project configuration. When the tooling contract is absent, incomplete, or unapproved, or an approved command is unavailable or fails, record the affected metrics as `Not measured: <reason>`, keep every metric that could be measured, and suggest `{{skill:myspec-setup}}` when the contract itself is missing or unapproved.
-- Do not create or update `quality-report.md`; that detailed per-file report belongs to `{{skill:myspec-quantify}}`.
+- Do not create or update `my-specs/quality-report.md`; that project-wide report belongs to `{{skill:myspec-quantify}}`.
 
 A metric is a pass/fail criterion only when an applicable approved spec requirement, product directive, or guidance rule defines that target; a value that misses such a target is a `Not met` item. Otherwise it is reported without a finding.
 

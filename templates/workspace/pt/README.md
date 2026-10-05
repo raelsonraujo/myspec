@@ -8,7 +8,8 @@ Contrato do repositório usado pelos skills Myspec. Toda regra nasce como `Statu
 | `product-directives/` | Conceitos, terminologia e invariantes de produto | `myspec-configurar` |
 | `coding-practices/` | Uma prática de código do repositório por arquivo | `myspec-configurar` |
 | `general-guidelines/` | Uma orientação compartilhada por todos os skills Myspec por arquivo | `myspec-configurar` |
-| `specs/NNN-<nome>/` | `spec.md`, `file-tree.md`, `quality-report.md` e `inspections/inspection-NNN.md` de cada mudança | `myspec-prescrever`, `myspec-implementar`, `myspec-quantificar`, `myspec-inspecionar` |
+| `quality-report.md` | Complexidade e cobertura do projeto inteiro com oportunidades de melhoria | `myspec-quantificar` |
+| `specs/NNN-<nome>/` | `spec.md`, `file-tree.md` e `inspections/inspection-NNN.md` de cada mudança | `myspec-prescrever`, `myspec-implementar`, `myspec-inspecionar` |
 
 ## Fluxo de trabalho
 
@@ -19,7 +20,7 @@ Contrato do repositório usado pelos skills Myspec. Toda regra nasce como `Statu
 | `myspec-implementar` | Propõe e aprova a árvore de arquivos e então implementa a spec. |
 | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede cobertura e complexidade e registra uma inspeção com veredito. |
 | `myspec-corrigir` | Faz um ajuste pequeno de no máximo três arquivos, inclusive dentro de uma spec implementada. |
-| `myspec-quantificar` | Mede apenas complexidade e cobertura do código de uma spec. |
+| `myspec-quantificar` | Julga complexidade e cobertura do projeto inteiro e sugere melhorias que podem originar novas specs. |
 
 Um ciclo típico após a configuração:
 

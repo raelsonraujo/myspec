@@ -39,7 +39,7 @@ Regras de medição:
 - Delimite as métricas ao código de produção da spec, identificado pela árvore aprovada, controle de versão e evidência do repositório. Se a ferramenta não conseguir isolá-lo, informe o valor do projeto e marque `(projeto)`.
 - Testes falhos ou ignorados são achados, não verificação limpa.
 - Nunca invente, estime manualmente, instale ou substitua ferramenta; pergunte antes de alterar dependências, comandos ou configuração. Se o contrato estiver ausente, incompleto ou não aprovado, ou um comando aprovado estiver indisponível ou falhar, registre as métricas afetadas como `Não medida: <motivo>`, preserve as que puderam ser medidas e sugira `{{skill:myspec-configurar}}` quando o próprio contrato faltar ou não estiver aprovado.
-- Não crie nem atualize `quality-report.md`; esse relatório detalhado por arquivo pertence a `{{skill:myspec-quantificar}}`.
+- Não crie nem atualize `my-specs/quality-report.md`; esse relatório do projeto inteiro pertence a `{{skill:myspec-quantificar}}`.
 
 Uma métrica só é critério de aprovação quando requisito da spec, diretriz de produto ou orientação aprovada e aplicável define essa meta; valor fora dela é item `Não atendido`. Caso contrário, é informada sem achado.
 

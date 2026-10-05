@@ -104,4 +104,4 @@ The CRAP score combines complexity and line coverage: `CRAP(m) = CC(m)² × (1 �
 
 1. Install the dependencies above and run the workflow once to confirm the report is generated.
 2. Run the `myspec-setup` skill to review and approve `my-specs/tooling.md` and the `my-specs/general-guidelines/method-complexity-risk-targets.md` guideline, both created with `Status: Proposed`.
-3. Once approved, the `myspec-quantify` skill uses these commands and results to produce each spec's `quality-report.md`.
+3. Once approved, the `myspec-inspect` skill uses these commands to measure each spec's code, and the `myspec-quantify` skill uses them to produce the project-wide `my-specs/quality-report.md`.

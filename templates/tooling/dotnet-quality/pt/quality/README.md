@@ -105,4 +105,4 @@ O CRAP score combina complexidade e cobertura de linhas: `CRAP(m) = CC(m)² × (
 
 1. Instale as dependências acima e rode o fluxo uma vez para confirmar que o relatório é gerado.
 2. Rode o skill `myspec-configurar` para revisar e aprovar `my-specs/tooling.md` e a orientação `my-specs/general-guidelines/metas-de-complexidade-e-crap.md`, que nascem como `Status: Proposed`.
-3. Após a aprovação, o skill `myspec-quantificar` usa esses comandos e resultados para gerar o `quality-report.md` de cada spec.
+3. Após a aprovação, o skill `myspec-inspecionar` usa esses comandos para medir o código de cada spec, e o skill `myspec-quantificar` os usa para gerar o `my-specs/quality-report.md` do projeto inteiro.

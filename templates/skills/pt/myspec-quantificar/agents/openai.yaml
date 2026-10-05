@@ -1,4 +1,4 @@
 interface:
   display_name: "Myspec Quantificar"
-  short_description: "Medir complexidade e qualidade da cobertura de testes"
-  default_prompt: "Use {{skill:myspec-quantificar}} para quantificar e revisar a implementação da spec selecionada."
+  short_description: "Julgar complexidade e cobertura do projeto"
+  default_prompt: "Use {{skill:myspec-quantificar}} para medir o projeto inteiro e sugerir onde melhorar em seguida."

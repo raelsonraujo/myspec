@@ -1,11 +1,9 @@
-# Relatório de qualidade da implementação
+# Relatório de qualidade do projeto
 
 ## Escopo e base
 
-- Spec: `<caminho>`
-- Base: `<commit, branch, diff ou árvore de arquivos aprovada>`
-- Arquivos de produção medidos:
-  - `<caminho>`
+- Base: `<commit ou branch>`
+- Medido em: `<data>`
 - Exclusões:
   - `<caminho ou categoria>`: <motivo>
 
@@ -15,33 +13,36 @@
 | --- | --- |
 | `<comando de build ou teste>` | <aprovado, falhou ou parcial> |
 
+## Resumo do projeto
+
+| Métrica | Atual | Anterior | Meta aprovada |
+| --- | ---: | ---: | ---: |
+| Cobertura de linhas | `<cobertas>/<total> (<percentual>)` | `<valor ou —>` | `<meta ou —>` |
+| Cobertura de ramos | `<cobertos>/<total> (<percentual>)` | `<valor ou —>` | `<meta ou —>` |
+| Maior complexidade ciclomática | `<valor>` (`<membro>`) | `<valor ou —>` | `<meta ou —>` |
+| Métodos acima da meta de complexidade | `<quantidade>` | `<valor ou —>` | — |
+
 ## Cobertura de testes
 
 - Ferramenta e versão: `<ferramenta>`
-- Cobertura de linhas: `<cobertas>/<total> (<percentual>)`
-- Cobertura de ramos: `<cobertos>/<total> (<percentual>)`
 
-| Arquivo ou tipo | Cobertura de linhas | Cobertura de ramos | Lacunas relevantes |
-| --- | ---: | ---: | --- |
-| `<nome>` | `<valor>` | `<valor>` | `<comportamento crítico não coberto>` |
+| Projeto, módulo ou arquivo | Cobertura de linhas | Cobertura de ramos | Spec relacionada | Lacunas relevantes |
+| --- | ---: | ---: | --- | --- |
+| `<nome>` | `<valor>` | `<valor>` | `<NNN-nome ou —>` | `<comportamento crítico não coberto>` |
 
 ## Complexidade ciclomática
 
 - Ferramenta e versão: `<ferramenta>`
 
-| Arquivo ou tipo | Método ou função | Complexidade | Observação |
-| --- | --- | ---: | --- |
-| `<nome>` | `<membro>` | `<valor>` | `<motivo para atenção, se houver>` |
+| Arquivo ou tipo | Método ou função | Complexidade | Spec relacionada | Observação |
+| --- | --- | ---: | --- | --- |
+| `<nome>` | `<membro>` | `<valor>` | `<NNN-nome ou —>` | `<meta não atingida ou motivo para atenção>` |
 
-## Evidência dos critérios de aceitação
+## Oportunidades de melhoria
 
-| Critério | Evidência de teste ou verificação | Lacuna de cobertura |
-| --- | --- | --- |
-| `AC-01` | `<nome do teste ou comando>` | `<nenhuma ou lacuna>` |
-
-## Sugestões de melhoria
-
-1. <Melhoria priorizada e baseada em evidência, com o efeito métrico esperado.>
+| Prioridade | Oportunidade | Código afetado | Spec relacionada | Efeito esperado | Próximo skill |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | <melhoria baseada em evidência> | `<caminho ou membro>` | `<NNN-nome ou —>` | <efeito esperado nas métricas> | `{{skill:myspec-prescrever}}` ou `{{skill:myspec-corrigir}}` |
 
 ## Limitações
 

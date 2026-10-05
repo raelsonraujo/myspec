@@ -75,7 +75,7 @@ A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.e
 | `myspec-prescribe` | `myspec-prescrever` | Cria uma spec testável em `my-specs/specs/NNN-<nome>/` |
 | `myspec-implement` | `myspec-implementar` | Propõe/aprova a árvore de arquivos e implementa a spec |
 | `myspec-inspect` | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede cobertura e complexidade e registra em `specs/NNN-<nome>/inspections/` uma inspeção com veredito |
-| `myspec-quantify` | `myspec-quantificar` | Mede apenas complexidade ciclomática e cobertura de testes de uma spec |
+| `myspec-quantify` | `myspec-quantificar` | Julga complexidade ciclomática e cobertura de testes do projeto inteiro em `my-specs/quality-report.md` e sugere melhorias que podem virar novas specs |
 | `myspec-patch` | `myspec-corrigir` | Ajuste pequeno (até 3 arquivos) sem nova spec, inclusive dentro de uma spec já implementada |
 
 Um ciclo típico é `prescribe > implement (árvore) > implement > inspect > implement > inspect > patch > inspect`: repita implement ou patch seguido de inspect até obter os resultados desejados. A spec está concluída quando a inspeção mais recente estiver `Ready`/`Apta` ou `Ready with observations`/`Apta com ressalvas`; o veredito não bloqueia nenhum skill. Use implement em vez de patch quando a mudança exigir mais de 3 arquivos ou afetar uma spec cuja árvore nunca foi aprovada.

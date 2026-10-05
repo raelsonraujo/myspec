@@ -1,4 +1,4 @@
 interface:
   display_name: "Myspec Quantify"
-  short_description: "Measure complexity and test coverage quality"
-  default_prompt: "Use {{skill:myspec-quantify}} to measure and review the selected spec implementation."
+  short_description: "Judge project-wide complexity and coverage"
+  default_prompt: "Use {{skill:myspec-quantify}} to measure the whole project and suggest where to improve next."
