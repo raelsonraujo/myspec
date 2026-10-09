@@ -150,10 +150,13 @@ describe('myspec install --tooling', () => {
       'quality/coverlet.runsettings',
       'quality/run-coverage-report.ps1',
       'quality/run-coverage-report.sh',
+      'quality/run-benchmarks.ps1',
+      'quality/run-benchmarks.sh',
       'quality/.gitignore',
       'quality/.gitattributes',
       'my-specs/tooling.md',
       'my-specs/general-guidelines/metas-de-complexidade-e-crap.md',
+      'my-specs/general-guidelines/caminhos-criticos-de-performance.md',
     ]) {
       assert.ok(existsSync(join(dir, path)), path);
     }
@@ -175,9 +178,13 @@ describe('myspec install --tooling', () => {
     assert.match(tooling, /^Created on: `\d{4}-\d{2}-\d{2}`$/m);
     assert.match(tooling, /`dotnet build App\.slnx --configuration Release --no-restore`/);
     assert.match(tooling, /## CRAP Score/);
+    assert.match(tooling, /^## Performance$/m);
     assert.match(read(dir, 'quality/README.md'), /dotnet restore App\.slnx/);
+    assert.match(read(dir, 'quality/README.md'), /dotnet sln App\.slnx add/);
     assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/method-complexity-risk-targets.md')));
+    assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/performance-critical-paths.md')));
     assert.doesNotMatch(read(dir, 'quality/run-coverage-report.sh'), /\r/);
+    assert.doesNotMatch(read(dir, 'quality/run-benchmarks.sh'), /\r/);
     assert.deepEqual(JSON.parse(read(dir, 'my-specs/myspec.json')).tooling, ['dotnet-quality']);
   });
 

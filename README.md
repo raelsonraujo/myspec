@@ -37,7 +37,7 @@ Um template de tooling gera, junto com os skills, os artefatos para medir qualid
 myspec install -p claude -l pt -t dotnet-quality
 ```
 
-`dotnet-quality` mede complexidade ciclomática, cobertura de linhas/ramos e CRAP score em .NET com Coverlet e ReportGenerator, em uma única execução de testes:
+`dotnet-quality` mede complexidade ciclomática, cobertura de linhas/ramos e CRAP score em .NET com Coverlet e ReportGenerator, em uma única execução de testes. Em uma execução separada, mede a performance dos caminhos críticos aprovados (bytes alocados e tempo médio por operação) com BenchmarkDotNet:
 
 ```text
 quality/
@@ -45,11 +45,14 @@ quality/
 ├── coverlet.runsettings      # filtros de cobertura
 ├── run-coverage-report.ps1   # restore → build → test → relatório
 ├── run-coverage-report.sh
-├── .gitignore                # ignora quality/coverage/
+├── run-benchmarks.ps1        # benchmarks dos caminhos críticos em Release
+├── run-benchmarks.sh
+├── .gitignore                # ignora quality/coverage/ e quality/benchmarks/
 └── .gitattributes            # mantém o .sh com LF
 my-specs/
 ├── tooling.md                                     # contrato proposto, com a solução detectada na raiz
-└── general-guidelines/<metas de CC e CRAP>.md     # orientação proposta: CC ≤ 15 e CRAP ≤ 30
+├── general-guidelines/<metas de CC e CRAP>.md     # orientação proposta: CC ≤ 15 e CRAP ≤ 30
+└── general-guidelines/<caminhos críticos>.md      # orientação proposta: caminhos críticos e orçamentos de alocação/tempo
 ```
 
 A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.email` são preenchidas automaticamente; se não forem encontradas, a CLI avisa e deixa um marcador. Arquivos que já existem nunca são sobrescritos. Depois de instalar as dependências, rode o skill de setup (`myspec-setup`/`myspec-configurar`) para revisar e aprovar o contrato.

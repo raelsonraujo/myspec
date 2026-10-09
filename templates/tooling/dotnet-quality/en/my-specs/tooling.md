@@ -12,8 +12,8 @@ Created on: `{{date}}`
 
 - Working directory: repository root
 - Restore or bootstrap command: `dotnet restore {{solution}}` followed by `dotnet tool restore`
-- Version source: `coverlet.collector` and `Microsoft.NET.Test.Sdk` package references in each test project; the local tool manifest (`dotnet-tools.json` or `.config/dotnet-tools.json`) for ReportGenerator
-- Generated results root: `quality/coverage/` (ignored through `quality/.gitignore` and recreated on every run)
+- Version source: `coverlet.collector` and `Microsoft.NET.Test.Sdk` package references in each test project; the local tool manifest (`dotnet-tools.json` or `.config/dotnet-tools.json`) for ReportGenerator; the `BenchmarkDotNet` package reference in the benchmark project
+- Generated results roots: `quality/coverage/` and `quality/benchmarks/` (ignored through `quality/.gitignore` and recreated on every run)
 
 ## Cyclomatic Complexity
 
@@ -55,6 +55,20 @@ Created on: `{{date}}`
 - ReportGenerator highlights cyclomatic complexity above 15 and CRAP score above 30 as elevated, independently of each other
 - Interpretation: `my-specs/general-guidelines/method-complexity-risk-targets.md`, once approved
 
+## Performance
+
+- Tool: BenchmarkDotNet, run from the repository's single `*.Benchmarks` console project
+- Version: `BenchmarkDotNet` `0.15.8`, pinned in the benchmark project
+- Installation or restore: follow `quality/README.md`, then `dotnet restore {{solution}}`
+- Measurement command: `pwsh -NoProfile -File quality/run-benchmarks.ps1` or `bash quality/run-benchmarks.sh`, which run `dotnet run --project <benchmarks.csproj> --configuration Release -- --filter "*" --memory --exporters json --artifacts quality/benchmarks`
+- Metrics: `Allocated` bytes per operation (primary) and `Mean` time per operation, per benchmark
+- Output format: BenchmarkDotNet JSON (`Statistics.Mean` in nanoseconds and `Memory.BytesAllocatedPerOperation` per benchmark) and its default GitHub Markdown, CSV, and HTML reports
+- Result path: `quality/benchmarks/results/*.json`; `quality/benchmarks/results/*-report-github.md`
+- Scope: benchmarks tagged with the critical path IDs in `my-specs/general-guidelines/performance-critical-paths.md`
+- Environment: Release build, no debugger attached, and the same machine and runtime whenever time is compared with a previous run
+- Changed-code isolation: run only the critical paths a spec touches with `-Categories <CP-ID>` or `--category <CP-ID>`
+- Interpretation: `my-specs/general-guidelines/performance-critical-paths.md`, once approved
+
 ## Related Contract Documents
 
 - Repository coding practices: `my-specs/coding-practices/*.md`
@@ -65,6 +79,9 @@ Created on: `{{date}}`
 - Use Coverlet's Cobertura complexity instead of a separate complexity tool: one test run yields coverage, cyclomatic complexity, and CRAP score for the same code.
 - Pin ReportGenerator as a repository-local tool: developers and CI use the same aggregation behavior without a global installation.
 - Exclude migrations and generated files: their generated branching and volume would distort developer-controlled metrics.
+- Run benchmarks in a separate script: they take minutes and need a Release process without coverage instrumentation, so they stay out of the coverage run.
+- Use allocation as the primary performance metric: bytes allocated per operation are stable across machines, while time is compared only against the previous run on the same environment.
+- Benchmark only approved critical paths: microbenchmarks cost maintenance, so they cover the paths the team chose rather than every method.
 - Apply no pass/fail thresholds: Myspec records measurements and improvement suggestions until the developer explicitly adopts quality gates.
 
 ## Approval History
