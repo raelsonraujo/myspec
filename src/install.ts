@@ -11,14 +11,12 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import { LANGUAGES, type LanguageId } from './languages.js';
-import { MANIFEST_PATH, readManifest, WORKSPACE_DIR, writeManifest } from './manifest.js';
+import type { LanguageId } from './languages.js';
+import { findManifest, writeManifest } from './manifest.js';
 import { PROVIDERS, UsageError, type ProviderId } from './providers.js';
-import { listSkills, readWorkspaceReadme, renderTemplate } from './templates.js';
+import { listSkills, renderTemplate } from './templates.js';
 import { planTooling, type ToolingVariables } from './tooling.js';
-
-/** Folders the Myspec skills read from and write to, relative to the workspace. */
-export const WORKSPACE_FOLDERS = ['product-directives', 'coding-practices', 'general-guidelines', 'specs'];
+import { migrateWorkspace, scaffoldWorkspace, type WorkspaceMigration } from './workspace.js';
 
 export interface InstallOptions {
   root: string;
@@ -44,6 +42,8 @@ export interface InstallResult {
   updated: string[];
   unchanged: string[];
   removed: string[];
+  /** Set when an existing workspace was renamed to the layout of the installed language. */
+  migration?: WorkspaceMigration;
   workspaceCreated: string[];
   tooling: ToolingResult[];
   warnings: string[];
@@ -55,7 +55,8 @@ export function install(options: InstallOptions): InstallResult {
     throw new Error(`Target directory does not exist: ${root}`);
   }
 
-  const previous = readManifest(root);
+  const installed = findManifest(root);
+  const previous = installed?.manifest;
   // Providers accumulate across installs; the language applies to all of them so only one language is ever installed.
   const providers = [...new Set([...(previous?.providers ?? []), ...options.providers])];
   if (providers.length === 0) throw new UsageError('At least one provider is required.');
@@ -106,6 +107,11 @@ export function install(options: InstallOptions): InstallResult {
     }
     mkdirSync(dirname(absolute), { recursive: true });
     writeFileSync(absolute, content);
+  }
+
+  if (installed && installed.layout !== options.language) {
+    result.migration = migrateWorkspace(root, installed.layout, options.language);
+    result.warnings.push(...result.migration.warnings);
   }
 
   // Tooling runs before the workspace scaffold so folders that receive a document get no .gitkeep.
@@ -183,36 +189,6 @@ function localDate(): string {
   const now = new Date();
   const pad = (value: number) => String(value).padStart(2, '0');
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-}
-
-/** Creates the my-specs folders without ever touching documents the repository already has. */
-function scaffoldWorkspace(root: string, language: LanguageId): string[] {
-  const created: string[] = [];
-  const workspace = join(root, WORKSPACE_DIR);
-
-  for (const folder of WORKSPACE_FOLDERS) {
-    const dir = join(workspace, folder);
-    mkdirSync(dir, { recursive: true });
-    if (readdirSync(dir).length === 0) {
-      writeFileSync(join(dir, '.gitkeep'), '');
-      created.push(`${WORKSPACE_DIR}/${folder}/`);
-    }
-  }
-
-  // The README is regenerated only while it still matches a pristine template, so user edits survive.
-  const readme = join(workspace, 'README.md');
-  const pristine = (Object.keys(LANGUAGES) as LanguageId[]).map(readWorkspaceReadme);
-  const current = existsSync(readme) ? readFileSync(readme, 'utf8') : undefined;
-  const wanted = readWorkspaceReadme(language);
-  if (current === undefined || (current !== wanted && pristine.includes(current))) {
-    writeFileSync(readme, wanted);
-    if (current === undefined) created.push(`${WORKSPACE_DIR}/README.md`);
-  }
-  if (!existsSync(join(root, MANIFEST_PATH))) {
-    created.push(MANIFEST_PATH);
-  }
-
-  return created;
 }
 
 /** Guards against manifest entries that would escape the target directory. */

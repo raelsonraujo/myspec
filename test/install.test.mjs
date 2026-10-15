@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, it } from 'node:test';
@@ -66,7 +66,8 @@ describe('myspec install', () => {
     assert.match(read(dir, '.claude/skills/myspec-patch/SKILL.md'), /more than three files/);
 
     installOk(dir, '-l', 'pt');
-    assert.match(read(dir, '.codex/skills/myspec-inspecionar/assets/inspection-template.md'), /^## Critérios de aceitação$/m);
+    assert.match(read(dir, '.codex/skills/myspec-inspecionar/assets/modelo-de-inspecao.md'), /^## Critérios de aceitação$/m);
+    assert.match(read(dir, '.codex/skills/myspec-inspecionar/SKILL.md'), /inspecoes\/inspecao-<NNN>\.md/);
     assert.match(read(dir, '.codex/skills/myspec-inspecionar/SKILL.md'), /pertence a `\$myspec-quantificar`/);
   });
 
@@ -79,13 +80,25 @@ describe('myspec install', () => {
 
   it('scaffolds the my-specs workspace and manifest', () => {
     const dir = repo();
-    installOk(dir, '-p', 'codex', '-l', 'pt');
+    installOk(dir, '-p', 'codex', '-l', 'en');
 
     for (const folder of ['product-directives', 'coding-practices', 'general-guidelines', 'specs']) {
       assert.ok(existsSync(join(dir, 'my-specs', folder, '.gitkeep')), folder);
     }
-    assert.match(read(dir, 'my-specs/README.md'), /myspec-configurar/);
-    const manifest = JSON.parse(read(dir, 'my-specs/myspec.json'));
+    assert.match(read(dir, 'my-specs/README.md'), /myspec-setup/);
+    assert.equal(JSON.parse(read(dir, 'my-specs/myspec.json')).language, 'en');
+  });
+
+  it('scaffolds the Portuguese minhas-specs workspace and manifest', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'codex', '-l', 'pt');
+
+    for (const folder of ['diretrizes-de-produto', 'praticas-de-codigo', 'orientacoes-gerais', 'specs']) {
+      assert.ok(existsSync(join(dir, 'minhas-specs', folder, '.gitkeep')), folder);
+    }
+    assert.ok(!existsSync(join(dir, 'my-specs')));
+    assert.match(read(dir, 'minhas-specs/README.md'), /myspec-configurar/);
+    const manifest = JSON.parse(read(dir, 'minhas-specs/myspec.json'));
     assert.equal(manifest.language, 'pt');
     assert.deepEqual(manifest.providers, ['codex']);
     assert.ok(manifest.files.includes('.codex/skills/myspec-configurar/SKILL.md'));
@@ -99,7 +112,53 @@ describe('myspec install', () => {
     assert.deepEqual(skillDirs(dir, '.codex/skills'), PT_SKILLS);
     assert.deepEqual(skillDirs(dir, '.claude/skills'), PT_SKILLS);
     assert.match(result.stdout, /Switched skills from English to Português/);
-    assert.match(read(dir, 'my-specs/README.md'), /Fluxo de trabalho/);
+    assert.match(read(dir, 'minhas-specs/README.md'), /Fluxo de trabalho/);
+    assert.ok(!existsSync(join(dir, 'my-specs')));
+  });
+
+  it('moves the workspace to the new language and keeps approvals valid', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'codex', '-l', 'en');
+    const approved = '# Rule\n\nStatus: Approved\n\nCreated by: `A`\n\n## Approval History\n\n- Approved by: `A`\n';
+    writeFileSync(join(dir, 'my-specs/coding-practices/rule.md'), approved);
+    mkdirSync(join(dir, 'my-specs/specs/001-cancel/inspections'), { recursive: true });
+    writeFileSync(join(dir, 'my-specs/specs/001-cancel/spec.md'), '# Cancel\n');
+    writeFileSync(join(dir, 'my-specs/specs/001-cancel/file-tree.md'), 'Status: Proposed\n');
+    writeFileSync(join(dir, 'my-specs/specs/001-cancel/inspections/inspection-001.md'), '# Inspection 001\n');
+    writeFileSync(join(dir, 'my-specs/quality-report.md'), '# Report\n');
+
+    const result = installOk(dir, '-l', 'pt');
+
+    assert.ok(!existsSync(join(dir, 'my-specs')));
+    assert.equal(
+      read(dir, 'minhas-specs/praticas-de-codigo/rule.md'),
+      '# Rule\n\nStatus: Aprovado\n\nCriado por: `A`\n\n## Histórico de aprovação\n\n- Aprovado por: `A`\n',
+    );
+    assert.equal(read(dir, 'minhas-specs/specs/001-cancel/spec.md'), '# Cancel\n');
+    assert.equal(read(dir, 'minhas-specs/specs/001-cancel/arvore-de-arquivos.md'), 'Status: Proposto\n');
+    assert.ok(existsSync(join(dir, 'minhas-specs/specs/001-cancel/inspecoes/inspecao-001.md')));
+    assert.ok(existsSync(join(dir, 'minhas-specs/relatorio-de-qualidade.md')));
+    assert.equal(JSON.parse(read(dir, 'minhas-specs/myspec.json')).language, 'pt');
+    assert.match(result.stdout, /> my-specs -> minhas-specs/);
+
+    installOk(dir, '-l', 'en');
+    assert.ok(!existsSync(join(dir, 'minhas-specs')));
+    assert.equal(read(dir, 'my-specs/coding-practices/rule.md'), approved);
+    assert.ok(existsSync(join(dir, 'my-specs/specs/001-cancel/inspections/inspection-001.md')));
+  });
+
+  it('moves a Portuguese workspace created with the English layout', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'claude', '-l', 'en');
+    const manifest = JSON.parse(read(dir, 'my-specs/myspec.json'));
+    writeFileSync(join(dir, 'my-specs/myspec.json'), JSON.stringify({ ...manifest, language: 'pt' }));
+    writeFileSync(join(dir, 'my-specs/tooling.md'), 'Status: Approved\n');
+
+    installOk(dir);
+
+    assert.ok(!existsSync(join(dir, 'my-specs')));
+    assert.equal(read(dir, 'minhas-specs/ferramentas.md'), 'Status: Aprovado\n');
+    assert.deepEqual(skillDirs(dir, '.claude/skills'), PT_SKILLS);
   });
 
   it('never overwrites repository contract documents and leaves unrelated skills alone', () => {
@@ -111,8 +170,8 @@ describe('myspec install', () => {
 
     installOk(dir, '-p', 'codex', '-l', 'pt');
 
-    assert.equal(read(dir, 'my-specs/README.md'), 'custom readme');
-    assert.equal(read(dir, 'my-specs/tooling.md'), 'approved tooling');
+    assert.equal(read(dir, 'minhas-specs/README.md'), 'custom readme');
+    assert.equal(read(dir, 'minhas-specs/ferramentas.md'), 'approved tooling');
     assert.equal(read(dir, '.codex/skills/other-skill.md'), 'not ours');
   });
 
@@ -154,16 +213,18 @@ describe('myspec install --tooling', () => {
       'quality/run-benchmarks.sh',
       'quality/.gitignore',
       'quality/.gitattributes',
-      'my-specs/tooling.md',
-      'my-specs/general-guidelines/metas-de-complexidade-e-crap.md',
-      'my-specs/general-guidelines/caminhos-criticos-de-performance.md',
+      'minhas-specs/ferramentas.md',
+      'minhas-specs/orientacoes-gerais/metas-de-complexidade-e-crap.md',
+      'minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md',
     ]) {
       assert.ok(existsSync(join(dir, path)), path);
     }
     for (const manifest of ['dotnet-tools.json', '.config/dotnet-tools.json']) {
       assert.ok(!existsSync(join(dir, manifest)), 'dependencies must not be installed');
     }
-    assert.ok(!existsSync(join(dir, 'my-specs/general-guidelines/.gitkeep')));
+    assert.ok(!existsSync(join(dir, 'minhas-specs/orientacoes-gerais/.gitkeep')));
+    assert.match(read(dir, 'minhas-specs/ferramentas.md'), /^Status: Proposto$/m);
+    assert.match(result.stdout, /aprovar minhas-specs\/ferramentas\.md/);
     assert.match(result.stdout, /Instale as dependências seguindo quality\/README\.md/);
   });
 
@@ -205,8 +266,8 @@ describe('myspec install --tooling', () => {
     installOk(dir, '-p', 'claude', '-l', 'pt');
     installOk(dir, '-t', 'dotnet-quality');
 
-    assert.match(read(dir, 'my-specs/tooling.md'), /^# Ferramentas de qualidade Myspec/);
-    assert.deepEqual(JSON.parse(read(dir, 'my-specs/myspec.json')).providers, ['claude']);
+    assert.match(read(dir, 'minhas-specs/ferramentas.md'), /^# Ferramentas de qualidade Myspec/);
+    assert.deepEqual(JSON.parse(read(dir, 'minhas-specs/myspec.json')).providers, ['claude']);
   });
 
   it('warns and leaves a placeholder when the solution cannot be detected', () => {
@@ -230,7 +291,8 @@ describe('tooling templates', () => {
       for (const language of ['en', 'pt']) {
         assert.ok(template.description[language], `${language} description`);
         const planned = planTooling(template.id, language, { solution: 'S', author: 'A', date: 'D' });
-        assert.ok(planned.has('my-specs/tooling.md'), `${language} tooling.md`);
+        const tooling = { en: 'my-specs/tooling.md', pt: 'minhas-specs/ferramentas.md' }[language];
+        assert.ok(planned.has(tooling), `${language} ${tooling}`);
         for (const [path, content] of planned) {
           assert.doesNotMatch(content, /\{\{/, `${language}: ${path} has an unrendered placeholder`);
         }
@@ -255,4 +317,15 @@ describe('skill templates', () => {
       }
     });
   }
+
+  it('pt skills only use Portuguese workspace names and labels', () => {
+    const english =
+      /my-specs|product-directives|coding-practices|general-guidelines|tooling\.md|quality-report|file-tree|inspections?[/-]|Approv|Proposed|Created (by|on)|Applies to|`None`/;
+    for (const skill of listSkills('pt')) {
+      for (const file of skill.files) {
+        assert.doesNotMatch(file, /-template\.md$/, `${skill.name}/${file}`);
+        assert.doesNotMatch(readFileSync(join(skill.dir, file), 'utf8'), english, `${skill.name}/${file}`);
+      }
+    }
+  });
 });

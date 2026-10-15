@@ -1,15 +1,15 @@
 # Ferramentas de qualidade Myspec
 
-Status: Proposed
+Status: Proposto
 
-Created by: `<git user.name> <git user.email>`
+Criado por: `<git user.name> <git user.email>`
 
-Created on: `<date>`
+Criado em: `<data>`
 
 ## Contexto de execução
 
 - Diretório de trabalho: `<caminho relativo ao repositório>`
-- Comando de restauração/bootstrap: `<comando ou None>`
+- Comando de restauração/bootstrap: `<comando ou Nenhum>`
 - Fonte de versão: `<manifesto, lock file, arquivo de projeto ou versão explícita>`
 
 ## Complexidade ciclomática
@@ -20,7 +20,7 @@ Created on: `<date>`
 - Comando de medição: `<comando exato>`
 - Formato e caminho do resultado: `<formato>`; `<caminho relativo>`
 - Escopo de produção: `<projetos, caminhos ou seleção de arquivos alterados>`
-- Exclusões: `<código gerado, padrões ou None>`
+- Exclusões: `<código gerado, padrões ou Nenhum>`
 - Isolamento de código alterado: `<método>`
 
 ## Cobertura de testes
@@ -33,11 +33,11 @@ Created on: `<date>`
 - Comando de cobertura: `<comando exato>`
 - Formato e caminho: `<formato com suporte a linhas e ramos>`; `<caminho relativo>`
 - Escopo de produção e testes: `<projetos, assemblies, caminhos ou seleção>`
-- Exclusões: `<código gerado, padrões ou None>`
+- Exclusões: `<código gerado, padrões ou Nenhum>`
 - Isolamento de código alterado: `<método>`
 
 ## Histórico de aprovação
 
-- Approved by: `<git user.name> <git user.email>`
-- Approved on: `<date>`
-- Approval context: `<descrição concisa do contrato ou revisão aprovada>`
+- Aprovado por: `<git user.name> <git user.email>`
+- Aprovado em: `<data>`
+- Contexto da aprovação: `<descrição concisa do contrato ou revisão aprovada>`

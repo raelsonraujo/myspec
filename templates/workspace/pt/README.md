@@ -1,15 +1,15 @@
-# my-specs
+# minhas-specs
 
-Contrato do repositório usado pelos skills Myspec. Toda regra nasce como `Status: Proposed` e só passa a restringir os skills depois que um desenvolvedor a aprova explicitamente (`Status: Approved`).
+Contrato do repositório usado pelos skills Myspec. Toda regra nasce como `Status: Proposto` e só passa a restringir os skills depois que um desenvolvedor a aprova explicitamente (`Status: Aprovado`).
 
 | Caminho | Conteúdo | Criado por |
 | --- | --- | --- |
-| `tooling.md` | Comandos aprovados de complexidade ciclomática e cobertura de testes | `myspec-configurar` |
-| `product-directives/` | Conceitos, terminologia e invariantes de produto | `myspec-configurar` |
-| `coding-practices/` | Uma prática de código do repositório por arquivo | `myspec-configurar` |
-| `general-guidelines/` | Uma orientação compartilhada por todos os skills Myspec por arquivo | `myspec-configurar` |
-| `quality-report.md` | Complexidade e cobertura do projeto inteiro com oportunidades de melhoria | `myspec-quantificar` |
-| `specs/NNN-<nome>/` | `spec.md`, `file-tree.md` e `inspections/inspection-NNN.md` de cada mudança | `myspec-prescrever`, `myspec-implementar`, `myspec-inspecionar` |
+| `ferramentas.md` | Comandos aprovados de complexidade ciclomática e cobertura de testes | `myspec-configurar` |
+| `diretrizes-de-produto/` | Conceitos, terminologia e invariantes de produto | `myspec-configurar` |
+| `praticas-de-codigo/` | Uma prática de código do repositório por arquivo | `myspec-configurar` |
+| `orientacoes-gerais/` | Uma orientação compartilhada por todos os skills Myspec por arquivo | `myspec-configurar` |
+| `relatorio-de-qualidade.md` | Complexidade e cobertura do projeto inteiro com oportunidades de melhoria | `myspec-quantificar` |
+| `specs/NNN-<nome>/` | `spec.md`, `arvore-de-arquivos.md` e `inspecoes/inspecao-NNN.md` de cada mudança | `myspec-prescrever`, `myspec-implementar`, `myspec-inspecionar` |
 
 ## Fluxo de trabalho
 

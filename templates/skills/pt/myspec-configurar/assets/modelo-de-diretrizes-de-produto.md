@@ -1,12 +1,12 @@
 # <Nome do documento de diretriz de produto>
 
-Status: Proposed
+Status: Proposto
 
-Created by: `<git user.name> <git user.email>`
+Criado por: `<git user.name> <git user.email>`
 
-Created on: `<date>`
+Criado em: `<data>`
 
-Applies to: `{{skill:myspec-implementar}}` e `{{skill:myspec-corrigir}}`
+Aplica-se a: `{{skill:myspec-implementar}}` e `{{skill:myspec-corrigir}}`
 
 ## Escopo de produto
 
@@ -27,6 +27,6 @@ Applies to: `{{skill:myspec-implementar}}` e `{{skill:myspec-corrigir}}`
 
 ## Histórico de aprovação
 
-- Approved by: `<git user.name> <git user.email>`
-- Approved on: `<date>`
-- Approval context: `<descrição concisa das regras ou revisão aprovada>`
+- Aprovado por: `<git user.name> <git user.email>`
+- Aprovado em: `<data>`
+- Contexto da aprovação: `<descrição concisa das regras ou revisão aprovada>`

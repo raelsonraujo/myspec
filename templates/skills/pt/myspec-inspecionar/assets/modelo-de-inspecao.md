@@ -1,6 +1,6 @@
 # Inspeção <NNN>: <título da spec>
 
-`<data>` · Base `<commit ou branch>` · Anterior `<inspection-NNN.md ou None>`
+`<data>` · Base `<commit ou branch>` · Anterior `<inspecao-NNN.md ou Nenhum>`
 
 ## Veredito
 
@@ -10,7 +10,7 @@
 
 | Critério | Status | Evidência |
 | --- | --- | --- |
-| `AC-01` <título curto> | <Atendido / Não atendido / Evidência insuficiente> | `<nome do teste ou arquivo:linha>` |
+| `CA-01` <título curto> | <Atendido / Não atendido / Evidência insuficiente> | `<nome do teste ou arquivo:linha>` |
 
 ## Métricas
 
@@ -24,10 +24,10 @@
 
 ## Achados
 
-- **F-NNN** · <Bloqueante / Atenção> · <critério ou regra violada, ex.: `coding-practices/<arquivo>.md`> — <evidência em `arquivo:linha`> — <menor correção>.
+- **A-NNN** · <Bloqueante / Atenção> · <critério ou regra violada, ex.: `praticas-de-codigo/<arquivo>.md`> — <evidência em `arquivo:linha`> — <menor correção>.
 
 ## Achados anteriores
 
 | Achado | Status | Evidência |
 | --- | --- | --- |
-| `F-NNN` | <Resolvido / Aberto / Superado> | `<arquivo:linha, teste ou regra alterada>` |
+| `A-NNN` | <Resolvido / Aberto / Superado> | `<arquivo:linha, teste ou regra alterada>` |

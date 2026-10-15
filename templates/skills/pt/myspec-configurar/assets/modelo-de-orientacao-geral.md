@@ -1,12 +1,12 @@
 # <Nome da orientação geral>
 
-Status: Proposed
+Status: Proposto
 
-Created by: `<git user.name> <git user.email>`
+Criado por: `<git user.name> <git user.email>`
 
-Created on: `<date>`
+Criado em: `<data>`
 
-Applies to: `<skills Myspec aplicáveis>`
+Aplica-se a: `<skills Myspec aplicáveis>`
 
 ## Regra
 
@@ -19,6 +19,6 @@ Applies to: `<skills Myspec aplicáveis>`
 
 ## Histórico de aprovação
 
-- Approved by: `<git user.name> <git user.email>`
-- Approved on: `<date>`
-- Approval context: `<descrição concisa da regra ou revisão aprovada>`
+- Aprovado por: `<git user.name> <git user.email>`
+- Aprovado em: `<data>`
+- Contexto da aprovação: `<descrição concisa da regra ou revisão aprovada>`

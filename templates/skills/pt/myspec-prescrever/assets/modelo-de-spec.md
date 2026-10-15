@@ -14,7 +14,7 @@
 
 ## Critérios de aceitação
 
-### AC-01: <Resultado observável>
+### CA-01: <Resultado observável>
 
 - Dado <estado inicial>
 - Quando <ação ou evento>

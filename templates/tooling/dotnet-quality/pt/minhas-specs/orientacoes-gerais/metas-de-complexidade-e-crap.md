@@ -1,12 +1,12 @@
 # Metas de complexidade e CRAP por método
 
-Status: Proposed
+Status: Proposto
 
-Created by: `{{author}}`
+Criado por: `{{author}}`
 
-Created on: `{{date}}`
+Criado em: `{{date}}`
 
-Applies to: Todos os skills Myspec que criam, atualizam, inspecionam ou usam relatórios de qualidade
+Aplica-se a: Todos os skills Myspec que criam, atualizam, inspecionam ou usam relatórios de qualidade
 
 ## Regra
 
@@ -28,7 +28,7 @@ Em todo relatório de qualidade que inclua complexidade ciclomática:
 - diferencie essa classificação das cores do ReportGenerator, que avaliam cada métrica isoladamente;
 - trate valores fora das metas como sinal de melhoria, não como falha automática de build ou não conformidade, salvo quando uma especificação aprovada ou outro contrato de maior prioridade tornar a meta obrigatória;
 - não descreva a complexidade como melhorada apenas porque ramos foram movidos para métodos auxiliares arbitrários; métodos extraídos devem ter responsabilidades coesas e orientadas a comportamento;
-- aplique as exclusões de código gerado e o isolamento de código alterado definidos em `my-specs/tooling.md`.
+- aplique as exclusões de código gerado e o isolamento de código alterado definidos em `minhas-specs/ferramentas.md`.
 
 ## Precedência das orientações
 

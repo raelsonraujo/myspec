@@ -1,10 +1,10 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { LanguageId } from './languages.js';
+import { LANGUAGES, type LanguageId } from './languages.js';
 import type { ProviderId } from './providers.js';
 
-export const WORKSPACE_DIR = 'my-specs';
-export const MANIFEST_PATH = `${WORKSPACE_DIR}/myspec.json`;
+/** The manifest lives in the workspace folder, whose name depends on the installed language. */
+export const manifestPath = (language: LanguageId) => `${LANGUAGES[language].workspace.dir}/myspec.json`;
 
 /** Records what `myspec install` generated so a later install can replace it cleanly. */
 export interface Manifest {
@@ -18,16 +18,32 @@ export interface Manifest {
   installedAt: string;
 }
 
-export function readManifest(root: string): Manifest | undefined {
-  const path = join(root, MANIFEST_PATH);
-  if (!existsSync(path)) return undefined;
-  try {
-    return JSON.parse(readFileSync(path, 'utf8')) as Manifest;
-  } catch {
-    throw new Error(`Could not parse ${MANIFEST_PATH}. Fix or delete it, then run the install again.`);
+export interface InstalledManifest {
+  manifest: Manifest;
+  /**
+   * Language whose workspace layout holds the manifest. It differs from `manifest.language` for workspaces
+   * created before layouts were localized, when every language used the English one.
+   */
+  layout: LanguageId;
+}
+
+export function findManifest(root: string): InstalledManifest | undefined {
+  for (const layout of Object.keys(LANGUAGES) as LanguageId[]) {
+    const path = manifestPath(layout);
+    if (!existsSync(join(root, path))) continue;
+    try {
+      return { manifest: JSON.parse(readFileSync(join(root, path), 'utf8')) as Manifest, layout };
+    } catch {
+      throw new Error(`Could not parse ${path}. Fix or delete it, then run the install again.`);
+    }
   }
+  return undefined;
+}
+
+export function readManifest(root: string): Manifest | undefined {
+  return findManifest(root)?.manifest;
 }
 
 export function writeManifest(root: string, manifest: Manifest): void {
-  writeFileSync(join(root, MANIFEST_PATH), `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFileSync(join(root, manifestPath(manifest.language)), `${JSON.stringify(manifest, null, 2)}\n`);
 }
