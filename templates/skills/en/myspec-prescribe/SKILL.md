@@ -16,7 +16,7 @@ Approved product directives define the product vocabulary and invariants a spec 
 ## Workflow
 
 1. Read the request and inspect relevant repository context when available.
-2. Complete the Mandatory Guidance Gate, then read `my-specs/tooling.md` when present. Use it to identify quality tooling and defined contract sections; do not treat it as a substitute for reading the directive and guidance files at `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
+2. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/tooling/` when present. Use them to identify quality tooling and the gates the specified change must meet; do not treat them as a substitute for reading the directive and guidance files at `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
 3. Identify material ambiguities that would substantially change scope or observable behavior. Ask focused questions only for those ambiguities; otherwise state conservative assumptions.
 4. Suggest a concise kebab-case name based on the requested behavior.
 5. Inspect immediate directories under `my-specs/specs` whose names begin with a three-digit prefix followed by `-`. Assign the next sequential, zero-padded three-digit prefix, beginning with `001` when none exist. Do not renumber existing folders.

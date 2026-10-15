@@ -15,11 +15,11 @@
 
 ## Project Summary
 
-| Metric | Current | Previous | Approved target |
-| --- | ---: | ---: | ---: |
-| <metric and reported value from the tooling contract> | `<value>` | `<value or —>` | `<target or —>` |
+| Metric | Current | Previous | Gate |
+| --- | ---: | ---: | --- |
+| <metric and reported value from its metric file> | `<value>` | `<value or —>` | `<threshold and enforcement, or —>` |
 
-<Repeat the next section for every metric the tooling contract defines, in its order.>
+<Repeat the next section for every approved metric file under my-specs/tooling, in filename order.>
 
 ## <Metric name>
 
@@ -27,7 +27,7 @@
 
 | Location | Value | Related spec | Observation |
 | --- | ---: | --- | --- |
-| `<project, file, or member, at the granularity the contract defines>` | `<value>` | `<NNN-name or —>` | `<target missed or reason this deserves attention>` |
+| `<project, file, or member, at the granularity the metric file defines>` | `<value>` | `<NNN-name or —>` | `<gate missed or reason this deserves attention>` |
 
 ## Improvement Opportunities
 

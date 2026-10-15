@@ -31,9 +31,9 @@ Sem `-p`/`-l` em um terminal interativo, a CLI pergunta os valores. Se o reposit
 
 ## Templates de tooling
 
-Um template de tooling gera, junto com os skills, os artefatos para medir qualidade e uma proposta de `my-specs/tooling.md` (`Status: Proposed`; em português, `minhas-specs/ferramentas.md` com `Status: Proposto`) já preenchida. **A CLI não instala dependências**: cada template traz um README com os comandos para o desenvolvedor executar.
+Um template de tooling gera, junto com os skills, os artefatos para medir qualidade e uma proposta já preenchida de um arquivo por métrica em `my-specs/tooling/` (`Status: Proposed`; em português, `minhas-specs/ferramentas/` com `Status: Proposto`). **A CLI não instala dependências**: cada template traz um README com os comandos para o desenvolvedor executar.
 
-Os skills não supõem métricas: medem exatamente as definidas na seção `## Metrics` (`## Métricas`) do contrato aprovado. Sem template de tooling, o skill de setup pergunta ao desenvolvedor quais métricas medir; um template apenas propõe um conjunto concreto para revisão.
+Os skills não supõem métricas: cada arquivo em `tooling/` (`ferramentas/`) é uma métrica, com status e aprovação próprios, e define tudo o que é preciso para medi-la — contexto de execução, comandos pré-requisito, ferramenta, comando, escopo, isolamento do código alterado, valores registrados — e seus portões (`## Gates`/`## Portões`): limite, se vale para o código alterado ou para o projeto, e efeito `Blocking`/`Bloqueante` ou `Attention`/`Atenção`. Os comandos de build e teste ficam na orientação geral `build-and-test-commands.md` (`comandos-de-build-e-teste.md`). Sem template de tooling, o skill de setup pergunta ao desenvolvedor quais métricas medir; um template apenas propõe um conjunto concreto para revisão.
 
 ```bash
 myspec install -p claude -l pt -t dotnet-quality
@@ -52,12 +52,16 @@ quality/
 ├── .gitignore                # ignora quality/coverage/ e quality/benchmarks/
 └── .gitattributes            # mantém o .sh com LF
 minhas-specs/                                      # -l pt (my-specs/ em -l en)
-├── ferramentas.md                                 # contrato proposto, com a solução detectada na raiz
-├── orientacoes-gerais/<metas de CC e CRAP>.md     # orientação proposta: CC ≤ 15 e CRAP ≤ 30
-└── orientacoes-gerais/<caminhos críticos>.md      # orientação proposta: caminhos críticos e orçamentos de alocação/tempo
+├── ferramentas/
+│   ├── complexidade-ciclomatica.md                # portão: CC ≤ 15
+│   ├── cobertura-de-testes.md
+│   ├── crap-score.md                              # portão: CRAP ≤ 30
+│   └── performance.md                             # portões: orçamentos de alocação/tempo de cada caminho crítico
+├── orientacoes-gerais/comandos-de-build-e-teste.md  # restore, build e testes com a solução detectada na raiz
+└── orientacoes-gerais/<caminhos críticos>.md      # orientação proposta: caminhos críticos e seus orçamentos
 ```
 
-A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.email` são preenchidas automaticamente; se não forem encontradas, a CLI avisa e deixa um marcador. Arquivos que já existem nunca são sobrescritos. Depois de instalar as dependências, rode o skill de setup (`myspec-setup`/`myspec-configurar`) para revisar e aprovar o contrato.
+A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.email` são preenchidas automaticamente; se não forem encontradas, a CLI avisa e deixa um marcador. Arquivos que já existem nunca são sobrescritos. Depois de instalar as dependências, rode o skill de setup (`myspec-setup`/`myspec-configurar`) para revisar e aprovar cada métrica.
 
 ## O que é gerado
 
@@ -68,23 +72,24 @@ A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.e
 └── my-specs/                   # minhas-specs/ em -l pt
     ├── README.md
     ├── myspec.json             # manifesto mantido pela CLI
+    ├── tooling/                # ferramentas/: uma métrica por arquivo
     ├── product-directives/     # diretrizes-de-produto/
     ├── coding-practices/       # praticas-de-codigo/
     ├── general-guidelines/     # orientacoes-gerais/
     └── specs/
 ```
 
-Diretrizes de produto, práticas de código, orientações gerais e o contrato de ferramentas são compartilhados com o time e registram criador e aprovadores com `git config user.name`/`user.email`. As specs (`spec.md`, árvore de arquivos e inspeções) são um auxílio local do desenvolvedor: não registram identidade Git, apenas status e um histórico de revisões datado.
+Métricas, diretrizes de produto, práticas de código e orientações gerais são compartilhadas com o time e registram criador e aprovadores com `git config user.name`/`user.email`. As specs (`spec.md`, árvore de arquivos e inspeções) são um auxílio local do desenvolvedor: não registram identidade Git, apenas status e um histórico de revisões datado.
 
-Na versão `pt`, todo o workspace fica em português: pastas, arquivos gerados pelos skills (`ferramentas.md`, `relatorio-de-qualidade.md`, `arvore-de-arquivos.md`, `inspecoes/inspecao-NNN.md`), status (`Proposto`/`Aprovado`), metadados (`Criado por`, `Aprovado por`, `Histórico de aprovação`, `Histórico de revisões`), marcadores da árvore (`# adicionar`, `# modificar`, `# excluir`) e IDs (`CA-01`, `A-001`).
+Na versão `pt`, todo o workspace fica em português: pastas (`ferramentas/`, `orientacoes-gerais/` etc.), arquivos gerados pelos skills (`relatorio-de-qualidade.md`, `arvore-de-arquivos.md`, `inspecoes/inspecao-NNN.md`), status (`Proposto`/`Aprovado`), metadados (`Criado por`, `Aprovado por`, `Histórico de aprovação`, `Histórico de revisões`), marcadores da árvore (`# adicionar`, `# modificar`, `# excluir`) e IDs (`CA-01`, `A-001`).
 
 | Inglês (`en`) | Português (`pt`) | Função |
 | --- | --- | --- |
 | `myspec-setup` | `myspec-configurar` | Define as métricas de qualidade escolhidas pelo desenvolvedor e suas ferramentas, diretrizes de produto, práticas e orientações |
 | `myspec-prescribe` | `myspec-prescrever` | Cria uma spec testável em `specs/NNN-<nome>/` |
 | `myspec-implement` | `myspec-implementar` | Propõe/aprova a árvore de arquivos e implementa a spec |
-| `myspec-inspect` | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas definidas no contrato de ferramentas e registra em `specs/NNN-<nome>/inspections/` (`inspecoes/`) uma inspeção com veredito |
-| `myspec-quantify` | `myspec-quantificar` | Julga as métricas do contrato de ferramentas no projeto inteiro em `quality-report.md` (`relatorio-de-qualidade.md`) e sugere melhorias que podem virar novas specs |
+| `myspec-inspect` | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas definidas em `tooling/` (`ferramentas/`), julga seus portões e registra em `specs/NNN-<nome>/inspections/` (`inspecoes/`) uma inspeção com veredito |
+| `myspec-quantify` | `myspec-quantificar` | Julga as métricas de `tooling/` (`ferramentas/`) no projeto inteiro em `quality-report.md` (`relatorio-de-qualidade.md`) e sugere melhorias que podem virar novas specs |
 | `myspec-patch` | `myspec-corrigir` | Ajuste pequeno (até 3 arquivos) sem nova spec, inclusive dentro de uma spec já implementada |
 
 Um ciclo típico é `prescribe > implement (árvore) > implement > inspect > implement > inspect > patch > inspect`: repita implement ou patch seguido de inspect até obter os resultados desejados. A spec está concluída quando a inspeção mais recente estiver `Ready`/`Apta` ou `Ready with observations`/`Apta com ressalvas`; o veredito não bloqueia nenhum skill. Use implement em vez de patch quando a mudança exigir mais de 3 arquivos ou afetar uma spec cuja árvore nunca foi aprovada.
@@ -97,6 +102,7 @@ As referências entre skills são geradas na sintaxe de cada agente: `$myspec-se
 - Providers se acumulam: `install -p claude` depois de `install -p codex` mantém os dois.
 - O idioma vale para todos os providers: trocar de `-l en` para `-l pt` remove os skills em inglês (somente os arquivos listados em `myspec.json`).
 - Trocar de idioma renomeia o workspace para o novo idioma (`my-specs/coding-practices/` → `minhas-specs/praticas-de-codigo/`, `file-tree.md` → `arvore-de-arquivos.md` etc.) e traduz apenas as linhas de status e aprovação dos documentos, para que aprovações existentes continuem valendo; o corpo dos documentos não é traduzido. Um caminho cujo destino já existe não é movido. Workspaces `pt` criados em versões anteriores, ainda em `my-specs/`, são migrados da mesma forma na próxima instalação.
+- Um `tooling.md` (`ferramentas.md`) de versões anteriores é mantido e gera um aviso: rode o skill de setup para dividi-lo em um arquivo por métrica.
 - O conteúdo dos documentos do workspace nunca é sobrescrito. O `README.md` do workspace só é regenerado enquanto não tiver sido editado.
 
 ## Desenvolvimento

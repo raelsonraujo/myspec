@@ -1,4 +1,0 @@
-interface:
-  display_name: "Myspec Corrigir"
-  short_description: "Corrigir código dentro de regras aprovadas"
-  default_prompt: "Use $myspec-corrigir para realizar este pequeno ajuste de código preservando diretrizes de produto e orientações Myspec."

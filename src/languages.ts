@@ -9,7 +9,10 @@ export interface WorkspaceLayout {
   codingPractices: string;
   generalGuidelines: string;
   specs: string;
+  /** Folder with one approved metric definition per file. */
   tooling: string;
+  /** Single-file tooling contract of earlier versions, split into `tooling` by the setup skill. */
+  legacyTooling: string;
   qualityReport: string;
   /** Inside each spec folder. */
   fileTree: string;
@@ -49,7 +52,8 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       codingPractices: 'coding-practices',
       generalGuidelines: 'general-guidelines',
       specs: 'specs',
-      tooling: 'tooling.md',
+      tooling: 'tooling',
+      legacyTooling: 'tooling.md',
       qualityReport: 'quality-report.md',
       fileTree: 'file-tree.md',
       inspections: 'inspections',
@@ -78,7 +82,8 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       codingPractices: 'praticas-de-codigo',
       generalGuidelines: 'orientacoes-gerais',
       specs: 'specs',
-      tooling: 'ferramentas.md',
+      tooling: 'ferramentas',
+      legacyTooling: 'ferramentas.md',
       qualityReport: 'relatorio-de-qualidade.md',
       fileTree: 'arvore-de-arquivos.md',
       inspections: 'inspecoes',

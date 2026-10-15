@@ -11,7 +11,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import type { LanguageId } from './languages.js';
+import { LANGUAGES, type LanguageId } from './languages.js';
 import { findManifest, writeManifest } from './manifest.js';
 import { PROVIDERS, UsageError, type ProviderId } from './providers.js';
 import { listSkills, renderTemplate } from './templates.js';
@@ -122,6 +122,15 @@ export function install(options: InstallOptions): InstallResult {
   }
 
   result.workspaceCreated = scaffoldWorkspace(root, options.language);
+
+  const layout = LANGUAGES[options.language];
+  const legacyTooling = `${layout.workspace.dir}/${layout.workspace.legacyTooling}`;
+  if (existsSync(join(root, legacyTooling))) {
+    result.warnings.push(
+      `${legacyTooling} uses the single-file tooling format; run ${layout.setupSkill} to split it into one file per metric ` +
+        `under ${layout.workspace.dir}/${layout.workspace.tooling}/.`,
+    );
+  }
 
   writeManifest(root, {
     version: options.version,

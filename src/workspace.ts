@@ -49,6 +49,7 @@ export function migrateWorkspace(root: string, from: LanguageId, to: LanguageId)
     'generalGuidelines',
     'specs',
     'tooling',
+    'legacyTooling',
     'qualityReport',
   ];
   for (const key of entries) move(inWorkspace(source[key] as string), inWorkspace(target[key] as string));
@@ -97,7 +98,7 @@ export function scaffoldWorkspace(root: string, language: LanguageId): string[] 
   const layout = LANGUAGES[language].workspace;
   const workspace = join(root, layout.dir);
 
-  for (const folder of [layout.productDirectives, layout.codingPractices, layout.generalGuidelines, layout.specs]) {
+  for (const folder of [layout.tooling, layout.productDirectives, layout.codingPractices, layout.generalGuidelines, layout.specs]) {
     const dir = join(workspace, folder);
     mkdirSync(dir, { recursive: true });
     if (readdirSync(dir).length === 0) {

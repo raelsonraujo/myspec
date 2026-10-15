@@ -1,11 +1,9 @@
-# Implementation Quality Report
+# Project Quality Report
 
 ## Scope and Baseline
 
-- Spec: `<path>`
-- Baseline: `<commit, branch, diff, or approved file tree>`
-- Production files measured:
-  - `<path>`
+- Baseline: `<commit or branch>`
+- Measured on: `<date>`
 - Exclusions:
   - `<path or category>`: <reason>
 
@@ -15,33 +13,27 @@
 | --- | --- |
 | `<build or test command>` | <passed, failed, or partial> |
 
-## Test Coverage
+## Project Summary
 
-- Tool and version: `<tool>`
-- Line coverage: `<covered>/<total> (<percentage>)`
-- Branch coverage: `<covered>/<total> (<percentage>)`
-
-| File or type | Line coverage | Branch coverage | Notable gaps |
+| Metric | Current | Previous | Gate |
 | --- | ---: | ---: | --- |
-| `<name>` | `<value>` | `<value>` | `<critical uncovered behavior>` |
+| <metric and reported value from its metric file> | `<value>` | `<value or —>` | `<threshold and enforcement, or —>` |
 
-## Cyclomatic Complexity
+<Repeat the next section for every approved metric file under my-specs/tooling, in filename order.>
+
+## <Metric name>
 
 - Tool and version: `<tool>`
 
-| File or type | Method or function | Complexity | Observation |
-| --- | --- | ---: | --- |
-| `<name>` | `<member>` | `<value>` | `<reason this deserves attention, if any>` |
+| Location | Value | Related spec | Observation |
+| --- | ---: | --- | --- |
+| `<project, file, or member, at the granularity the metric file defines>` | `<value>` | `<NNN-name or —>` | `<gate missed or reason this deserves attention>` |
 
-## Acceptance Criteria Evidence
+## Improvement Opportunities
 
-| Criterion | Test or verification evidence | Coverage gap |
-| --- | --- | --- |
-| `AC-01` | `<test name or command>` | `<none or gap>` |
-
-## Improvement Suggestions
-
-1. <Prioritized, evidence-based improvement and its expected metric effect.>
+| Priority | Opportunity | Affected code | Related spec | Expected effect | Next skill |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | <evidence-based improvement> | `<path or member>` | `<NNN-name or —>` | <expected metric effect> | `$myspec-prescribe` or `$myspec-patch` |
 
 ## Limitations
 
