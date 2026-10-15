@@ -74,7 +74,9 @@ A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.e
     └── specs/
 ```
 
-Na versão `pt`, todo o workspace fica em português: pastas, arquivos gerados pelos skills (`ferramentas.md`, `relatorio-de-qualidade.md`, `arvore-de-arquivos.md`, `inspecoes/inspecao-NNN.md`), status (`Proposto`/`Aprovado`), metadados (`Criado por`, `Aprovado por`, `Histórico de aprovação`), marcadores da árvore (`# adicionar`, `# modificar`, `# excluir`) e IDs (`CA-01`, `A-001`).
+Diretrizes de produto, práticas de código, orientações gerais e o contrato de ferramentas são compartilhados com o time e registram criador e aprovadores com `git config user.name`/`user.email`. As specs (`spec.md`, árvore de arquivos e inspeções) são um auxílio local do desenvolvedor: não registram identidade Git, apenas status e um histórico de revisões datado.
+
+Na versão `pt`, todo o workspace fica em português: pastas, arquivos gerados pelos skills (`ferramentas.md`, `relatorio-de-qualidade.md`, `arvore-de-arquivos.md`, `inspecoes/inspecao-NNN.md`), status (`Proposto`/`Aprovado`), metadados (`Criado por`, `Aprovado por`, `Histórico de aprovação`, `Histórico de revisões`), marcadores da árvore (`# adicionar`, `# modificar`, `# excluir`) e IDs (`CA-01`, `A-001`).
 
 | Inglês (`en`) | Português (`pt`) | Função |
 | --- | --- | --- |

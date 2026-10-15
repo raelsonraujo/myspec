@@ -9,6 +9,7 @@ import { listSkills, skillReferences } from '../dist/templates.js';
 import { listToolingTemplates, planTooling } from '../dist/tooling.js';
 
 const CLI = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
+const TEMPLATES = fileURLToPath(new URL('../templates', import.meta.url));
 const EN_SKILLS = ['myspec-implement', 'myspec-inspect', 'myspec-patch', 'myspec-prescribe', 'myspec-quantify', 'myspec-setup'];
 const PT_SKILLS = ['myspec-configurar', 'myspec-corrigir', 'myspec-implementar', 'myspec-inspecionar', 'myspec-prescrever', 'myspec-quantificar'];
 
@@ -319,6 +320,22 @@ describe('skill templates', () => {
       }
     });
   }
+
+  it('keeps Git identity out of spec documents', () => {
+    const specAssets = {
+      en: { 'myspec-prescribe': 'spec-template.md', 'myspec-implement': 'file-tree-template.md', 'myspec-inspect': 'inspection-template.md' },
+      pt: { 'myspec-prescrever': 'modelo-de-spec.md', 'myspec-implementar': 'modelo-de-arvore-de-arquivos.md', 'myspec-inspecionar': 'modelo-de-inspecao.md' },
+    };
+    for (const [language, assets] of Object.entries(specAssets)) {
+      for (const skill of listSkills(language).filter((skill) => skill.name in assets)) {
+        const content = readFileSync(join(skill.dir, 'assets', assets[skill.name]), 'utf8');
+        assert.doesNotMatch(content, /git user|Created by|Criado por|Approved by|Aprovado por/, `${language}: ${skill.name}`);
+        assert.doesNotMatch(readFileSync(join(skill.dir, 'SKILL.md'), 'utf8'), /git config/, `${language}: ${skill.name}/SKILL.md`);
+      }
+    }
+    assert.match(read(join(TEMPLATES, 'skills/pt/myspec-implementar/assets'), 'modelo-de-arvore-de-arquivos.md'), /^## Histórico de revisões$/m);
+    assert.match(read(join(TEMPLATES, 'skills/en/myspec-implement/assets'), 'file-tree-template.md'), /^## Revision History$/m);
+  });
 
   it('leaves the choice of metrics to the tooling contract', () => {
     const contracts = {

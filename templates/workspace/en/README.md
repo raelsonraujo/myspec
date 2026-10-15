@@ -2,6 +2,8 @@
 
 Repository contract used by the Myspec skills. Every rule here starts as `Status: Proposed` and only constrains the skills after a developer explicitly approves it (`Status: Approved`).
 
+Contract documents are shared with the team and record their creator and approvers from Git. Everything under `specs/` is the developer's local working record: it carries no Git identity, only a status and a dated revision history.
+
 | Path | Content | Created by |
 | --- | --- | --- |
 | `tooling.md` | Build and test commands plus the quality metrics the developer chose and how to measure them | `myspec-setup` |

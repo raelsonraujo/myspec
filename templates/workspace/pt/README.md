@@ -2,6 +2,8 @@
 
 Contrato do repositório usado pelos skills Myspec. Toda regra nasce como `Status: Proposto` e só passa a restringir os skills depois que um desenvolvedor a aprova explicitamente (`Status: Aprovado`).
 
+Os documentos do contrato são compartilhados com o time e registram criador e aprovadores a partir do Git. Tudo em `specs/` é registro de trabalho local do desenvolvedor: não traz identidade Git, apenas status e um histórico de revisões datado.
+
 | Caminho | Conteúdo | Criado por |
 | --- | --- | --- |
 | `ferramentas.md` | Comandos de build e teste e as métricas de qualidade escolhidas pelo desenvolvedor, com como medi-las | `myspec-configurar` |
