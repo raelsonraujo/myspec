@@ -10,8 +10,10 @@ export interface WorkspaceLayout {
   generalGuidelines: string;
   specs: string;
   /** Folder with one approved metric definition per file. */
-  tooling: string;
-  /** Single-file tooling contract of earlier versions, split into `tooling` by the setup skill. */
+  metrics: string;
+  /** Name the metrics folder had in 0.4.0, renamed to `metrics` on install. */
+  legacyMetrics: string;
+  /** Single-file tooling contract of earlier versions, split into `metrics` by the setup skill. */
   legacyTooling: string;
   qualityReport: string;
   /** Inside each spec folder. */
@@ -52,7 +54,8 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       codingPractices: 'coding-practices',
       generalGuidelines: 'general-guidelines',
       specs: 'specs',
-      tooling: 'tooling',
+      metrics: 'metrics',
+      legacyMetrics: 'tooling',
       legacyTooling: 'tooling.md',
       qualityReport: 'quality-report.md',
       fileTree: 'file-tree.md',
@@ -82,7 +85,8 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       codingPractices: 'praticas-de-codigo',
       generalGuidelines: 'orientacoes-gerais',
       specs: 'specs',
-      tooling: 'ferramentas',
+      metrics: 'metricas',
+      legacyMetrics: 'ferramentas',
       legacyTooling: 'ferramentas.md',
       qualityReport: 'relatorio-de-qualidade.md',
       fileTree: 'arvore-de-arquivos.md',

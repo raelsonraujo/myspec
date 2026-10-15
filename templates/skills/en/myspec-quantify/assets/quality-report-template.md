@@ -19,7 +19,7 @@
 | --- | ---: | ---: | --- |
 | <metric and reported value from its metric file> | `<value>` | `<value or —>` | `<threshold and enforcement, or —>` |
 
-<Repeat the next section for every approved metric file under my-specs/tooling, in filename order.>
+<Repeat the next section for every approved metric file under my-specs/metrics, in filename order.>
 
 ## <Metric name>
 

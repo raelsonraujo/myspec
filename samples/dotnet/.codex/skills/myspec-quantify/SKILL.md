@@ -1,6 +1,6 @@
 ---
 name: myspec-quantify
-description: Measure the quality metrics defined by the developer-approved metric files under my-specs/tooling across the whole project, judge the results against their gates, and turn the weakest areas into prioritized improvement opportunities that can start new specs. Use when a developer asks for project-wide quality control, metric analysis, or where to invest improvement effort next.
+description: Measure the quality metrics defined by the developer-approved metric files under my-specs/metrics across the whole project, judge the results against their gates, and turn the weakest areas into prioritized improvement opportunities that can start new specs. Use when a developer asks for project-wide quality control, metric analysis, or where to invest improvement effort next.
 ---
 
 # Myspec Quantify
@@ -13,7 +13,7 @@ Before moving beyond initial repository discovery or executing a measurement com
 
 ## Workflow
 
-1. Complete the Mandatory Guidance Gate, then read every metric file under repository-root `my-specs/tooling/`. One file is one metric, and only files with status `Approved` and a complete definition are measured; the metric files alone decide which metrics exist, so never measure or ask for one no file defines. Do not treat them as a substitute for reading the guidance files at `my-specs/coding-practices/` and `my-specs/general-guidelines/`.
+1. Complete the Mandatory Guidance Gate, then read every metric file under repository-root `my-specs/metrics/`. One file is one metric, and only files with status `Approved` and a complete definition are measured; the metric files alone decide which metrics exist, so never measure or ask for one no file defines. Do not treat them as a substitute for reading the guidance files at `my-specs/coding-practices/` and `my-specs/general-guidelines/`.
 2. If no metric file is approved and complete, stop and ask the developer to run `$myspec-setup`; when only the legacy single-file `my-specs/tooling.md` exists, ask for it to be split into metric files. Do not select substitute tooling. List every unapproved or incomplete metric file under the report's limitations.
 3. Run the exact build and test commands defined by the approved general guideline `my-specs/general-guidelines/build-and-test-commands.md`, then each approved metric's prerequisite and measurement commands for the whole project, applying its documented scope, exclusions, and every applicable defined guideline.
 4. Judge the results against the gates of each metric file that apply to the project, and identify the locations that miss them or rank worst.

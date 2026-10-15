@@ -145,7 +145,7 @@ function printResult(result: InstallResult): void {
       ? `${PROVIDERS[result.providers[0]].invocationPrefix}${skill}`
       : result.providers.map((id) => `${PROVIDERS[id].invocationPrefix}${skill} (${PROVIDERS[id].displayName})`).join(' / ');
   const workspace = language.workspace;
-  const toolingPath = `${workspace.dir}/${workspace.tooling}/`;
+  const metricsPath = `${workspace.dir}/${workspace.metrics}/`;
   const readmes = result.tooling
     .flatMap((tooling) => [...tooling.created, ...tooling.skipped])
     .filter((path) => path.endsWith('/README.md') && !path.startsWith(`${workspace.dir}/`));
@@ -155,16 +155,16 @@ function printResult(result: InstallResult): void {
           title: 'Próximos passos:',
           dependencies: readmes.map((path) => `Instale as dependências seguindo ${path}.`),
           setup: readmes.length
-            ? `Rode ${invoke(language.setupSkill)} para revisar e aprovar as métricas em ${toolingPath} e definir diretrizes de produto e práticas de código.`
-            : `Rode ${invoke(language.setupSkill)} para definir ferramentas, diretrizes de produto e práticas de código.`,
+            ? `Rode ${invoke(language.setupSkill)} para revisar e aprovar as métricas em ${metricsPath} e definir diretrizes de produto e práticas de código.`
+            : `Rode ${invoke(language.setupSkill)} para definir métricas, diretrizes de produto e práticas de código.`,
           prescribe: `Rode ${invoke(language.prescribeSkill)} para escrever a primeira especificação.`,
         }
       : {
           title: 'Next steps:',
           dependencies: readmes.map((path) => `Install the dependencies following ${path}.`),
           setup: readmes.length
-            ? `Run ${invoke(language.setupSkill)} to review and approve the metrics in ${toolingPath} and define product directives and coding practices.`
-            : `Run ${invoke(language.setupSkill)} to define tooling, product directives, and coding practices.`,
+            ? `Run ${invoke(language.setupSkill)} to review and approve the metrics in ${metricsPath} and define product directives and coding practices.`
+            : `Run ${invoke(language.setupSkill)} to define metrics, product directives, and coding practices.`,
           prescribe: `Run ${invoke(language.prescribeSkill)} to write your first spec.`,
         };
   console.log(`\n${steps.title}`);

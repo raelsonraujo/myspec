@@ -48,7 +48,8 @@ export function migrateWorkspace(root: string, from: LanguageId, to: LanguageId)
     'codingPractices',
     'generalGuidelines',
     'specs',
-    'tooling',
+    'metrics',
+    'legacyMetrics',
     'legacyTooling',
     'qualityReport',
   ];
@@ -92,13 +93,32 @@ function relabelDocuments(root: string, dir: string, source: WorkspaceLayout, ta
   return relabeled;
 }
 
+/**
+ * Renames the metrics folder of a 0.4.0 workspace (`tooling/`, `ferramentas/`) to its current name. Like the language
+ * migration, it never overwrites: when both folders exist, the old one stays put and a warning is returned.
+ */
+export function renameLegacyMetrics(root: string, language: LanguageId): WorkspaceMigration {
+  const layout = LANGUAGES[language].workspace;
+  const from = `${layout.dir}/${layout.legacyMetrics}`;
+  const to = `${layout.dir}/${layout.metrics}`;
+  const result: WorkspaceMigration = { moved: [], relabeled: [], warnings: [] };
+  if (!existsSync(join(root, from))) return result;
+  if (existsSync(join(root, to))) {
+    result.warnings.push(`Both ${from} and ${to} exist; move the metric files of ${from} manually.`);
+    return result;
+  }
+  renameSync(join(root, from), join(root, to));
+  result.moved.push(`${from} -> ${to}`);
+  return result;
+}
+
 /** Creates the workspace folders without ever touching documents the repository already has. */
 export function scaffoldWorkspace(root: string, language: LanguageId): string[] {
   const created: string[] = [];
   const layout = LANGUAGES[language].workspace;
   const workspace = join(root, layout.dir);
 
-  for (const folder of [layout.tooling, layout.productDirectives, layout.codingPractices, layout.generalGuidelines, layout.specs]) {
+  for (const folder of [layout.metrics, layout.productDirectives, layout.codingPractices, layout.generalGuidelines, layout.specs]) {
     const dir = join(workspace, folder);
     mkdirSync(dir, { recursive: true });
     if (readdirSync(dir).length === 0) {

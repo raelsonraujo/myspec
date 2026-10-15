@@ -29,8 +29,8 @@ Risco de mudança de cada método controlado pelo desenvolvedor, combinando comp
 - Comando de medição: `pwsh -NoProfile -File quality/run-coverage-report.ps1 -NoOpen` ou `bash quality/run-coverage-report.sh --no-open`
 - Formato e caminho do resultado: seção Risk Hotspots do relatório HTML; `quality/coverage/report/index.html`
 - Escopo: todo assembly que não seja de teste e seja instrumentado por ao menos um projeto de testes de `{{solution}}`
-- Exclusões: as mesmas de `minhas-specs/ferramentas/complexidade-ciclomatica.md`
-- Isolamento de código alterado: o mesmo de `minhas-specs/ferramentas/complexidade-ciclomatica.md`
+- Exclusões: as mesmas de `minhas-specs/metricas/complexidade-ciclomatica.md`
+- Isolamento de código alterado: o mesmo de `minhas-specs/metricas/complexidade-ciclomatica.md`
 - Valores registrados: maior CRAP score entre os métodos (com o membro) e quantidade de métodos acima de 30
 
 ## Portões
@@ -42,12 +42,12 @@ Risco de mudança de cada método controlado pelo desenvolvedor, combinando comp
 
 Esse limite coincide com o limite padrão do ReportGenerator fixado no repositório, que exibe CRAP score acima de 30 como elevado. Método acima de 30 continua candidato a melhoria, pois a combinação de complexidade e cobertura medida representa risco elevado de mudança.
 
-Para todo método acima deste portão ou do portão de complexidade ciclomática, informe os dois valores medidos e a evidência de cobertura relevante e classifique-o segundo a política de `minhas-specs/ferramentas/complexidade-ciclomatica.md`. Diferencie essa classificação das cores do ReportGenerator, que avaliam cada métrica isoladamente.
+Para todo método acima deste portão ou do portão de complexidade ciclomática, informe os dois valores medidos e a evidência de cobertura relevante e classifique-o segundo a política de `minhas-specs/metricas/complexidade-ciclomatica.md`. Diferencie essa classificação das cores do ReportGenerator, que avaliam cada métrica isoladamente.
 
 ## Documentos relacionados do contrato
 
-- `minhas-specs/ferramentas/complexidade-ciclomatica.md`
-- `minhas-specs/ferramentas/cobertura-de-testes.md`
+- `minhas-specs/metricas/complexidade-ciclomatica.md`
+- `minhas-specs/metricas/cobertura-de-testes.md`
 
 ## Decisões e contrapartidas
 

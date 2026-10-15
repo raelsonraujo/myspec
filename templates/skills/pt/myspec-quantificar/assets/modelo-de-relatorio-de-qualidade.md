@@ -19,7 +19,7 @@
 | --- | ---: | ---: | --- |
 | <métrica e valor registrado do seu arquivo de métrica> | `<valor>` | `<valor ou —>` | `<limite e efeito, ou —>` |
 
-<Repita a próxima seção para cada arquivo de métrica aprovado em minhas-specs/ferramentas, na ordem dos nomes de arquivo.>
+<Repita a próxima seção para cada arquivo de métrica aprovado em minhas-specs/metricas, na ordem dos nomes de arquivo.>
 
 ## <Nome da métrica>
 

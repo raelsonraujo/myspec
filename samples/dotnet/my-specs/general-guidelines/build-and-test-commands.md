@@ -16,7 +16,7 @@ Verify the repository from its root with these commands, in order:
 2. Build: `dotnet build Sample.slnx --configuration Release --no-restore`
 3. Test: `dotnet test Sample.slnx --configuration Release --no-build`
 
-Run them before measuring any metric under `my-specs/tooling/`. The coverage workflow `quality/run-coverage-report` runs the same tests, so its test results may stand in for step 3 of the same baseline. Every command is run by the developer, as `my-specs/general-guidelines/dotnet-command-execution.md` requires.
+Run them before measuring any metric under `my-specs/metrics/`. The coverage workflow `quality/run-coverage-report` runs the same tests, so its test results may stand in for step 3 of the same baseline. Every command is run by the developer, as `my-specs/general-guidelines/dotnet-command-execution.md` requires.
 
 ## Guidance Precedence
 

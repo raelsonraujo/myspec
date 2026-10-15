@@ -30,8 +30,8 @@ Change risk of each developer-controlled method, combining cyclomatic complexity
 - Output format: the Risk Hotspots section of the HTML report
 - Result path: `quality/coverage/report/index.html`
 - Scope: every non-test assembly instrumented by at least one test project in `{{solution}}`
-- Exclusions: same as `my-specs/tooling/cyclomatic-complexity.md`
-- Changed-code isolation: same as `my-specs/tooling/cyclomatic-complexity.md`
+- Exclusions: same as `my-specs/metrics/cyclomatic-complexity.md`
+- Changed-code isolation: same as `my-specs/metrics/cyclomatic-complexity.md`
 - Reported values: highest CRAP score among methods (with the member) and the number of methods above 30
 
 ## Gates
@@ -43,12 +43,12 @@ Change risk of each developer-controlled method, combining cyclomatic complexity
 
 This target matches the default boundary of the repository-pinned ReportGenerator, which presents a CRAP score above 30 as elevated. A method above 30 remains an improvement candidate because its combination of complexity and measured coverage presents elevated change risk.
 
-For every method above this gate or the Cyclomatic Complexity gate, report both measured values and the relevant coverage evidence, and classify it using the policy in `my-specs/tooling/cyclomatic-complexity.md`. Distinguish that classification from ReportGenerator's colors, which evaluate each metric independently.
+For every method above this gate or the Cyclomatic Complexity gate, report both measured values and the relevant coverage evidence, and classify it using the policy in `my-specs/metrics/cyclomatic-complexity.md`. Distinguish that classification from ReportGenerator's colors, which evaluate each metric independently.
 
 ## Related Contract Documents
 
-- `my-specs/tooling/cyclomatic-complexity.md`
-- `my-specs/tooling/test-coverage.md`
+- `my-specs/metrics/cyclomatic-complexity.md`
+- `my-specs/metrics/test-coverage.md`
 
 ## Decisions and Tradeoffs
 

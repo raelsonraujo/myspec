@@ -1,6 +1,6 @@
 ---
 name: myspec-inspect
-description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, applicable approved product directives, and approved Myspec guidance, measure the metrics defined by the developer-approved metric files under my-specs/tooling and judge them against their gates, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
+description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, applicable approved product directives, and approved Myspec guidance, measure the metrics defined by the developer-approved metric files under my-specs/metrics and judge them against their gates, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
 ---
 
 # Myspec Inspect
@@ -16,7 +16,7 @@ Treat an approved product directive governing the implementation under review as
 ## Workflow
 
 1. Resolve the named folder under repository-root `my-specs/specs`. Read `spec.md` and, when present, `file-tree.md` in full.
-2. Complete the Mandatory Guidance Gate. Read repository instructions and every metric file under `my-specs/tooling/` when present. Use the metric files to establish quality-tooling applicability and gates, but do not treat them as a substitute for reading the directive and guidance files.
+2. Complete the Mandatory Guidance Gate. Read repository instructions and every metric file under `my-specs/metrics/` when present. Use the metric files to establish quality-tooling applicability and gates, but do not treat them as a substitute for reading the directive and guidance files.
 3. List `my-specs/specs/<spec-name>/inspections/`. When it holds earlier inspections, read the highest-numbered one in full; it is the previous inspection. Otherwise this is the first inspection.
 4. Establish the review baseline from the spec, the approved file tree, applicable approved product directives and guidance, relevant implementation and test files, version-control evidence, and any verification output the developer supplied.
 5. Collect the metrics described under [Metrics](#metrics).
@@ -28,7 +28,7 @@ Treat an approved product directive governing the implementation under review as
 
 ## Metrics
 
-Every inspection measures the implementation itself. Run the exact build and test commands defined by the approved general guideline `my-specs/general-guidelines/build-and-test-commands.md`, then, for each metric file under `my-specs/tooling/`, its prerequisite and measurement commands, applying its documented scope, exclusions, and every applicable approved guideline, and collect:
+Every inspection measures the implementation itself. Run the exact build and test commands defined by the approved general guideline `my-specs/general-guidelines/build-and-test-commands.md`, then, for each metric file under `my-specs/metrics/`, its prerequisite and measurement commands, applying its documented scope, exclusions, and every applicable approved guideline, and collect:
 
 - acceptance criteria met out of the total the spec defines;
 - tests passed out of the total run; and

@@ -50,7 +50,7 @@ Prefira complexidade naturalmente menor quando ela decorrer de um design claro e
 
 ## Documentos relacionados do contrato
 
-- `minhas-specs/ferramentas/crap-score.md`, que combina esta métrica com a cobertura de linhas
+- `minhas-specs/metricas/crap-score.md`, que combina esta métrica com a cobertura de linhas
 
 ## Decisões e contrapartidas
 

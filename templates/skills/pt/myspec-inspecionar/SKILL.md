@@ -1,6 +1,6 @@
 ---
 name: myspec-inspecionar
-description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada, diretrizes de produto e orientações Myspec aprovadas, mede as métricas definidas pelos arquivos de métrica aprovados em minhas-specs/ferramentas, julga-as frente a seus portões e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
+description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada, diretrizes de produto e orientações Myspec aprovadas, mede as métricas definidas pelos arquivos de métrica aprovados em minhas-specs/metricas, julga-as frente a seus portões e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
 ---
 
 # Myspec Inspecionar
@@ -14,7 +14,7 @@ Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minh
 ## Fluxo de trabalho
 
 1. Resolva a pasta nomeada sob `minhas-specs/specs`; leia integralmente `spec.md` e `arvore-de-arquivos.md`, se existir.
-2. Conclua o portão, leia instruções do repositório e todos os arquivos de métrica em `minhas-specs/ferramentas/` quando existirem. Eles definem ferramentas e portões, mas não substituem a leitura das diretrizes e orientações.
+2. Conclua o portão, leia instruções do repositório e todos os arquivos de métrica em `minhas-specs/metricas/` quando existirem. Eles definem ferramentas e portões, mas não substituem a leitura das diretrizes e orientações.
 3. Liste `minhas-specs/specs/<nome-da-spec>/inspecoes/`. Se houver inspeções, leia integralmente a de maior número: ela é a inspeção anterior. Caso contrário, esta é a primeira.
 4. Estabeleça a base de revisão: especificação, árvore aprovada, diretrizes/orientações aplicáveis, arquivos de implementação e teste, evidência de controle de versão e verificações fornecidas.
 5. Colete as métricas descritas em [Métricas](#métricas).
@@ -26,7 +26,7 @@ Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minh
 
 ## Métricas
 
-Toda inspeção mede a implementação. Execute os comandos exatos de build e teste definidos pela orientação geral aprovada `minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md` e, depois, para cada arquivo de métrica em `minhas-specs/ferramentas/`, seus comandos pré-requisito e de medição, respeitando escopo, exclusões e orientações aplicáveis, e colete:
+Toda inspeção mede a implementação. Execute os comandos exatos de build e teste definidos pela orientação geral aprovada `minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md` e, depois, para cada arquivo de métrica em `minhas-specs/metricas/`, seus comandos pré-requisito e de medição, respeitando escopo, exclusões e orientações aplicáveis, e colete:
 
 - critérios de aceitação atendidos sobre o total definido na spec;
 - testes aprovados sobre o total executado; e
