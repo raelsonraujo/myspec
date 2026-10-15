@@ -2,10 +2,6 @@
 
 Status: Proposed
 
-Created by: `<git user.name> <git user.email>`
-
-Created on: `<date>`
-
 ## Tree
 
 ```text
@@ -36,8 +32,9 @@ End every file entry with a comment beginning with exactly one operation marker:
 
 - <Decision requiring developer input before approval, or `None`.>
 
-## Approval History
+## Revision History
 
-- Approved by: `<git user.name> <git user.email>`
-- Approved on: `<date>`
-- Approval context: `<concise description of the approved tree revision>`
+| Date | Status | Revision |
+| --- | --- | --- |
+| `<date>` | Proposed | <what this revision proposed or changed> |
+| `<date>` | Approved | <which revision was approved> |

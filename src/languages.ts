@@ -24,6 +24,7 @@ export interface WorkspaceLayout {
     createdOn: string;
     appliesTo: string;
     approvalHistory: string;
+    revisionHistory: string;
     approvedBy: string;
     approvedOn: string;
     approvalContext: string;
@@ -60,6 +61,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
         createdOn: 'Created on:',
         appliesTo: 'Applies to:',
         approvalHistory: '## Approval History',
+        revisionHistory: '## Revision History',
         approvedBy: '- Approved by:',
         approvedOn: '- Approved on:',
         approvalContext: '- Approval context:',
@@ -88,6 +90,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
         createdOn: 'Criado em:',
         appliesTo: 'Aplica-se a:',
         approvalHistory: '## Histórico de aprovação',
+        revisionHistory: '## Histórico de revisões',
         approvedBy: '- Aprovado por:',
         approvedOn: '- Aprovado em:',
         approvalContext: '- Contexto da aprovação:',

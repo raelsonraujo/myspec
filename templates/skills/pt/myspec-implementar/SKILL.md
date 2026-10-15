@@ -15,9 +15,11 @@ Diretrizes de produto aprovadas definem vocabulário e invariantes. Trate-as com
 
 ## Portão rígido: árvore de arquivos
 
-Resolva a pasta solicitada em `minhas-specs/specs` e leia `spec.md`. Se `arvore-de-arquivos.md` não existir, inspecione repositório e especificação, crie-o pelo modelo `assets/modelo-de-arvore-de-arquivos.md`, defina `Status: Proposto` e registre criador/data imutáveis usando a configuração Git. Inclua arquivos a adicionar, modificar ou excluir, suas responsabilidades, locais de teste e decisões estruturais; apresente a proposta e encerre sem editar implementação.
+Resolva a pasta solicitada em `minhas-specs/specs` e leia `spec.md`. Se `arvore-de-arquivos.md` não existir, inspecione repositório e especificação, crie-o pelo modelo `assets/modelo-de-arvore-de-arquivos.md`, defina `Status: Proposto` e acrescente ao `Histórico de revisões` uma entrada `Proposto` com a data de hoje (`AAAA-MM-DD`). Inclua arquivos a adicionar, modificar ou excluir, suas responsabilidades, locais de teste e decisões estruturais; apresente a proposta e encerre sem editar implementação.
 
-Se existir, mas não estiver `Aprovado`, revise-o frente à especificação e repositório, apresente preocupações ou alternativas e peça aprovação/revisão, sem editar implementação. Após aprovação explícita em invocação posterior, marque `Aprovado` e acrescente ao histórico aprovador, data e contexto; preserve criação e entradas anteriores. A mera existência nunca é aprovação.
+Se existir, mas não estiver `Aprovado`, revise-o frente à especificação e repositório, apresente preocupações ou alternativas e peça aprovação/revisão, sem editar implementação. Em invocação posterior, incorpore revisões ou, após aprovação explícita, marque `Aprovado`. Registre cada revisão e aprovação como nova entrada datada no `Histórico de revisões`, com descrição concisa do que mudou ou foi aprovado; nunca edite nem remova entradas anteriores. Revisar uma árvore aprovada a devolve a `Proposto` até nova aprovação. A mera existência nunca é aprovação.
+
+A árvore, como tudo na pasta da spec, é um registro de trabalho local do desenvolvedor: nunca registre nela identidade Git, autor ou aprovador.
 
 ## Implementação interativa
 

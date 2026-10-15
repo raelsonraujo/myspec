@@ -2,10 +2,6 @@
 
 Status: Proposto
 
-Criado por: `<git user.name> <git user.email>`
-
-Criado em: `<data>`
-
 ## Árvore
 
 ```text
@@ -36,8 +32,9 @@ Termine cada entrada de arquivo com um comentário que comece exatamente com um 
 
 - <Decisão que exige entrada do desenvolvedor antes da aprovação, ou `Nenhum`.>
 
-## Histórico de aprovação
+## Histórico de revisões
 
-- Aprovado por: `<git user.name> <git user.email>`
-- Aprovado em: `<data>`
-- Contexto da aprovação: `<descrição concisa da árvore ou revisão aprovada>`
+| Data | Status | Revisão |
+| --- | --- | --- |
+| `<data>` | Proposto | <o que esta revisão propôs ou alterou> |
+| `<data>` | Aprovado | <qual revisão foi aprovada> |
