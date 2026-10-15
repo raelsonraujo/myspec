@@ -9,16 +9,16 @@ Produza métricas de qualidade baseadas em evidências para o projeto como um to
 
 ## Portão obrigatório de orientações
 
-Antes de avançar além da descoberta inicial ou executar medição, leia todos os Markdown em `my-specs/coding-practices/` e `my-specs/general-guidelines/`. Documentos aplicáveis com `Status: Approved` são obrigatórios; cumpra-os e exponha conflitos superiores. Ausências, documentos não aprovados ou `None` não restringem; informe limitações relevantes.
+Antes de avançar além da descoberta inicial ou executar medição, leia todos os Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Documentos aplicáveis com `Status: Aprovado` são obrigatórios; cumpra-os e exponha conflitos superiores. Ausências, documentos não aprovados ou `Nenhum` não restringem; informe limitações relevantes.
 
 ## Fluxo de trabalho
 
-1. Após o portão, leia `my-specs/tooling.md` na raiz. Exija `Status: Approved` e definições completas de complexidade e cobertura; ele não substitui as orientações.
+1. Após o portão, leia `minhas-specs/ferramentas.md` na raiz. Exija `Status: Aprovado` e definições completas de complexidade e cobertura; ele não substitui as orientações.
 2. Se o contrato estiver ausente, incompleto ou não aprovado, pare e peça `{{skill:myspec-configurar}}`. Não escolha ferramenta substituta.
 3. Obtenha os resultados dos comandos aprovados exatos de build, cobertura e complexidade para o projeto inteiro, respeitando escopo, exclusões e orientações aplicáveis.
 4. Julgue os resultados frente às metas definidas por orientações aprovadas, como limites de complexidade ou cobertura, e identifique arquivos, tipos e métodos que não as atingem ou concentram mais risco.
-5. Liste as specs em `my-specs/specs` e, para cada ponto crítico, cite a spec cuja árvore aprovada cobre aquele código, quando houver.
-6. Crie ou atualize `my-specs/quality-report.md` a partir de `assets/quality-report-template.md`. Se já existir relatório, compare os totais do projeto com seus valores antes de substituí-lo.
+5. Liste as specs em `minhas-specs/specs` e, para cada ponto crítico, cite a spec cuja árvore aprovada cobre aquele código, quando houver.
+6. Crie ou atualize `minhas-specs/relatorio-de-qualidade.md` a partir de `assets/modelo-de-relatorio-de-qualidade.md`. Se já existir relatório, compare os totais do projeto com seus valores antes de substituí-lo.
 7. Avalie as sugestões contra práticas de código e orientações aprovadas e retorne caminho, destaques e as oportunidades priorizadas com o próximo skill sugerido.
 
 Se a ferramenta aprovada estiver indisponível ou falhar, não invente, estime manualmente, instale ou substitua ferramenta. Relate a falha, preserve métricas mensuráveis e marque seções incompletas.

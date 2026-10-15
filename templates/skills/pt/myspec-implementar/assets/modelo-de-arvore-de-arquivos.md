@@ -1,0 +1,43 @@
+# Árvore de arquivos da implementação
+
+Status: Proposto
+
+Criado por: `<git user.name> <git user.email>`
+
+Criado em: `<data>`
+
+## Árvore
+
+```text
+<projeto>/
+├── <arquivo-a-adicionar>            # adicionar via <contexto breve>
+├── <arquivo-a-modificar>            # modificar para <contexto breve>
+├── <arquivo-a-excluir>              # excluir porque <contexto breve>
+└── <projeto-de-testes>/
+    ├── <arquivo-de-teste-a-adicionar> # adicionar
+    └── <arquivo-de-teste-a-modificar> # modificar para o comportamento alterado
+```
+
+Termine cada entrada de arquivo com um comentário que comece exatamente com um marcador de operação: `# adicionar`, `# modificar` ou `# excluir`. O marcador pode ter contexto curto. Não deixe entradas sem marcador e omita exemplos não aplicáveis.
+
+## Responsabilidades dos arquivos
+
+- `<caminho>`: <por que este arquivo muda e o que ele é responsável por manter>.
+
+## Cobertura dos critérios de aceitação
+
+- `CA-01`: <local de produção>; <local de teste>.
+
+## Decisões estruturais
+
+- <Limite, dependência ou padrão importante refletido por esta árvore.>
+
+## Decisões em aberto
+
+- <Decisão que exige entrada do desenvolvedor antes da aprovação, ou `Nenhum`.>
+
+## Histórico de aprovação
+
+- Aprovado por: `<git user.name> <git user.email>`
+- Aprovado em: `<data>`
+- Contexto da aprovação: `<descrição concisa da árvore ou revisão aprovada>`

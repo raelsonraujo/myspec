@@ -1,10 +1,10 @@
 # Ferramentas de qualidade Myspec
 
-Status: Proposed
+Status: Proposto
 
-Created by: `{{author}}`
+Criado por: `{{author}}`
 
-Created on: `{{date}}`
+Criado em: `{{date}}`
 
 > Gerado por `myspec install --tooling dotnet-quality`. Instale as dependências descritas em `quality/README.md`, revise cada valor abaixo frente a este repositório e aprove o contrato com `myspec-configurar`.
 
@@ -24,7 +24,7 @@ Created on: `{{date}}`
 - Formato e caminho do resultado: atributos `complexity` do XML Cobertura e relatório HTML; `quality/coverage/report/Cobertura.xml` e `quality/coverage/report/index.html`
 - Escopo de produção: todo assembly que não seja de teste e seja instrumentado por ao menos um projeto de testes de `{{solution}}`
 - Exclusões: assemblies de teste `[*.Tests]*` e `[*.xUnit.*]*`; `**/bin/**`, `**/obj/**`, `**/Migrations/**`, `**/*.g.cs`, `**/*.Designer.cs`, `**/*.generated.cs`, `**/AssemblyInfo.cs` (ver `quality/coverlet.runsettings`)
-- Isolamento de código alterado: filtre o Cobertura consolidado pelos caminhos de produção listados em `my-specs/specs/<nome-da-spec>/file-tree.md` e informe os totais dos projetos afetados ao lado dos valores dos arquivos alterados
+- Isolamento de código alterado: filtre o Cobertura consolidado pelos caminhos de produção listados em `minhas-specs/specs/<nome-da-spec>/arvore-de-arquivos.md` e informe os totais dos projetos afetados ao lado dos valores dos arquivos alterados
 
 ## Cobertura de testes
 
@@ -50,7 +50,7 @@ Created on: `{{date}}`
 - Fonte: seção Risk Hotspots de `quality/coverage/report/index.html`, calculada pelo ReportGenerator por método a partir da complexidade e da cobertura do Cobertura
 - Definição: `CRAP(m) = CC(m)² × (1 − cov(m))³ + CC(m)`, em que `CC` é a complexidade ciclomática do método e `cov` sua cobertura de linhas medida como fração
 - O ReportGenerator destaca como elevadas, de forma independente, complexidade ciclomática acima de 15 e CRAP score acima de 30
-- Interpretação: `my-specs/general-guidelines/metas-de-complexidade-e-crap.md`, após aprovação
+- Interpretação: `minhas-specs/orientacoes-gerais/metas-de-complexidade-e-crap.md`, após aprovação
 
 ## Performance
 
@@ -60,15 +60,15 @@ Created on: `{{date}}`
 - Comando de medição: `pwsh -NoProfile -File quality/run-benchmarks.ps1` ou `bash quality/run-benchmarks.sh`, que executam `dotnet run --project <benchmarks.csproj> --configuration Release -- --filter "*" --memory --exporters json --artifacts quality/benchmarks`
 - Métricas: bytes `Allocated` por operação (principal) e tempo `Mean` por operação, por benchmark
 - Formato e caminho do resultado: JSON do BenchmarkDotNet (`Statistics.Mean` em nanossegundos e `Memory.BytesAllocatedPerOperation` por benchmark), além dos relatórios padrão Markdown GitHub, CSV e HTML; `quality/benchmarks/results/*.json` e `quality/benchmarks/results/*-report-github.md`
-- Escopo: benchmarks marcados com os IDs dos caminhos críticos de `my-specs/general-guidelines/caminhos-criticos-de-performance.md`
+- Escopo: benchmarks marcados com os IDs dos caminhos críticos de `minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md`
 - Ambiente: build Release, sem depurador anexado, e mesma máquina e runtime sempre que o tempo for comparado com execução anterior
 - Isolamento de código alterado: execute apenas os caminhos críticos tocados pela spec com `-Categories <ID-do-CP>` ou `--category <ID-do-CP>`
-- Interpretação: `my-specs/general-guidelines/caminhos-criticos-de-performance.md`, após aprovação
+- Interpretação: `minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md`, após aprovação
 
 ## Documentos relacionados
 
-- Práticas de código do repositório: `my-specs/coding-practices/*.md`
-- Orientações gerais Myspec: `my-specs/general-guidelines/*.md`
+- Práticas de código do repositório: `minhas-specs/praticas-de-codigo/*.md`
+- Orientações gerais Myspec: `minhas-specs/orientacoes-gerais/*.md`
 
 ## Decisões e contrapartidas
 

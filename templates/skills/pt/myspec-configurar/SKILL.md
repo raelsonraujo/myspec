@@ -9,26 +9,26 @@ Estabeleça um contrato reprodutível e aprovado pelo desenvolvedor para os skil
 
 ## Portão obrigatório de orientações
 
-Antes de avançar além da descoberta inicial do repositório, leia todos os arquivos Markdown existentes em `my-specs/product-directives/`, `my-specs/coding-practices/` e `my-specs/general-guidelines/`. Todo documento aplicável com `Status: Approved` é obrigatório: cumpra sua regra antes da ação que ela rege e exponha conflitos com instruções de maior prioridade. Pasta ou arquivo ausente, documento não aprovado ou seção marcada explicitamente como `None` não impõe restrição; informe a limitação quando for relevante.
+Antes de avançar além da descoberta inicial do repositório, leia todos os arquivos Markdown existentes em `minhas-specs/diretrizes-de-produto/`, `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Todo documento aplicável com `Status: Aprovado` é obrigatório: cumpra sua regra antes da ação que ela rege e exponha conflitos com instruções de maior prioridade. Pasta ou arquivo ausente, documento não aprovado ou seção marcada explicitamente como `Nenhum` não impõe restrição; informe a limitação quando for relevante.
 
 ## Fluxo de trabalho
 
 1. Inspecione manifestos, projetos de teste, arquivos de ferramentas locais, scripts de build e CI. Não instale nem modifique ferramentas.
-2. Após o portão obrigatório, leia `my-specs/tooling.md` quando existir.
+2. Após o portão obrigatório, leia `minhas-specs/ferramentas.md` quando existir.
 3. Para complexidade ciclomática, peça ferramenta e versão fixada, mecanismo de instalação/restauração, comando exato, formato e caminho do resultado, escopo de produção e exclusões.
 4. Para cobertura, peça executor de testes, coletor e versões fixadas, mecanismo de instalação/restauração, comandos exatos de build e cobertura, formato/caminho do relatório, escopo e exclusões.
 5. Pergunte se devem ser definidas ou revistas diretrizes de produto, práticas de código e orientações gerais. Registre cada regra concreta conforme os modelos em `assets/`; se não houver regras conhecidas, deixe a pasta ausente ou vazia e declare isso.
 6. Quando útil, ofereça candidatos compatíveis com o repositório e suas contrapartidas. Derive diretrizes de produto da entrada do desenvolvedor, artefatos aprovados e comportamento de domínio estabelecido; identifique inferências que ainda exigem confirmação.
-7. Crie ou atualize os documentos do contrato como `Proposed`, com criador e data obtidos de `git config user.name` e `git config user.email`. Use `Approval History`: `tooling.md`, diretrizes, uma prática por arquivo e uma orientação por arquivo devem usar os respectivos modelos.
+7. Crie ou atualize os documentos do contrato como `Proposto`, com criador e data obtidos de `git config user.name` e `git config user.email`. Use `Histórico de aprovação`: `ferramentas.md`, diretrizes, uma prática por arquivo e uma orientação por arquivo devem usar os respectivos modelos.
 8. Apresente a proposta completa e peça aprovação ou revisões explícitas. Encerre sem marcá-la como aprovada.
-9. Em invocação posterior, incorpore revisões ou, após aprovação explícita, altere o status para `Approved`. Acrescente uma entrada com aprovador, data e contexto; nunca substitua entradas antigas nem os metadados de criação.
+9. Em invocação posterior, incorpore revisões ou, após aprovação explícita, altere o status para `Aprovado`. Acrescente uma entrada com aprovador, data e contexto; nunca substitua entradas antigas nem os metadados de criação.
 
 ## Regras do contrato
 
-- Considere `my-specs` relativo à raiz do repositório; mantenha comandos executáveis a partir de um diretório documentado.
+- Considere `minhas-specs` relativo à raiz do repositório; mantenha comandos executáveis a partir de um diretório documentado.
 - Fixe versões ou documente sua fonte controlada, exclusões de código gerado/padrões e o isolamento dos arquivos alterados nas métricas.
 - Inclua cobertura de linhas e ramos quando o coletor a suportar.
-- Mantenha as ferramentas em `my-specs/tooling.md`; diretrizes, práticas e orientações devem ficar em arquivos Markdown separados nas respectivas pastas, com nome conciso em kebab-case, status e histórico de aprovação próprios.
+- Mantenha as ferramentas em `minhas-specs/ferramentas.md`; diretrizes, práticas e orientações devem ficar em arquivos Markdown separados nas respectivas pastas, com nome conciso em kebab-case, status e histórico de aprovação próprios.
 - Mantenha práticas acionáveis e específicas; diretrizes de produto breves, voltadas a conceitos, terminologia, políticas e invariantes observáveis — não técnica de implementação ou arquitetura.
 - Diretrizes de produto aprovadas restringem especificações e implementações futuras. Se houver conflito, exija sua revisão e aprovação antes de implementar.
 - Não considere silêncio, ferramenta existente ou comando bem-sucedido como aprovação. Não instale dependências nem altere configuração sem autorização separada. Não deixe este contrato sobrepor instruções de maior prioridade.

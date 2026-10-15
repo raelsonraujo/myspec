@@ -24,7 +24,7 @@ Usage:
   myspec install -p <provider> -l <language> [-t <tooling>] [-d <dir>]
 
 Commands:
-  install            Install the Myspec skills and the my-specs workspace
+  install            Install the Myspec skills and the workspace (my-specs, or minhas-specs in pt)
 
 Options:
   -p, --provider     codex, claude, or both (codex,claude). Repeatable.
@@ -34,7 +34,8 @@ Options:
   -h, --help         Show this help
   -v, --version      Show the version
 
-When the repository already has my-specs/myspec.json, -p and -l default to the installed values.
+When the repository already has a Myspec workspace, -p and -l default to the installed values.
+Switching languages renames the workspace folders and files to the new language.
 
 Tooling templates (artifacts only; dependencies are installed by you, following quality/README.md):
 ${toolingList()}
@@ -122,6 +123,10 @@ function printResult(result: InstallResult): void {
   for (const id of result.providers) {
     console.log(`  ${PROVIDERS[id].skillsDir}/  ${result.skills.join(', ')}`);
   }
+  for (const move of result.migration?.moved ?? []) console.log(`  > ${move}`);
+  if (result.migration?.relabeled.length) {
+    console.log(`  Translated the status and approval labels of ${result.migration.relabeled.length} document(s).`);
+  }
   for (const path of result.workspaceCreated) console.log(`  + ${path}`);
   console.log(
     `\n  Skill files: ${result.created.length} created, ${result.updated.length} updated, ` +
@@ -139,16 +144,18 @@ function printResult(result: InstallResult): void {
     result.providers.length === 1
       ? `${PROVIDERS[result.providers[0]].invocationPrefix}${skill}`
       : result.providers.map((id) => `${PROVIDERS[id].invocationPrefix}${skill} (${PROVIDERS[id].displayName})`).join(' / ');
+  const workspace = language.workspace;
+  const toolingPath = `${workspace.dir}/${workspace.tooling}`;
   const readmes = result.tooling
     .flatMap((tooling) => [...tooling.created, ...tooling.skipped])
-    .filter((path) => path.endsWith('/README.md') && !path.startsWith('my-specs/'));
+    .filter((path) => path.endsWith('/README.md') && !path.startsWith(`${workspace.dir}/`));
   const steps =
     result.language === 'pt'
       ? {
           title: 'Próximos passos:',
           dependencies: readmes.map((path) => `Instale as dependências seguindo ${path}.`),
           setup: readmes.length
-            ? `Rode ${invoke(language.setupSkill)} para revisar e aprovar my-specs/tooling.md e definir diretrizes de produto e práticas de código.`
+            ? `Rode ${invoke(language.setupSkill)} para revisar e aprovar ${toolingPath} e definir diretrizes de produto e práticas de código.`
             : `Rode ${invoke(language.setupSkill)} para definir ferramentas, diretrizes de produto e práticas de código.`,
           prescribe: `Rode ${invoke(language.prescribeSkill)} para escrever a primeira especificação.`,
         }
@@ -156,7 +163,7 @@ function printResult(result: InstallResult): void {
           title: 'Next steps:',
           dependencies: readmes.map((path) => `Install the dependencies following ${path}.`),
           setup: readmes.length
-            ? `Run ${invoke(language.setupSkill)} to review and approve my-specs/tooling.md and define product directives and coding practices.`
+            ? `Run ${invoke(language.setupSkill)} to review and approve ${toolingPath} and define product directives and coding practices.`
             : `Run ${invoke(language.setupSkill)} to define tooling, product directives, and coding practices.`,
           prescribe: `Run ${invoke(language.prescribeSkill)} to write your first spec.`,
         };

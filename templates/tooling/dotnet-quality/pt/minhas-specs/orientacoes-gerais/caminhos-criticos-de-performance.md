@@ -1,12 +1,12 @@
 # Caminhos críticos de performance
 
-Status: Proposed
+Status: Proposto
 
-Created by: `{{author}}`
+Criado por: `{{author}}`
 
-Created on: `{{date}}`
+Criado em: `{{date}}`
 
-Applies to: Todos os skills Myspec que prescrevem, implementam, corrigem, inspecionam ou quantificam código alcançável por um caminho crítico
+Aplica-se a: Todos os skills Myspec que prescrevem, implementam, corrigem, inspecionam ou quantificam código alcançável por um caminho crítico
 
 ## Regra
 

@@ -46,4 +46,4 @@
 
 ## Limitações
 
-- <Limitação de ferramenta ou escopo, ou `None`.>
+- <Limitação de ferramenta ou escopo, ou `Nenhum`.>
