@@ -1,6 +1,6 @@
 ---
 name: myspec-inspect
-description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, applicable approved product directives, and approved Myspec guidance, measure the metrics defined by the developer-approved tooling contract, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
+description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, applicable approved product directives, and approved Myspec guidance, measure the metrics defined by the developer-approved metric files under my-specs/tooling and judge them against their gates, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
 ---
 
 # Myspec Inspect
@@ -16,7 +16,7 @@ Treat an approved product directive governing the implementation under review as
 ## Workflow
 
 1. Resolve the named folder under repository-root `my-specs/specs`. Read `spec.md` and, when present, `file-tree.md` in full.
-2. Complete the Mandatory Guidance Gate. Read repository instructions and `my-specs/tooling.md` when present. Use the tooling contract to establish quality-tooling applicability, but do not treat it as a substitute for reading the directive and guidance files.
+2. Complete the Mandatory Guidance Gate. Read repository instructions and every metric file under `my-specs/tooling/` when present. Use the metric files to establish quality-tooling applicability and gates, but do not treat them as a substitute for reading the directive and guidance files.
 3. List `my-specs/specs/<spec-name>/inspections/`. When it holds earlier inspections, read the highest-numbered one in full; it is the previous inspection. Otherwise this is the first inspection.
 4. Establish the review baseline from the spec, the approved file tree, applicable approved product directives and guidance, relevant implementation and test files, version-control evidence, and any verification output the developer supplied.
 5. Collect the metrics described under [Metrics](#metrics).
@@ -28,22 +28,29 @@ Treat an approved product directive governing the implementation under review as
 
 ## Metrics
 
-Every inspection measures the implementation itself. Run the exact build, test, and metric commands defined in an approved `my-specs/tooling.md`, applying their documented scope, exclusions, and every applicable approved guideline, and collect:
+Every inspection measures the implementation itself. Run the exact build and test commands defined by the approved general guideline `my-specs/general-guidelines/build-and-test-commands.md`, then, for each metric file under `my-specs/tooling/`, its prerequisite and measurement commands, applying its documented scope, exclusions, and every applicable approved guideline, and collect:
 
 - acceptance criteria met out of the total the spec defines;
 - tests passed out of the total run; and
-- for every metric under the contract's `## Metrics`, the values its `Reported values` lists.
+- for every metric file, the values its `Reported values` lists.
 
-The tooling contract alone decides which metrics exist. Never measure, report, or ask for a metric it does not define, such as coverage or complexity, and never treat a missing metric as a gap.
+The metric files alone decide which metrics exist: one file is one metric. Never measure, report, or ask for a metric no file defines, such as coverage or complexity, and never treat a missing metric as a gap.
 
 Measurement rules:
 
 - Scope metrics to the spec's implemented production code, identified from the approved file tree, version-control evidence, and repository evidence. When tooling cannot isolate that code, report the whole-project value and mark it `(project)`.
 - Treat failed or skipped tests as findings; never present measurements from that run as clean verification.
-- Never invent, estimate manually, install, or substitute a metric tool, and ask before changing dependencies, commands, or project configuration. When the tooling contract is absent, incomplete, or unapproved, or an approved command is unavailable or fails, record the affected metrics as `Not measured: <reason>`, keep every metric that could be measured, and suggest `{{skill:myspec-setup}}` when the contract itself is missing or unapproved.
+- Run a command shared by several metric files once per baseline and read every metric from that run.
+- Never invent, estimate manually, install, or substitute a metric tool, and ask before changing dependencies, commands, or project configuration. When a metric file is incomplete or unapproved, the build and test commands are undefined or unapproved, or an approved command is unavailable or fails, record the affected values as `Not measured: <reason>`, keep every metric that could be measured, and suggest `{{skill:myspec-setup}}` when a definition is missing or unapproved. When only the legacy single-file `my-specs/tooling.md` exists, measure nothing from it and suggest `{{skill:myspec-setup}}` to split it into metric files.
 - Do not create or update `my-specs/quality-report.md`; that project-wide report belongs to `{{skill:myspec-quantify}}`.
 
-A metric is a pass/fail criterion only when an applicable approved spec requirement, product directive, or guidance rule defines that target; a value that misses such a target is a `Not met` item. Otherwise it is reported without a finding.
+Judge each reported value against the `## Gates` of its approved metric file that apply to changed code:
+
+- a value that misses a `Blocking` gate is a `Not met` item;
+- a value that misses an `Attention` gate is an `Attention` finding;
+- a value measured only as `(project)` cannot prove a changed-code gate; report the gate as `Insufficient evidence` unless the gate also applies to the project.
+
+An applicable approved spec requirement or product directive that defines a target is judged the same way as a `Blocking` gate. A value with no gate or target is reported without a finding.
 
 ## Follow-up
 
@@ -70,8 +77,8 @@ Create `my-specs/specs/<spec-name>/inspections/inspection-<NNN>.md` from [assets
 Keep the record short. It reports results, not the process that produced them:
 
 - **Acceptance Criteria**: one row per acceptance criterion in the spec, with the test or location that proves its status.
-- **Metrics**: the acceptance-criteria and test rows, then one row per reported value of each metric the tooling contract defines, with the previous inspection's value or `—`.
-- **Findings**: one line per open finding, `Blocking` first. A `Blocking` finding is any item that makes the verdict `Blocked`, including a violation of an approved product directive, coding practice, or general guideline. An `Attention` finding is a non-blocking point the developer must act on or know about, such as an unassessable rule or an unapproved file tree or tooling contract. Write `None` when there is none.
+- **Metrics**: the acceptance-criteria and test rows, then one row per reported value of each metric file, with the previous inspection's value, or `—`, and the gate that judges it, or `—`.
+- **Findings**: one line per open finding, `Blocking` first. A `Blocking` finding is any item that makes the verdict `Blocked`, including a violation of an approved product directive, coding practice, or general guideline. An `Attention` finding is a non-blocking point the developer must act on or know about, such as a missed `Attention` gate, an unassessable rule, or an unapproved file tree or metric file. Write `None` when there is none.
 - **Previous Findings**: only findings the previous inspection left open. Write `None — first inspection.` when there is no previous inspection.
 
 Leave out anything the developer already knows or that does not change a decision: tool names and versions, commands, configuration, author, lists of measured or excluded files, per-file or per-method tables, `Met` items other than acceptance criteria, restated spec text, metric interpretations, and general improvement suggestions.

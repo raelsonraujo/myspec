@@ -1,4 +1,0 @@
-interface:
-  display_name: "Myspec Quantificar"
-  short_description: "Medir complexidade e qualidade da cobertura de testes"
-  default_prompt: "Use $myspec-quantificar para quantificar e revisar a implementação da spec selecionada."

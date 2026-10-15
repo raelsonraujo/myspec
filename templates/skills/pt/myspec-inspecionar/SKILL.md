@@ -1,6 +1,6 @@
 ---
 name: myspec-inspecionar
-description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada, diretrizes de produto e orientações Myspec aprovadas, mede as métricas definidas pelo contrato de ferramentas aprovado e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
+description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada, diretrizes de produto e orientações Myspec aprovadas, mede as métricas definidas pelos arquivos de métrica aprovados em minhas-specs/ferramentas, julga-as frente a seus portões e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
 ---
 
 # Myspec Inspecionar
@@ -14,7 +14,7 @@ Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minh
 ## Fluxo de trabalho
 
 1. Resolva a pasta nomeada sob `minhas-specs/specs`; leia integralmente `spec.md` e `arvore-de-arquivos.md`, se existir.
-2. Conclua o portão, leia instruções do repositório e `minhas-specs/ferramentas.md` quando existir. Ele não substitui a leitura das diretrizes e orientações.
+2. Conclua o portão, leia instruções do repositório e todos os arquivos de métrica em `minhas-specs/ferramentas/` quando existirem. Eles definem ferramentas e portões, mas não substituem a leitura das diretrizes e orientações.
 3. Liste `minhas-specs/specs/<nome-da-spec>/inspecoes/`. Se houver inspeções, leia integralmente a de maior número: ela é a inspeção anterior. Caso contrário, esta é a primeira.
 4. Estabeleça a base de revisão: especificação, árvore aprovada, diretrizes/orientações aplicáveis, arquivos de implementação e teste, evidência de controle de versão e verificações fornecidas.
 5. Colete as métricas descritas em [Métricas](#métricas).
@@ -26,22 +26,29 @@ Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minh
 
 ## Métricas
 
-Toda inspeção mede a implementação. Execute os comandos exatos de build, teste e métricas definidos em `minhas-specs/ferramentas.md` aprovado, respeitando escopo, exclusões e orientações aplicáveis, e colete:
+Toda inspeção mede a implementação. Execute os comandos exatos de build e teste definidos pela orientação geral aprovada `minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md` e, depois, para cada arquivo de métrica em `minhas-specs/ferramentas/`, seus comandos pré-requisito e de medição, respeitando escopo, exclusões e orientações aplicáveis, e colete:
 
 - critérios de aceitação atendidos sobre o total definido na spec;
 - testes aprovados sobre o total executado; e
-- para cada métrica sob `## Métricas` do contrato, os valores listados em `Valores registrados`.
+- para cada arquivo de métrica, os valores listados em `Valores registrados`.
 
-Somente o contrato de ferramentas decide quais métricas existem. Nunca meça, relate ou peça métrica que ele não defina, como cobertura ou complexidade, nem trate a ausência de uma métrica como lacuna.
+Somente os arquivos de métrica decidem quais métricas existem: um arquivo é uma métrica. Nunca meça, relate ou peça métrica que nenhum arquivo defina, como cobertura ou complexidade, nem trate a ausência de uma métrica como lacuna.
 
 Regras de medição:
 
 - Delimite as métricas ao código de produção da spec, identificado pela árvore aprovada, controle de versão e evidência do repositório. Se a ferramenta não conseguir isolá-lo, informe o valor do projeto e marque `(projeto)`.
 - Testes falhos ou ignorados são achados; nunca apresente as medições dessa execução como verificação limpa.
-- Nunca invente, estime manualmente, instale ou substitua ferramenta; pergunte antes de alterar dependências, comandos ou configuração. Se o contrato estiver ausente, incompleto ou não aprovado, ou um comando aprovado estiver indisponível ou falhar, registre as métricas afetadas como `Não medida: <motivo>`, preserve as que puderam ser medidas e sugira `{{skill:myspec-configurar}}` quando o próprio contrato faltar ou não estiver aprovado.
+- Execute uma única vez por base o comando compartilhado por vários arquivos de métrica e leia todas as métricas dessa execução.
+- Nunca invente, estime manualmente, instale ou substitua ferramenta; pergunte antes de alterar dependências, comandos ou configuração. Se um arquivo de métrica estiver incompleto ou não aprovado, os comandos de build e teste não estiverem definidos ou aprovados, ou um comando aprovado estiver indisponível ou falhar, registre os valores afetados como `Não medida: <motivo>`, preserve as métricas que puderam ser medidas e sugira `{{skill:myspec-configurar}}` quando uma definição faltar ou não estiver aprovada. Se existir apenas o arquivo único legado `minhas-specs/ferramentas.md`, não meça nada a partir dele e sugira `{{skill:myspec-configurar}}` para dividi-lo em arquivos de métrica.
 - Não crie nem atualize `minhas-specs/relatorio-de-qualidade.md`; esse relatório do projeto inteiro pertence a `{{skill:myspec-quantificar}}`.
 
-Uma métrica só é critério de aprovação quando requisito da spec, diretriz de produto ou orientação aprovada e aplicável define essa meta; valor fora dela é item `Não atendido`. Caso contrário, é informada sem achado.
+Julgue cada valor registrado frente aos `## Portões` do seu arquivo de métrica aprovado que se aplicam ao código alterado:
+
+- valor que descumpre portão `Bloqueante` é item `Não atendido`;
+- valor que descumpre portão `Atenção` é achado `Atenção`;
+- valor medido apenas como `(projeto)` não comprova portão de código alterado; registre o portão como `Evidência insuficiente`, salvo se ele também se aplicar ao projeto.
+
+Requisito da spec ou diretriz de produto aprovada e aplicável que defina uma meta é julgado como portão `Bloqueante`. Valor sem portão ou meta é informado sem achado.
 
 ## Acompanhamento
 
@@ -68,8 +75,8 @@ Crie `minhas-specs/specs/<nome-da-spec>/inspecoes/inspecao-<NNN>.md` a partir de
 Mantenha o registro curto. Ele relata resultados, não o processo que os produziu:
 
 - **Critérios de aceitação**: uma linha por critério da spec, com o teste ou local que comprova o status.
-- **Métricas**: as linhas de critérios de aceitação e de testes e, depois, uma linha por valor registrado de cada métrica definida pelo contrato de ferramentas, com o valor da inspeção anterior ou `—`.
-- **Achados**: uma linha por achado aberto, `Bloqueante` primeiro. `Bloqueante` é todo item que torna o veredito `Bloqueada`, inclusive violação de diretriz de produto, prática de código ou orientação geral aprovada. `Atenção` é um ponto não bloqueante que o desenvolvedor precisa tratar ou conhecer, como regra não avaliável ou árvore ou contrato de ferramentas não aprovado. Escreva `Nenhum` quando não houver.
+- **Métricas**: as linhas de critérios de aceitação e de testes e, depois, uma linha por valor registrado de cada arquivo de métrica, com o valor da inspeção anterior, ou `—`, e o portão que o julga, ou `—`.
+- **Achados**: uma linha por achado aberto, `Bloqueante` primeiro. `Bloqueante` é todo item que torna o veredito `Bloqueada`, inclusive violação de diretriz de produto, prática de código ou orientação geral aprovada. `Atenção` é um ponto não bloqueante que o desenvolvedor precisa tratar ou conhecer, como portão `Atenção` descumprido, regra não avaliável ou árvore ou arquivo de métrica não aprovado. Escreva `Nenhum` quando não houver.
 - **Achados anteriores**: apenas os achados que a inspeção anterior deixou abertos. Escreva `Nenhum — primeira inspeção.` quando não houver inspeção anterior.
 
 Omita o que o desenvolvedor já conhece ou que não muda uma decisão: nomes e versões de ferramentas, comandos, configuração, autor, listas de arquivos medidos ou excluídos, tabelas por arquivo ou método, itens `Atendido` que não sejam critérios de aceitação, texto repetido da spec, interpretações das métricas e sugestões gerais de melhoria.

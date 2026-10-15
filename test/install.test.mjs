@@ -39,7 +39,7 @@ describe('myspec install', () => {
 
     assert.deepEqual(skillDirs(dir, '.codex/skills'), EN_SKILLS);
     assert.ok(existsSync(join(dir, '.codex/skills/myspec-setup/agents/openai.yaml')));
-    assert.ok(existsSync(join(dir, '.codex/skills/myspec-setup/assets/tooling-template.md')));
+    assert.ok(existsSync(join(dir, '.codex/skills/myspec-setup/assets/metric-template.md')));
     const implement = read(dir, '.codex/skills/myspec-implement/SKILL.md');
     assert.match(implement, /use `\$myspec-setup` to revise/);
     assert.doesNotMatch(implement, /\{\{skill:/);
@@ -83,7 +83,7 @@ describe('myspec install', () => {
     const dir = repo();
     installOk(dir, '-p', 'codex', '-l', 'en');
 
-    for (const folder of ['product-directives', 'coding-practices', 'general-guidelines', 'specs']) {
+    for (const folder of ['tooling', 'product-directives', 'coding-practices', 'general-guidelines', 'specs']) {
       assert.ok(existsSync(join(dir, 'my-specs', folder, '.gitkeep')), folder);
     }
     assert.match(read(dir, 'my-specs/README.md'), /myspec-setup/);
@@ -94,7 +94,7 @@ describe('myspec install', () => {
     const dir = repo();
     installOk(dir, '-p', 'codex', '-l', 'pt');
 
-    for (const folder of ['diretrizes-de-produto', 'praticas-de-codigo', 'orientacoes-gerais', 'specs']) {
+    for (const folder of ['ferramentas', 'diretrizes-de-produto', 'praticas-de-codigo', 'orientacoes-gerais', 'specs']) {
       assert.ok(existsSync(join(dir, 'minhas-specs', folder, '.gitkeep')), folder);
     }
     assert.ok(!existsSync(join(dir, 'my-specs')));
@@ -127,6 +127,7 @@ describe('myspec install', () => {
     writeFileSync(join(dir, 'my-specs/specs/001-cancel/file-tree.md'), 'Status: Proposed\n');
     writeFileSync(join(dir, 'my-specs/specs/001-cancel/inspections/inspection-001.md'), '# Inspection 001\n');
     writeFileSync(join(dir, 'my-specs/quality-report.md'), '# Report\n');
+    writeFileSync(join(dir, 'my-specs/tooling/coverage.md'), approved);
 
     const result = installOk(dir, '-l', 'pt');
 
@@ -139,12 +140,14 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/specs/001-cancel/arvore-de-arquivos.md'), 'Status: Proposto\n');
     assert.ok(existsSync(join(dir, 'minhas-specs/specs/001-cancel/inspecoes/inspecao-001.md')));
     assert.ok(existsSync(join(dir, 'minhas-specs/relatorio-de-qualidade.md')));
+    assert.match(read(dir, 'minhas-specs/ferramentas/coverage.md'), /^Status: Aprovado$/m);
     assert.equal(JSON.parse(read(dir, 'minhas-specs/myspec.json')).language, 'pt');
     assert.match(result.stdout, /> my-specs -> minhas-specs/);
 
     installOk(dir, '-l', 'en');
     assert.ok(!existsSync(join(dir, 'minhas-specs')));
     assert.equal(read(dir, 'my-specs/coding-practices/rule.md'), approved);
+    assert.equal(read(dir, 'my-specs/tooling/coverage.md'), approved);
     assert.ok(existsSync(join(dir, 'my-specs/specs/001-cancel/inspections/inspection-001.md')));
   });
 
@@ -153,12 +156,12 @@ describe('myspec install', () => {
     installOk(dir, '-p', 'claude', '-l', 'en');
     const manifest = JSON.parse(read(dir, 'my-specs/myspec.json'));
     writeFileSync(join(dir, 'my-specs/myspec.json'), JSON.stringify({ ...manifest, language: 'pt' }));
-    writeFileSync(join(dir, 'my-specs/tooling.md'), 'Status: Approved\n');
+    writeFileSync(join(dir, 'my-specs/tooling/coverage.md'), 'Status: Approved\n');
 
     installOk(dir);
 
     assert.ok(!existsSync(join(dir, 'my-specs')));
-    assert.equal(read(dir, 'minhas-specs/ferramentas.md'), 'Status: Aprovado\n');
+    assert.equal(read(dir, 'minhas-specs/ferramentas/coverage.md'), 'Status: Aprovado\n');
     assert.deepEqual(skillDirs(dir, '.claude/skills'), PT_SKILLS);
   });
 
@@ -166,14 +169,25 @@ describe('myspec install', () => {
     const dir = repo();
     installOk(dir, '-p', 'codex', '-l', 'en');
     writeFileSync(join(dir, 'my-specs/README.md'), 'custom readme');
-    writeFileSync(join(dir, 'my-specs/tooling.md'), 'approved tooling');
+    writeFileSync(join(dir, 'my-specs/tooling/coverage.md'), 'approved metric');
     writeFileSync(join(dir, '.codex/skills/other-skill.md'), 'not ours');
 
     installOk(dir, '-p', 'codex', '-l', 'pt');
 
     assert.equal(read(dir, 'minhas-specs/README.md'), 'custom readme');
-    assert.equal(read(dir, 'minhas-specs/ferramentas.md'), 'approved tooling');
+    assert.equal(read(dir, 'minhas-specs/ferramentas/coverage.md'), 'approved metric');
     assert.equal(read(dir, '.codex/skills/other-skill.md'), 'not ours');
+  });
+
+  it('keeps a legacy single-file tooling contract and asks for it to be split', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'codex', '-l', 'en');
+    writeFileSync(join(dir, 'my-specs/tooling.md'), 'Status: Approved\n');
+
+    const result = installOk(dir, '-l', 'pt');
+
+    assert.equal(read(dir, 'minhas-specs/ferramentas.md'), 'Status: Aprovado\n');
+    assert.match(result.stdout, /minhas-specs\/ferramentas\.md uses the single-file tooling format; run myspec-configurar/);
   });
 
   it('is idempotent', () => {
@@ -214,8 +228,11 @@ describe('myspec install --tooling', () => {
       'quality/run-benchmarks.sh',
       'quality/.gitignore',
       'quality/.gitattributes',
-      'minhas-specs/ferramentas.md',
-      'minhas-specs/orientacoes-gerais/metas-de-complexidade-e-crap.md',
+      'minhas-specs/ferramentas/complexidade-ciclomatica.md',
+      'minhas-specs/ferramentas/cobertura-de-testes.md',
+      'minhas-specs/ferramentas/crap-score.md',
+      'minhas-specs/ferramentas/performance.md',
+      'minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md',
       'minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md',
     ]) {
       assert.ok(existsSync(join(dir, path)), path);
@@ -224,28 +241,44 @@ describe('myspec install --tooling', () => {
       assert.ok(!existsSync(join(dir, manifest)), 'dependencies must not be installed');
     }
     assert.ok(!existsSync(join(dir, 'minhas-specs/orientacoes-gerais/.gitkeep')));
-    assert.match(read(dir, 'minhas-specs/ferramentas.md'), /^Status: Proposto$/m);
-    assert.match(result.stdout, /aprovar minhas-specs\/ferramentas\.md/);
+    assert.ok(!existsSync(join(dir, 'minhas-specs/ferramentas/.gitkeep')));
+    assert.ok(!existsSync(join(dir, 'minhas-specs/ferramentas.md')));
+    assert.match(read(dir, 'minhas-specs/ferramentas/crap-score.md'), /^Status: Proposto$/m);
+    assert.match(read(dir, 'minhas-specs/ferramentas/crap-score.md'), /^## Portões$/m);
+    assert.match(result.stdout, /aprovar as métricas em minhas-specs\/ferramentas\//);
     assert.match(result.stdout, /Instale as dependências seguindo quality\/README\.md/);
   });
 
-  it('fills the tooling contract as a proposal for this repository', () => {
+  it('proposes one metric file per measurement with its own gates', () => {
     const dir = dotnetRepo();
     installOk(dir, '-p', 'codex', '-l', 'en', '-t', 'dotnet-quality');
 
-    const tooling = read(dir, 'my-specs/tooling.md');
-    assert.match(tooling, /^# Myspec Quality Tooling/);
-    assert.match(tooling, /^Status: Proposed$/m);
-    assert.match(tooling, /^Created by: `Ada Lovelace <ada@example\.com>`$/m);
-    assert.match(tooling, /^Created on: `\d{4}-\d{2}-\d{2}`$/m);
-    assert.match(tooling, /`dotnet build App\.slnx --configuration Release --no-restore`/);
-    assert.match(tooling, /## CRAP Score/);
-    assert.match(tooling, /^## Metrics$/m);
-    assert.match(tooling, /^### Performance$/m);
-    assert.match(tooling, /^- Reported values: line coverage and branch coverage/m);
+    assert.deepEqual(readdirSync(join(dir, 'my-specs/tooling')).sort(), [
+      'crap-score.md',
+      'cyclomatic-complexity.md',
+      'performance.md',
+      'test-coverage.md',
+    ]);
+    for (const metric of readdirSync(join(dir, 'my-specs/tooling'))) {
+      const content = read(dir, `my-specs/tooling/${metric}`);
+      assert.match(content, /^Status: Proposed$/m, metric);
+      assert.match(content, /^Created by: `Ada Lovelace <ada@example\.com>`$/m, metric);
+      assert.match(content, /^Created on: `\d{4}-\d{2}-\d{2}`$/m, metric);
+      for (const section of ['Definition', 'Execution Context', 'Measurement', 'Gates', 'Approval History']) {
+        assert.match(content, new RegExp(`^## ${section}$`, 'm'), `${metric}: ${section}`);
+      }
+    }
+    assert.match(read(dir, 'my-specs/tooling/crap-score.md'), /^\| Highest CRAP score among methods \| `≤ 30` \| Both \| Attention \|$/m);
+    assert.match(read(dir, 'my-specs/tooling/test-coverage.md'), /^- Reported values: line coverage and branch coverage/m);
+    assert.match(read(dir, 'my-specs/tooling/test-coverage.md'), /^## Gates\n\nNone\.$/m);
+    assert.match(
+      read(dir, 'my-specs/general-guidelines/build-and-test-commands.md'),
+      /`dotnet build App\.slnx --configuration Release --no-restore`/,
+    );
+    assert.ok(!existsSync(join(dir, 'my-specs/tooling.md')));
+    assert.ok(!existsSync(join(dir, 'my-specs/general-guidelines/method-complexity-risk-targets.md')));
     assert.match(read(dir, 'quality/README.md'), /dotnet restore App\.slnx/);
     assert.match(read(dir, 'quality/README.md'), /dotnet sln App\.slnx add/);
-    assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/method-complexity-risk-targets.md')));
     assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/performance-critical-paths.md')));
     assert.doesNotMatch(read(dir, 'quality/run-coverage-report.sh'), /\r/);
     assert.doesNotMatch(read(dir, 'quality/run-benchmarks.sh'), /\r/);
@@ -255,12 +288,13 @@ describe('myspec install --tooling', () => {
   it('keeps existing tooling artifacts', () => {
     const dir = dotnetRepo();
     installOk(dir, '-p', 'codex', '-l', 'en');
-    writeFileSync(join(dir, 'my-specs/tooling.md'), 'approved tooling');
+    writeFileSync(join(dir, 'my-specs/tooling/test-coverage.md'), 'approved metric');
 
     const result = installOk(dir, '-t', 'dotnet-quality');
 
-    assert.equal(read(dir, 'my-specs/tooling.md'), 'approved tooling');
-    assert.match(result.stdout, /= my-specs\/tooling\.md \(already exists, kept\)/);
+    assert.equal(read(dir, 'my-specs/tooling/test-coverage.md'), 'approved metric');
+    assert.match(result.stdout, /= my-specs\/tooling\/test-coverage\.md \(already exists, kept\)/);
+    assert.match(result.stdout, /\+ my-specs\/tooling\/crap-score\.md/);
     assert.ok(existsSync(join(dir, 'quality/run-coverage-report.ps1')));
   });
 
@@ -269,7 +303,7 @@ describe('myspec install --tooling', () => {
     installOk(dir, '-p', 'claude', '-l', 'pt');
     installOk(dir, '-t', 'dotnet-quality');
 
-    assert.match(read(dir, 'minhas-specs/ferramentas.md'), /^# Ferramentas de qualidade Myspec/);
+    assert.match(read(dir, 'minhas-specs/ferramentas/complexidade-ciclomatica.md'), /^# Complexidade ciclomática/);
     assert.deepEqual(JSON.parse(read(dir, 'minhas-specs/myspec.json')).providers, ['claude']);
   });
 
@@ -277,7 +311,8 @@ describe('myspec install --tooling', () => {
     const dir = repo();
     const result = installOk(dir, '-p', 'codex', '-l', 'en', '-t', 'dotnet-quality');
     assert.match(result.stdout, /Expected exactly one \.sln or \.slnx/);
-    assert.match(read(dir, 'my-specs/tooling.md'), /`dotnet restore <solution>`/);
+    assert.match(read(dir, 'my-specs/tooling/test-coverage.md'), /`dotnet restore <solution>`/);
+    assert.match(read(dir, 'my-specs/general-guidelines/build-and-test-commands.md'), /`dotnet restore <solution>`/);
   });
 
   it('rejects unknown tooling templates', () => {
@@ -294,8 +329,8 @@ describe('tooling templates', () => {
       for (const language of ['en', 'pt']) {
         assert.ok(template.description[language], `${language} description`);
         const planned = planTooling(template.id, language, { solution: 'S', author: 'A', date: 'D' });
-        const tooling = { en: 'my-specs/tooling.md', pt: 'minhas-specs/ferramentas.md' }[language];
-        assert.ok(planned.has(tooling), `${language} ${tooling}`);
+        const tooling = { en: 'my-specs/tooling/', pt: 'minhas-specs/ferramentas/' }[language];
+        assert.ok([...planned.keys()].some((path) => path.startsWith(tooling)), `${language} ${tooling}`);
         for (const [path, content] of planned) {
           assert.doesNotMatch(content, /\{\{/, `${language}: ${path} has an unrendered placeholder`);
         }
@@ -351,8 +386,8 @@ describe('skill templates', () => {
 
   it('leaves the choice of metrics to the tooling contract', () => {
     const contracts = {
-      en: ['myspec-setup/assets/tooling-template.md', 'myspec-inspect/assets/inspection-template.md', 'myspec-quantify/assets/quality-report-template.md'],
-      pt: ['myspec-configurar/assets/modelo-de-ferramentas.md', 'myspec-inspecionar/assets/modelo-de-inspecao.md', 'myspec-quantificar/assets/modelo-de-relatorio-de-qualidade.md'],
+      en: ['myspec-setup/assets/metric-template.md', 'myspec-inspect/assets/inspection-template.md', 'myspec-quantify/assets/quality-report-template.md'],
+      pt: ['myspec-configurar/assets/modelo-de-metrica.md', 'myspec-inspecionar/assets/modelo-de-inspecao.md', 'myspec-quantificar/assets/modelo-de-relatorio-de-qualidade.md'],
     };
     for (const [language, files] of Object.entries(contracts)) {
       const dir = (name) => listSkills(language).find((skill) => skill.name === name).dir;

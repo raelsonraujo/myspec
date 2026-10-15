@@ -1,6 +1,6 @@
 ---
 name: myspec-patch
-description: Make a small, bounded code adjustment without requiring a Myspec specification, while preserving approved product directives, following repository Myspec guidance and established patterns, and using proportionate automated verification. Use when a developer requests a minor fix, correction, cleanup, or targeted behavior adjustment that is too small to justify a spec.
+description: Make a small, bounded code adjustment of at most three files without requiring a new Myspec specification or file tree, while preserving approved product directives and the contract of any implemented spec it touches, following repository Myspec guidance and established patterns, and using proportionate automated verification. Use when a developer requests a minor fix, correction, cleanup, targeted behavior adjustment, or a fix for inspection findings on an already implemented spec.
 ---
 
 # Myspec Patch
@@ -16,20 +16,22 @@ Approved product directives define project vocabulary and product invariants. Tr
 ## Scope Gate
 
 1. Read the request, repository instructions, and affected code before editing.
-2. Treat a patch as bounded: it should have a clear requested outcome, touch a small cohesive area, and avoid architectural or product-design decisions.
-3. If the work changes public behavior, architecture, persistence, security, compatibility, or needs a product or cross-cutting design decision not already settled by an approved product directive, pause and recommend `$myspec-prescribe` instead. Do not silently expand the patch.
-4. If an existing spec is explicitly named, use `$myspec-implement` and its approved-file-tree gate rather than bypassing it with this skill.
+2. Identify the specs under `my-specs/specs` whose scope the change affects: a spec named by the developer, or one whose `spec.md` or `file-tree.md` covers the affected behavior or files. For each, read `spec.md`, `file-tree.md` when present, and the highest-numbered inspection under its `inspections/` folder when present.
+3. Count the files the change must add, modify, or delete, including test files.
+4. Recommend `$myspec-implement` instead of patching when the change needs more than three files, or when it affects a spec whose `file-tree.md` is absent or has no `Approved` entry in its `Revision History`, meaning that spec has not been implemented yet. When the change needs more than three files and no spec covers it, recommend `$myspec-prescribe` to create one first.
+5. If the change is not covered by an existing spec and changes public behavior, architecture, persistence, security, compatibility, or needs a product or cross-cutting design decision not already settled by an approved product directive, pause and recommend `$myspec-prescribe` instead.
+6. Otherwise patch. A patch may change code within the scope of an implemented spec, for example to address findings from its latest inspection. Preserve that spec's acceptance criteria and approved file-tree responsibilities, and report every file the patch touches outside its approved file tree. Do not silently expand the patch; if the file count or affected specs change while working, re-apply this gate.
 
 ## Implementation
 
-1. Complete the Mandatory Guidance Gate, then read `my-specs/tooling.md` when present. Use it to identify quality tooling and any defined contract sections; do not treat it as a substitute for reading the directive and guidance files under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
+1. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/tooling/` when present. Use them to identify quality tooling and the gates the changed code must meet; do not treat them as a substitute for reading the directive and guidance files under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
 2. Identify the requested behavior, the approved product directives it affects, and its relevant success, failure, boundary, authorization, and data-integrity paths. Preserve the directives even when the request omits the relevant invariant. State conservative assumptions; ask before proceeding when an unresolved choice materially changes observable behavior.
 3. Before source edits, tell the developer the intended small change and any material choice not settled by the request or repository evidence.
 4. Implement the smallest cohesive change. Work in reviewable slices and report meaningful checkpoints.
 5. Follow repository instructions and established patterns. Keep responsibilities cohesive, dependencies explicit, and production logic free of avoidable duplication.
 6. Add or update focused automated tests for the affected critical paths where feasible. Do not add unrelated refactors or dependencies.
 7. Run focused tests while iterating, then the relevant broader build and test suite when proportionate to the change.
-8. Report changed files, requested-behavior coverage with named test or verification evidence, verification results, approved product-directive and guidance compliance, assumptions, and remaining risks.
+8. Report changed files, requested-behavior coverage with named test or verification evidence, verification results, approved product-directive and guidance compliance, assumptions, and remaining risks. When the patch touched an implemented spec, name the inspection findings it addresses and suggest `$myspec-inspect` to record the new state.
 
 ## Coding Rules
 

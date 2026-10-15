@@ -21,7 +21,7 @@ If `file-tree.md` is absent:
 
 1. Inspect the repository structure and the spec.
 2. Create `file-tree.md` in the same spec folder using [assets/file-tree-template.md](assets/file-tree-template.md).
-3. Set its status to `Proposed`, then record immutable `Created by` and `Created on` metadata using the current repository's `git config user.name` and `git config user.email`. Ask the developer for an identity only when either Git value is unavailable.
+3. Set its status to `Proposed` and add a `Proposed` entry dated today (`YYYY-MM-DD`) to `Revision History`.
 4. Include files to add, modify, or delete; the responsibility of each file; test locations; and important structural decisions.
 5. End the task after presenting the proposal. Do not edit implementation files.
 
@@ -32,18 +32,20 @@ If `file-tree.md` exists but its status is not `Approved`:
 3. Ask the developer to approve or revise it.
 4. Do not edit implementation files.
 
-On a later invocation, when the developer explicitly approves the proposal, change its status to `Approved`, append an entry to `Approval History`, and proceed without changing its creation metadata. Each entry must include `Approved by`, `Approved on`, and a concise `Approval context` identifying the approved tree revision. Preserve all earlier approval entries. A file's mere existence is never approval.
+On a later invocation, incorporate requested revisions or, when the developer explicitly approves the proposal, change its status to `Approved`. Record every revision and approval as a new dated `Revision History` entry with a concise description of what changed or was approved; never edit or remove earlier entries. Revising an approved tree sets its status back to `Proposed` until the developer approves it again. A file's mere existence is never approval.
+
+The file tree, like everything under the spec folder, is the developer's local working record: never record a Git identity, author, or approver in it.
 
 ## Interactive Implementation
 
-1. Read the approved file tree, spec, repository instructions, and affected code.
-2. Complete the Mandatory Guidance Gate, then read `my-specs/tooling.md` when present. Use it to identify quality tooling and any defined contract sections; do not treat it as a substitute for reading the directive and guidance files under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
+1. Read the approved file tree, spec, repository instructions, and affected code. When the spec folder has an `inspections/` folder, read its highest-numbered inspection and treat its open findings as input for this implementation; an inspection verdict never prevents implementing.
+2. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/tooling/` when present. Use them to identify quality tooling and the gates the changed code must meet; do not treat them as a substitute for reading the directive and guidance files under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
 3. Map each acceptance criterion to implementation work, tests, and the approved product directives it affects. Preserve the directives even when an acceptance criterion omits the relevant invariant.
 4. Before source edits, tell the developer the intended first slice and raise material choices not settled by the spec or approved tree.
 5. Ask rather than assume when a choice changes public behavior, architecture, persistence, security, compatibility, or the approved tree.
 6. Implement in reviewable slices and report meaningful checkpoints. If evidence invalidates the approved tree, pause and propose an update.
 7. Run focused tests while iterating, then the relevant broader build and test suite.
-8. Report changed files, acceptance-criteria coverage, verification results, approved product-directive and guidance compliance, and any remaining risks.
+8. Report changed files, acceptance-criteria coverage, inspection findings addressed, verification results, approved product-directive and guidance compliance, and any remaining risks. Suggest `$myspec-inspect` to record the resulting state.
 
 Developer interaction is a design constraint. Do not silently fill important gaps merely to finish in one turn.
 

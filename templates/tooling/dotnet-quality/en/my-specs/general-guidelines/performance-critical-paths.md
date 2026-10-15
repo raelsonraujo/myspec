@@ -10,7 +10,7 @@ Applies to: All Myspec skills that prescribe, implement, patch, inspect, or quan
 
 ## Rule
 
-The paths below are the only performance-critical paths of this repository. Each one is measured by a BenchmarkDotNet benchmark tagged with the path ID and judged against its budget.
+The paths below are the only performance-critical paths of this repository. Each one is measured by a BenchmarkDotNet benchmark tagged with the path ID, as defined in `my-specs/tooling/performance.md`, and judged against its budget by that metric's gates.
 
 | ID | Critical path | Entry point | Benchmark | Allocation budget | Time budget |
 | --- | --- | --- | --- | --- | --- |
@@ -20,8 +20,9 @@ Replace the example row with the paths the team chooses before approving this gu
 
 Budgets:
 
-- **Allocation** (`Allocated` bytes per operation) is the primary metric because it is stable across machines and runs. A value above the budget misses the target.
-- **Time** (`Mean` per operation) is compared only with the previous measurement taken on the same machine and runtime. A regression above the time budget misses the target. When the environment differs or no previous measurement exists, report time as context only.
+- **Allocation** (`Allocated` bytes per operation) is the primary budget because it is stable across machines and runs.
+- **Time** (`Mean` per operation) is a maximum regression relative to the previous measurement on the same machine and runtime.
+- How a value that exceeds a budget is judged belongs to the gates of `my-specs/tooling/performance.md`.
 
 Specs:
 

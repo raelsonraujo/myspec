@@ -33,7 +33,7 @@ dotnet add <ProjetoDeTestes>/<ProjetoDeTestes>.csproj package Microsoft.NET.Test
 dotnet add <ProjetoDeTestes>/<ProjetoDeTestes>.csproj package coverlet.collector --version 6.0.4
 ```
 
-As versões acima são as registradas em `minhas-specs/ferramentas.md`. Se o projeto já usa outras, confirme a compatibilidade com o SDK e o framework de testes e atualize `minhas-specs/ferramentas.md` antes de aprová-lo.
+As versões acima são as registradas nos arquivos de métrica em `minhas-specs/ferramentas/`. Se o projeto já usa outras, confirme a compatibilidade com o SDK e o framework de testes e atualize esses arquivos antes de aprová-los.
 
 ### 2. ReportGenerator como ferramenta local
 
@@ -169,10 +169,12 @@ O `run-benchmarks` encontra o projeto `*.Benchmarks`, executa-o em `Release` com
 - Em `coverlet.runsettings`, ajuste `Exclude` aos nomes dos seus assemblies de teste (o padrão exclui `*.Tests` e `*.xUnit.*`) e, se quiser restringir o escopo, adicione `<Include>[MeuProduto.*]*</Include>`.
 - Mantenha `quality/coverage/` e `quality/benchmarks/` fora do controle de versão e os scripts e o `.runsettings` versionados.
 - Se o projeto de benchmarks não terminar em `.Benchmarks`, ajuste a exclusão de cobertura `[*.Benchmarks]*` e informe o caminho do projeto ao `run-benchmarks`.
-- Qualquer mudança de versão, comando, escopo ou exclusão deve ser refletida em `minhas-specs/ferramentas.md`.
+- Qualquer mudança de versão, comando, escopo ou exclusão deve ser refletida nos arquivos de métrica afetados em `minhas-specs/ferramentas/`.
 
 ## Integração com o Myspec
 
 1. Instale as dependências acima e rode o fluxo uma vez para confirmar que o relatório é gerado.
-2. Rode o skill `myspec-configurar` para revisar e aprovar `minhas-specs/ferramentas.md` e as orientações `minhas-specs/orientacoes-gerais/metas-de-complexidade-e-crap.md` e `minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md`, que nascem como `Status: Proposto`. Preencha os caminhos críticos e seus orçamentos antes de aprovar a orientação de performance.
+2. Rode o skill `myspec-configurar` para revisar e aprovar, todos criados como `Status: Proposto`:
+   - um arquivo por métrica em `minhas-specs/ferramentas/` (`complexidade-ciclomatica.md`, `cobertura-de-testes.md`, `crap-score.md` e `performance.md`), cada um com seus portões;
+   - as orientações `minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md` e `minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md`. Preencha os caminhos críticos e seus orçamentos antes de aprovar a orientação de performance.
 3. Após a aprovação, o skill `myspec-inspecionar` usa esses comandos para medir o código de cada spec, e o skill `myspec-quantificar` os usa para gerar o `minhas-specs/relatorio-de-qualidade.md` do projeto inteiro.

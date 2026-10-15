@@ -15,11 +15,11 @@
 
 ## Resumo do projeto
 
-| Métrica | Atual | Anterior | Meta aprovada |
-| --- | ---: | ---: | ---: |
-| <métrica e valor registrado do contrato de ferramentas> | `<valor>` | `<valor ou —>` | `<meta ou —>` |
+| Métrica | Atual | Anterior | Portão |
+| --- | ---: | ---: | --- |
+| <métrica e valor registrado do seu arquivo de métrica> | `<valor>` | `<valor ou —>` | `<limite e efeito, ou —>` |
 
-<Repita a próxima seção para cada métrica definida pelo contrato de ferramentas, na mesma ordem.>
+<Repita a próxima seção para cada arquivo de métrica aprovado em minhas-specs/ferramentas, na ordem dos nomes de arquivo.>
 
 ## <Nome da métrica>
 
@@ -27,7 +27,7 @@
 
 | Local | Valor | Spec relacionada | Observação |
 | --- | ---: | --- | --- |
-| `<projeto, arquivo ou membro, na granularidade definida pelo contrato>` | `<valor>` | `<NNN-nome ou —>` | `<meta não atingida ou motivo para atenção>` |
+| `<projeto, arquivo ou membro, na granularidade definida pelo arquivo de métrica>` | `<valor>` | `<NNN-nome ou —>` | `<portão descumprido ou motivo para atenção>` |
 
 ## Oportunidades de melhoria
 

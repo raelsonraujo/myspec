@@ -32,7 +32,7 @@ dotnet add <TestProject>/<TestProject>.csproj package Microsoft.NET.Test.Sdk --v
 dotnet add <TestProject>/<TestProject>.csproj package coverlet.collector --version 6.0.4
 ```
 
-These are the versions recorded in `my-specs/tooling.md`. If the project already uses other versions, confirm compatibility with the SDK and test framework and update `my-specs/tooling.md` before approving it.
+These are the versions recorded in the metric files under `my-specs/tooling/`. If the project already uses other versions, confirm compatibility with the SDK and test framework and update those files before approving them.
 
 ### 2. ReportGenerator as a local tool
 
@@ -168,10 +168,12 @@ The CRAP score combines complexity and line coverage: `CRAP(m) = CC(m)² × (1 �
 - In `coverlet.runsettings`, adjust `Exclude` to your test assembly names (the default excludes `*.Tests` and `*.xUnit.*`) and, to narrow the scope, add `<Include>[MyProduct.*]*</Include>`.
 - Keep `quality/coverage/` and `quality/benchmarks/` out of version control and keep the scripts and `.runsettings` versioned.
 - If the benchmark project does not end in `.Benchmarks`, adjust the `[*.Benchmarks]*` coverage exclusion and pass the project path to `run-benchmarks`.
-- Reflect every version, command, scope, or exclusion change in `my-specs/tooling.md`.
+- Reflect every version, command, scope, or exclusion change in the affected metric files under `my-specs/tooling/`.
 
 ## Myspec integration
 
 1. Install the dependencies above and run the workflow once to confirm the report is generated.
-2. Run the `myspec-setup` skill to review and approve `my-specs/tooling.md` and the `my-specs/general-guidelines/method-complexity-risk-targets.md` and `my-specs/general-guidelines/performance-critical-paths.md` guidelines, all created with `Status: Proposed`. Fill in the critical paths and their budgets before approving the performance guideline.
+2. Run the `myspec-setup` skill to review and approve, all created with `Status: Proposed`:
+   - one metric file per measurement under `my-specs/tooling/` (`cyclomatic-complexity.md`, `test-coverage.md`, `crap-score.md`, and `performance.md`), each with its own gates;
+   - the `my-specs/general-guidelines/build-and-test-commands.md` and `my-specs/general-guidelines/performance-critical-paths.md` guidelines. Fill in the critical paths and their budgets before approving the performance guideline.
 3. Once approved, the `myspec-inspect` skill uses these commands to measure each spec's code, and the `myspec-quantify` skill uses them to produce the project-wide `my-specs/quality-report.md`.

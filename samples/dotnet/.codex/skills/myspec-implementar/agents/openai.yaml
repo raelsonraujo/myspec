@@ -1,4 +1,0 @@
-interface:
-  display_name: "Myspec Implementar"
-  short_description: "Implementar specs dentro das regras aprovadas"
-  default_prompt: "Use $myspec-implementar para implementar a especificação selecionada com árvore de arquivos e diretrizes de produto aprovadas."

@@ -14,11 +14,11 @@
 
 ## Metrics
 
-| Metric | Current | Previous |
-| --- | ---: | ---: |
-| Acceptance criteria met | `<met>/<total>` | `<value or —>` |
-| Tests passed | `<passed>/<total>` | `<value or —>` |
-| <metric and reported value from the tooling contract> | `<value>` | `<value or —>` |
+| Metric | Current | Previous | Gate |
+| --- | ---: | ---: | --- |
+| Acceptance criteria met | `<met>/<total>` | `<value or —>` | — |
+| Tests passed | `<passed>/<total>` | `<value or —>` | — |
+| <metric and reported value from its metric file> | `<value>` | `<value or —>` | `<threshold and enforcement, or —>` |
 
 ## Findings
 

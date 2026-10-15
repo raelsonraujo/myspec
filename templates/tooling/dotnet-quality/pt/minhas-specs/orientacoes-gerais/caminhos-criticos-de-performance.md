@@ -10,7 +10,7 @@ Aplica-se a: Todos os skills Myspec que prescrevem, implementam, corrigem, inspe
 
 ## Regra
 
-Os caminhos abaixo são os únicos caminhos críticos de performance deste repositório. Cada um é medido por um benchmark do BenchmarkDotNet marcado com o ID do caminho e julgado frente ao seu orçamento.
+Os caminhos abaixo são os únicos caminhos críticos de performance deste repositório. Cada um é medido por um benchmark do BenchmarkDotNet marcado com o ID do caminho, conforme `minhas-specs/ferramentas/performance.md`, e julgado frente ao seu orçamento pelos portões dessa métrica.
 
 | ID | Caminho crítico | Ponto de entrada | Benchmark | Orçamento de alocação | Orçamento de tempo |
 | --- | --- | --- | --- | --- | --- |
@@ -20,8 +20,9 @@ Substitua a linha de exemplo pelos caminhos escolhidos pelo time antes de aprova
 
 Orçamentos:
 
-- **Alocação** (bytes `Allocated` por operação) é a métrica principal, pois é estável entre máquinas e execuções. Valor acima do orçamento não atinge a meta.
-- **Tempo** (`Mean` por operação) só é comparado com a medição anterior feita na mesma máquina e runtime. Regressão acima do orçamento de tempo não atinge a meta. Se o ambiente mudou ou não houver medição anterior, informe o tempo apenas como contexto.
+- **Alocação** (bytes `Allocated` por operação) é o orçamento principal, pois é estável entre máquinas e execuções.
+- **Tempo** (`Mean` por operação) é a regressão máxima frente à medição anterior na mesma máquina e runtime.
+- Como julgar um valor acima do orçamento cabe aos portões de `minhas-specs/ferramentas/performance.md`.
 
 Specs:
 

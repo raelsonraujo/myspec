@@ -1,4 +1,4 @@
 interface:
   display_name: "Myspec Inspect"
-  short_description: "Review against product and specification rules"
+  short_description: "Inspect a spec and decide if it can advance"
   default_prompt: "Use $myspec-inspect to review a named spec implementation against its requirements, approved product directives, and repository rules."

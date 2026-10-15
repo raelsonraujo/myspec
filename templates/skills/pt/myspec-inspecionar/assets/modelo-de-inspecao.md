@@ -14,11 +14,11 @@
 
 ## Métricas
 
-| Métrica | Atual | Anterior |
-| --- | ---: | ---: |
-| Critérios de aceitação atendidos | `<atendidos>/<total>` | `<valor ou —>` |
-| Testes aprovados | `<aprovados>/<total>` | `<valor ou —>` |
-| <métrica e valor registrado do contrato de ferramentas> | `<valor>` | `<valor ou —>` |
+| Métrica | Atual | Anterior | Portão |
+| --- | ---: | ---: | --- |
+| Critérios de aceitação atendidos | `<atendidos>/<total>` | `<valor ou —>` | — |
+| Testes aprovados | `<aprovados>/<total>` | `<valor ou —>` | — |
+| <métrica e valor registrado do seu arquivo de métrica> | `<valor>` | `<valor ou —>` | `<limite e efeito, ou —>` |
 
 ## Achados
 

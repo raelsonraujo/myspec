@@ -24,7 +24,7 @@ Approved product directives define project vocabulary and product invariants. Tr
 
 ## Implementation
 
-1. Complete the Mandatory Guidance Gate, then read `my-specs/tooling.md` when present. Use it to identify quality tooling and any defined contract sections; do not treat it as a substitute for reading the directive and guidance files under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
+1. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/tooling/` when present. Use them to identify quality tooling and the gates the changed code must meet; do not treat them as a substitute for reading the directive and guidance files under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
 2. Identify the requested behavior, the approved product directives it affects, and its relevant success, failure, boundary, authorization, and data-integrity paths. Preserve the directives even when the request omits the relevant invariant. State conservative assumptions; ask before proceeding when an unresolved choice materially changes observable behavior.
 3. Before source edits, tell the developer the intended small change and any material choice not settled by the request or repository evidence.
 4. Implement the smallest cohesive change. Work in reviewable slices and report meaningful checkpoints.

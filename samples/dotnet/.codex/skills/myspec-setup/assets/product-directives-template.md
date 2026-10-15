@@ -6,7 +6,7 @@ Created by: `<git user.name> <git user.email>`
 
 Created on: `<date>`
 
-Applies to: `$myspec-implement` and `$myspec-patch`
+Applies to: `$myspec-prescribe`, `$myspec-implement`, and `$myspec-patch`
 
 ## Product Scope
 
