@@ -1,6 +1,6 @@
 ---
 name: myspec-inspecionar
-description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada, diretrizes de produto e orientações Myspec aprovadas, mede cobertura e complexidade com ferramentas aprovadas e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
+description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada, diretrizes de produto e orientações Myspec aprovadas, mede as métricas definidas pelo contrato de ferramentas aprovado e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
 ---
 
 # Myspec Inspecionar
@@ -26,18 +26,18 @@ Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minh
 
 ## Métricas
 
-Toda inspeção mede a implementação. Execute os comandos exatos de build, teste, cobertura e complexidade definidos em `minhas-specs/ferramentas.md` aprovado, respeitando escopo, exclusões e orientações aplicáveis, e colete:
+Toda inspeção mede a implementação. Execute os comandos exatos de build, teste e métricas definidos em `minhas-specs/ferramentas.md` aprovado, respeitando escopo, exclusões e orientações aplicáveis, e colete:
 
 - critérios de aceitação atendidos sobre o total definido na spec;
-- testes aprovados sobre o total executado;
-- cobertura de linhas e ramos do código de produção implementado pela spec;
-- a maior complexidade ciclomática entre os métodos/funções desse código; e
-- qualquer métrica adicional definida pelo contrato de ferramentas aprovado, como CRAP score.
+- testes aprovados sobre o total executado; e
+- para cada métrica sob `## Métricas` do contrato, os valores listados em `Valores registrados`.
+
+Somente o contrato de ferramentas decide quais métricas existem. Nunca meça, relate ou peça métrica que ele não defina, como cobertura ou complexidade, nem trate a ausência de uma métrica como lacuna.
 
 Regras de medição:
 
 - Delimite as métricas ao código de produção da spec, identificado pela árvore aprovada, controle de versão e evidência do repositório. Se a ferramenta não conseguir isolá-lo, informe o valor do projeto e marque `(projeto)`.
-- Testes falhos ou ignorados são achados, não verificação limpa.
+- Testes falhos ou ignorados são achados; nunca apresente as medições dessa execução como verificação limpa.
 - Nunca invente, estime manualmente, instale ou substitua ferramenta; pergunte antes de alterar dependências, comandos ou configuração. Se o contrato estiver ausente, incompleto ou não aprovado, ou um comando aprovado estiver indisponível ou falhar, registre as métricas afetadas como `Não medida: <motivo>`, preserve as que puderam ser medidas e sugira `{{skill:myspec-configurar}}` quando o próprio contrato faltar ou não estiver aprovado.
 - Não crie nem atualize `minhas-specs/relatorio-de-qualidade.md`; esse relatório do projeto inteiro pertence a `{{skill:myspec-quantificar}}`.
 
@@ -68,7 +68,7 @@ Crie `minhas-specs/specs/<nome-da-spec>/inspecoes/inspecao-<NNN>.md` a partir de
 Mantenha o registro curto. Ele relata resultados, não o processo que os produziu:
 
 - **Critérios de aceitação**: uma linha por critério da spec, com o teste ou local que comprova o status.
-- **Métricas**: uma linha por métrica coletada, com o valor da inspeção anterior ou `—`. Acrescente uma linha para cada métrica adicional do contrato de ferramentas.
+- **Métricas**: as linhas de critérios de aceitação e de testes e, depois, uma linha por valor registrado de cada métrica definida pelo contrato de ferramentas, com o valor da inspeção anterior ou `—`.
 - **Achados**: uma linha por achado aberto, `Bloqueante` primeiro. `Bloqueante` é todo item que torna o veredito `Bloqueada`, inclusive violação de diretriz de produto, prática de código ou orientação geral aprovada. `Atenção` é um ponto não bloqueante que o desenvolvedor precisa tratar ou conhecer, como regra não avaliável ou árvore ou contrato de ferramentas não aprovado. Escreva `Nenhum` quando não houver.
 - **Achados anteriores**: apenas os achados que a inspeção anterior deixou abertos. Escreva `Nenhum — primeira inspeção.` quando não houver inspeção anterior.
 

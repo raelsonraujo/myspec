@@ -1,6 +1,6 @@
 ---
 name: myspec-quantificar
-description: Mede complexidade ciclomática e cobertura de testes automatizados do projeto como um todo usando ferramentas aprovadas pelo desenvolvedor, julga os resultados frente às metas aprovadas e transforma as áreas mais fracas em oportunidades de melhoria priorizadas que podem originar novas specs. Use para controle de qualidade do projeto, análise de complexidade ou cobertura, ou para decidir onde investir esforço de melhoria.
+description: Mede as métricas de qualidade definidas pelo contrato de ferramentas aprovado pelo desenvolvedor no projeto como um todo, julga os resultados frente às metas aprovadas e transforma as áreas mais fracas em oportunidades de melhoria priorizadas que podem originar novas specs. Use para controle de qualidade do projeto, análise de métricas ou para decidir onde investir esforço de melhoria.
 ---
 
 # Myspec Quantificar
@@ -13,10 +13,10 @@ Antes de avançar além da descoberta inicial ou executar medição, leia todos 
 
 ## Fluxo de trabalho
 
-1. Após o portão, leia `minhas-specs/ferramentas.md` na raiz. Exija `Status: Aprovado` e definições completas de complexidade e cobertura; ele não substitui as orientações.
+1. Após o portão, leia `minhas-specs/ferramentas.md` na raiz. Exija `Status: Aprovado` e ao menos uma métrica completa sob `## Métricas`; somente o contrato decide quais métricas existem, então nunca meça nem peça métrica que ele não defina. Ele não substitui as orientações.
 2. Se o contrato estiver ausente, incompleto ou não aprovado, pare e peça `{{skill:myspec-configurar}}`. Não escolha ferramenta substituta.
-3. Obtenha os resultados dos comandos aprovados exatos de build, cobertura e complexidade para o projeto inteiro, respeitando escopo, exclusões e orientações aplicáveis.
-4. Julgue os resultados frente às metas definidas por orientações aprovadas, como limites de complexidade ou cobertura, e identifique arquivos, tipos e métodos que não as atingem ou concentram mais risco.
+3. Obtenha os resultados dos comandos aprovados exatos de build, teste e métricas para o projeto inteiro, respeitando escopo, exclusões e orientações aplicáveis.
+4. Julgue os resultados frente às metas das orientações aprovadas citadas em `Interpretação` de cada métrica e identifique os locais que não as atingem ou estão mais mal classificados.
 5. Liste as specs em `minhas-specs/specs` e, para cada ponto crítico, cite a spec cuja árvore aprovada cobre aquele código, quando houver.
 6. Crie ou atualize `minhas-specs/relatorio-de-qualidade.md` a partir de `assets/modelo-de-relatorio-de-qualidade.md`. Se já existir relatório, compare os totais do projeto com seus valores antes de substituí-lo.
 7. Avalie as sugestões contra práticas de código e orientações aprovadas e retorne caminho, destaques e as oportunidades priorizadas com o próximo skill sugerido.
@@ -26,13 +26,13 @@ Se a ferramenta aprovada estiver indisponível ou falhar, não invente, estime m
 ## Regras de medição
 
 - Informe comandos exatos, ferramentas, versões e configuração. Meça todo o código de produção do projeto, com totais e detalhamento por projeto, módulo ou arquivo, conforme a ferramenta suportar.
-- Informe cobertura de linhas e ramos, com contagens e percentuais, quando suportado. Informe complexidade ao menos por método/função, consolide por arquivo/tipo e destaque os maiores valores.
-- Identifique código gerado, migrations, arquivos somente DTO e outras exclusões. Testes falhos ou ignorados são achados, não verificação limpa.
+- Informe cada métrica definida pelo contrato de ferramentas, com os valores e a granularidade que ele lista, e nenhuma outra. Inclua contagens além de proporções quando a ferramenta as fornecer e destaque os locais mais mal classificados.
+- Identifique código gerado, migrations, arquivos somente DTO e outras exclusões. Testes falhos ou ignorados são achados; nunca apresente as medições dessa execução como verificação limpa.
 - Só julgue uma métrica como fora da meta quando orientação aprovada ou o contrato de ferramentas definir essa meta. Nunca invente limites; sem meta definida, ordene por risco relativo.
 
 ## Oportunidades de melhoria
 
-Baseie-se em evidência medida e priorize: código fora de meta aprovada; caminhos críticos sem cobertura, sobretudo em código que implementa critérios de aceitação de specs existentes; métodos complexos com pontos concretos de simplificação; testes de ramos, falhas, limites, autorização e integridade ausentes; e duplicação que infla complexidade e superfície de teste.
+Baseie-se em evidência medida e priorize: código fora de meta aprovada; os locais mais mal classificados de cada métrica definida, sobretudo em código que implementa critérios de aceitação de specs existentes; e pontos concretos desse código cuja mudança melhoraria o valor medido.
 
 Para cada oportunidade, cite o código afetado, a spec relacionada quando houver, o efeito esperado nas métricas sem prometer valores antes de medir novamente e o próximo skill sugerido:
 

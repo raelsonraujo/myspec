@@ -1,4 +1,4 @@
 interface:
   display_name: "Myspec Quantify"
-  short_description: "Judge project-wide complexity and coverage"
+  short_description: "Judge the approved metrics project-wide"
   default_prompt: "Use {{skill:myspec-quantify}} to measure the whole project and suggest where to improve next."

@@ -18,9 +18,7 @@
 | --- | ---: | ---: |
 | Critérios de aceitação atendidos | `<atendidos>/<total>` | `<valor ou —>` |
 | Testes aprovados | `<aprovados>/<total>` | `<valor ou —>` |
-| Cobertura de linhas | `<percentual> (<cobertas>/<total>)` | `<valor ou —>` |
-| Cobertura de ramos | `<percentual> (<cobertos>/<total>)` | `<valor ou —>` |
-| Maior complexidade ciclomática | `<valor>` (`<membro>`) | `<valor ou —>` |
+| <métrica e valor registrado do contrato de ferramentas> | `<valor>` | `<valor ou —>` |
 
 ## Achados
 

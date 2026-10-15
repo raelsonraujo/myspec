@@ -1,6 +1,6 @@
 ---
 name: myspec-setup
-description: Set up or revise the repository-wide Myspec contract by asking the developer to define quality tooling, product directives, repository coding practices, and cross-skill guidelines. Use before Myspec quality measurement, when my-specs tooling is missing, or when metric tools, product rules, coding practices, or shared Myspec guidance need to change.
+description: Set up or revise the repository-wide Myspec contract by asking the developer to define the quality metrics and their tooling, product directives, repository coding practices, and cross-skill guidelines. Use before Myspec quality measurement, when my-specs tooling is missing, or when metrics, metric tools, product rules, coding practices, or shared Myspec guidance need to change.
 ---
 
 # Myspec Setup
@@ -15,22 +15,21 @@ Before moving beyond initial repository discovery, read every Markdown file that
 
 1. Inspect repository manifests, test projects, local tool files, build scripts, and CI configuration. Do not install or modify tooling.
 2. Read `my-specs/tooling.md` when it exists, after completing the Mandatory Guidance Gate.
-3. For cyclomatic complexity, ask the developer to define:
+3. Ask the developer for the exact build and test commands that verify the repository, and which quality metrics Myspec must measure. The metric set is exactly what the developer defines: never assume, infer, or default to any metric, including complexity or coverage, from the stack, existing tools, or common practice. Offer metric candidates only when the developer asks for them. Defining no metric is valid; record that explicitly.
+4. For each metric the developer chooses, ask the developer to define:
+   - what it measures, its unit, and its granularity, such as per method, per file, or project total;
    - tool and pinned version;
    - installation or restore mechanism;
    - exact measurement command;
    - output format and result path;
-   - measured production scope and exclusions.
-4. For test coverage, ask the developer to define:
-   - test runner, coverage collector, and pinned versions;
-   - installation or restore mechanism;
-   - exact build and coverage commands;
-   - report format and result path;
-   - measured production scope and exclusions.
+   - measured scope and exclusions;
+   - how the code changed by a spec is isolated from whole-project values;
+   - the values every inspection and quality report must record for it;
+   - the approved guideline that interprets it, if any. Targets and thresholds belong in a general guideline, never in an assumption.
 5. Ask whether to define or revise repository product directives. If yes, ask how the repository should group and name them, then record the product concepts, terminology, policies, and cohesive invariants that `{{skill:myspec-implement}}` and `{{skill:myspec-patch}}` must preserve as one or more concise Markdown files under `my-specs/product-directives/`. If no product rules are currently known, leave that folder absent or empty and state that no product constraint was established.
 6. Ask whether to define optional repository coding practices. If yes, record each concrete, verifiable practice for `{{skill:myspec-implement}}` and implementation-focused review as its own file under `my-specs/coding-practices/`; if no, leave that folder absent or empty.
 7. Ask whether to define optional general Myspec guidelines. If yes, record each behavioral or output rule that every other Myspec skill must follow as its own file under `my-specs/general-guidelines/`; if no, leave that folder absent or empty.
-8. When useful, offer repository-compatible candidates with concrete tradeoffs. Derive product-directive candidates from developer input, approved product artifacts, and established domain behavior, and label any inference that still needs developer confirmation. Never select a candidate merely because it is already familiar or implemented.
+8. When useful, offer repository-compatible candidates with concrete tradeoffs, except metrics, which follow step 3. Derive product-directive candidates from developer input, approved product artifacts, and established domain behavior, and label any inference that still needs developer confirmation. Never select a candidate merely because it is already familiar or implemented.
 9. Create or update the contract documents, setting each newly created document's status to `Proposed` and recording its creator and creation date from the current repository's `git config user.name` and `git config user.email`. Use an `Approval History` section for approvals:
    - `my-specs/tooling.md` from [assets/tooling-template.md](assets/tooling-template.md);
    - each document under `my-specs/product-directives/` from [assets/product-directives-template.md](assets/product-directives-template.md);
@@ -48,7 +47,7 @@ Do not treat silence, a pre-existing tool, or a successful command as approval. 
 - Pin versions or document the repository-controlled version source.
 - Record generated-code and file-pattern exclusions explicitly.
 - Define how changed implementation files are isolated from whole-project metrics.
-- Include both line and branch coverage when the chosen collector supports them.
+- Record only the metrics the developer defined, each in its own section under `## Metrics`. Other Myspec skills measure exactly those metrics and nothing else.
 - Keep quality tooling in `my-specs/tooling.md`. Store product directives under `my-specs/product-directives/` using the repository's chosen document names and grouping. Store every repository coding practice and general Myspec guideline in a separate Markdown file under its respective folder; do not embed their rule text in `tooling.md`.
 - Use a concise kebab-case filename that identifies the rule.
 - Give every product-directive, practice, and guideline file its own status and append-only approval history.

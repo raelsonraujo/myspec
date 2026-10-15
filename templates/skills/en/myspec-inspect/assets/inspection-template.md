@@ -18,9 +18,7 @@
 | --- | ---: | ---: |
 | Acceptance criteria met | `<met>/<total>` | `<value or —>` |
 | Tests passed | `<passed>/<total>` | `<value or —>` |
-| Line coverage | `<percentage> (<covered>/<total>)` | `<value or —>` |
-| Branch coverage | `<percentage> (<covered>/<total>)` | `<value or —>` |
-| Highest cyclomatic complexity | `<value>` (`<member>`) | `<value or —>` |
+| <metric and reported value from the tooling contract> | `<value>` | `<value or —>` |
 
 ## Findings
 

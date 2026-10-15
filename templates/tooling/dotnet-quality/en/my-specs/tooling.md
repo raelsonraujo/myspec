@@ -15,8 +15,16 @@ Created on: `{{date}}`
 - Version source: `coverlet.collector` and `Microsoft.NET.Test.Sdk` package references in each test project; the local tool manifest (`dotnet-tools.json` or `.config/dotnet-tools.json`) for ReportGenerator; the `BenchmarkDotNet` package reference in the benchmark project
 - Generated results roots: `quality/coverage/` and `quality/benchmarks/` (ignored through `quality/.gitignore` and recreated on every run)
 
-## Cyclomatic Complexity
+## Verification
 
+- Build command: `dotnet build {{solution}} --configuration Release --no-restore`
+- Test command: `dotnet test {{solution}} --configuration Release --no-build` (the coverage command runs the same tests)
+
+## Metrics
+
+### Cyclomatic Complexity
+
+- Definition: cyclomatic complexity of each method, summarized by class and assembly
 - Tool: Coverlet (`coverlet.collector`), whose Cobertura XML records method, class, and package `complexity`; visualized by ReportGenerator
 - Version: `coverlet.collector` `6.0.4`; ReportGenerator `5.5.10`
 - Installation or restore: follow `quality/README.md`, then `dotnet restore {{solution}}` and `dotnet tool restore`
@@ -26,14 +34,16 @@ Created on: `{{date}}`
 - Production scope: every non-test assembly instrumented by at least one test project in `{{solution}}`
 - Exclusions: test assemblies `[*.Tests]*` and `[*.xUnit.*]*`; `**/bin/**`, `**/obj/**`, `**/Migrations/**`, `**/*.g.cs`, `**/*.Designer.cs`, `**/*.generated.cs`, `**/AssemblyInfo.cs` (see `quality/coverlet.runsettings`)
 - Changed-code isolation: filter the merged Cobertura report by the production paths listed in `my-specs/specs/<spec-name>/file-tree.md`, and report affected-project totals alongside the changed-file values
+- Reported values: highest cyclomatic complexity among methods (with the member) and the number of methods above 15
+- Interpretation: `my-specs/general-guidelines/method-complexity-risk-targets.md`, once approved
 
-## Test Coverage
+### Test Coverage
 
+- Definition: share of production lines and branches executed by the tests, per file, class, and assembly
 - Test runner: VSTest through `dotnet test`
 - Coverage collector: `coverlet.collector` (`XPlat Code Coverage` data collector)
 - Versions: `coverlet.collector` `6.0.4` and `Microsoft.NET.Test.Sdk` `17.14.1`, pinned in each test project; ReportGenerator `5.5.10`, pinned in the local tool manifest
 - Installation or restore: follow `quality/README.md`, then `dotnet restore {{solution}}` and `dotnet tool restore`
-- Build command: `dotnet build {{solution}} --configuration Release --no-restore`
 - Coverage command: `dotnet test {{solution}} --configuration Release --no-build --settings quality/coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory quality/coverage/raw`
 - Report command: `dotnet reportgenerator -reports:"quality/coverage/raw/**/coverage.cobertura.xml" -targetdir:"quality/coverage/report" -reporttypes:"Html;JsonSummary;Cobertura"`
 - Complete workflow: `pwsh -NoProfile -File quality/run-coverage-report.ps1` or `bash quality/run-coverage-report.sh` (restore, build, test, and report in order)
@@ -47,26 +57,31 @@ Created on: `{{date}}`
 - Test scope: every test project in `{{solution}}`
 - Exclusions: same as Cyclomatic Complexity
 - Changed-code isolation: same as Cyclomatic Complexity
+- Reported values: line coverage and branch coverage, with percentage and covered over total
+- Interpretation: None
 
-## CRAP Score
+### CRAP Score
 
+- Definition: change risk of each method, combining cyclomatic complexity and line coverage
 - Source: the Risk Hotspots section of `quality/coverage/report/index.html`, computed by ReportGenerator per method from the Cobertura complexity and coverage data
 - Definition: `CRAP(m) = CC(m)² × (1 − cov(m))³ + CC(m)`, where `CC` is the method's cyclomatic complexity and `cov` its measured line coverage as a fraction
 - ReportGenerator highlights cyclomatic complexity above 15 and CRAP score above 30 as elevated, independently of each other
+- Reported values: highest CRAP score among methods (with the member) and the number of methods above 30
 - Interpretation: `my-specs/general-guidelines/method-complexity-risk-targets.md`, once approved
 
-## Performance
+### Performance
 
+- Definition: `Allocated` bytes per operation (primary) and `Mean` time per operation of each approved critical-path benchmark
 - Tool: BenchmarkDotNet, run from the repository's single `*.Benchmarks` console project
 - Version: `BenchmarkDotNet` `0.15.8`, pinned in the benchmark project
 - Installation or restore: follow `quality/README.md`, then `dotnet restore {{solution}}`
 - Measurement command: `pwsh -NoProfile -File quality/run-benchmarks.ps1` or `bash quality/run-benchmarks.sh`, which run `dotnet run --project <benchmarks.csproj> --configuration Release -- --filter "*" --memory --exporters json --artifacts quality/benchmarks`
-- Metrics: `Allocated` bytes per operation (primary) and `Mean` time per operation, per benchmark
 - Output format: BenchmarkDotNet JSON (`Statistics.Mean` in nanoseconds and `Memory.BytesAllocatedPerOperation` per benchmark) and its default GitHub Markdown, CSV, and HTML reports
 - Result path: `quality/benchmarks/results/*.json`; `quality/benchmarks/results/*-report-github.md`
 - Scope: benchmarks tagged with the critical path IDs in `my-specs/general-guidelines/performance-critical-paths.md`
 - Environment: Release build, no debugger attached, and the same machine and runtime whenever time is compared with a previous run
 - Changed-code isolation: run only the critical paths a spec touches with `-Categories <CP-ID>` or `--category <CP-ID>`
+- Reported values: `Allocated` bytes and `Mean` time per operation of each measured critical path
 - Interpretation: `my-specs/general-guidelines/performance-critical-paths.md`, once approved
 
 ## Related Contract Documents
