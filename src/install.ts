@@ -16,7 +16,7 @@ import { findManifest, writeManifest } from './manifest.js';
 import { PROVIDERS, UsageError, type ProviderId } from './providers.js';
 import { listSkills, renderTemplate } from './templates.js';
 import { planTooling, type ToolingVariables } from './tooling.js';
-import { migrateWorkspace, scaffoldWorkspace, type WorkspaceMigration } from './workspace.js';
+import { migrateWorkspace, renameLegacyMetrics, scaffoldWorkspace, type WorkspaceMigration } from './workspace.js';
 
 export interface InstallOptions {
   root: string;
@@ -114,6 +114,17 @@ export function install(options: InstallOptions): InstallResult {
     result.warnings.push(...result.migration.warnings);
   }
 
+  // Runs before the tooling templates, which would otherwise create the new folder beside the old one.
+  const renamed = renameLegacyMetrics(root, options.language);
+  if (renamed.moved.length > 0 || renamed.warnings.length > 0) {
+    result.migration = {
+      moved: [...(result.migration?.moved ?? []), ...renamed.moved],
+      relabeled: result.migration?.relabeled ?? [],
+      warnings: [...(result.migration?.warnings ?? []), ...renamed.warnings],
+    };
+    result.warnings.push(...renamed.warnings);
+  }
+
   // Tooling runs before the workspace scaffold so folders that receive a document get no .gitkeep.
   const tooling = options.tooling ?? [];
   if (tooling.length > 0) {
@@ -128,7 +139,7 @@ export function install(options: InstallOptions): InstallResult {
   if (existsSync(join(root, legacyTooling))) {
     result.warnings.push(
       `${legacyTooling} uses the single-file tooling format; run ${layout.setupSkill} to split it into one file per metric ` +
-        `under ${layout.workspace.dir}/${layout.workspace.tooling}/.`,
+        `under ${layout.workspace.dir}/${layout.workspace.metrics}/.`,
     );
   }
 

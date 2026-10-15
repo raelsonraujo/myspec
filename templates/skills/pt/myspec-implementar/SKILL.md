@@ -23,7 +23,7 @@ A árvore, como tudo na pasta da spec, é um registro de trabalho local do desen
 
 ## Implementação interativa
 
-1. Leia árvore aprovada, especificação, instruções do repositório e código afetado. Se a pasta da spec tiver `inspecoes/`, leia a inspeção de maior número e use seus achados abertos como entrada; o veredito de uma inspeção nunca impede a implementação. Após o portão, leia os arquivos de métrica em `minhas-specs/ferramentas/` quando existirem, para conhecer as ferramentas e os portões que o código alterado deve cumprir, sem que eles substituam as orientações.
+1. Leia árvore aprovada, especificação, instruções do repositório e código afetado. Se a pasta da spec tiver `inspecoes/`, leia a inspeção de maior número e use seus achados abertos como entrada; o veredito de uma inspeção nunca impede a implementação. Após o portão, leia os arquivos de métrica em `minhas-specs/metricas/` quando existirem, para conhecer as ferramentas e os portões que o código alterado deve cumprir, sem que eles substituam as orientações.
 2. Mapeie cada critério de aceitação para implementação, testes e diretrizes de produto afetadas.
 3. Antes de editar, informe a primeira fatia pretendida e levante escolhas materiais não resolvidas. Pergunte, em vez de supor, quando a escolha alterar comportamento público, arquitetura, persistência, segurança, compatibilidade ou a árvore aprovada.
 4. Implemente em fatias revisáveis; se evidência invalidar a árvore, pause e proponha atualização.

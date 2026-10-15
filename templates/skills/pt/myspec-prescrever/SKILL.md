@@ -15,7 +15,7 @@ Diretrizes de produto aprovadas definem o vocabulário e os invariantes que uma 
 
 ## Fluxo de trabalho
 
-1. Leia a solicitação e inspecione o contexto relevante. Após o portão, leia os arquivos de métrica em `minhas-specs/ferramentas/` quando existirem, para conhecer as ferramentas e os portões que a mudança deve cumprir, sem que eles substituam as diretrizes e orientações.
+1. Leia a solicitação e inspecione o contexto relevante. Após o portão, leia os arquivos de métrica em `minhas-specs/metricas/` quando existirem, para conhecer as ferramentas e os portões que a mudança deve cumprir, sem que eles substituam as diretrizes e orientações.
 2. Identifique ambiguidades materiais que alterariam substancialmente escopo ou comportamento observável. Faça perguntas objetivas só para elas; caso contrário, declare suposições conservadoras.
 3. Sugira um nome conciso em kebab-case baseado no comportamento solicitado.
 4. Inspecione diretórios imediatos de `minhas-specs/specs` cujo nome comece com três dígitos e `-`. Atribua o próximo prefixo sequencial de três dígitos com zeros, começando em `001`; nunca renumere pastas existentes.

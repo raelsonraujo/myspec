@@ -51,7 +51,7 @@ Prefer naturally lower complexity when it follows from a clear, cohesive design,
 
 ## Related Contract Documents
 
-- `my-specs/tooling/crap-score.md`, which combines this metric with line coverage
+- `my-specs/metrics/crap-score.md`, which combines this metric with line coverage
 
 ## Decisions and Tradeoffs
 

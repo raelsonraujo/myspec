@@ -47,7 +47,7 @@ None.
 
 ## Related Contract Documents
 
-- `my-specs/tooling/crap-score.md`, which combines this metric with cyclomatic complexity
+- `my-specs/metrics/crap-score.md`, which combines this metric with cyclomatic complexity
 
 ## Decisions and Tradeoffs
 

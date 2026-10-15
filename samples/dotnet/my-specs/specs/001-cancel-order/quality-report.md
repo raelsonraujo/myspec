@@ -12,7 +12,7 @@
   - `Sample.App.Infrastructure/Orders/OrderRepository.cs`
   - `Sample.App.Api/Orders/CancelOrderEndpoint.cs`
 - Exclusions:
-  - `Sample.App.Infrastructure/Orders/Migrations/`: generated code excluded by `my-specs/tooling/test-coverage.md`.
+  - `Sample.App.Infrastructure/Orders/Migrations/`: generated code excluded by `my-specs/metrics/test-coverage.md`.
 
 ## Verification
 

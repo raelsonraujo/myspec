@@ -49,7 +49,7 @@ None.
 
 ## Related Contract Documents
 
-- `my-specs/tooling/crap-score.md`, which combines this metric with cyclomatic complexity
+- `my-specs/metrics/crap-score.md`, which combines this metric with cyclomatic complexity
 - `my-specs/general-guidelines/dotnet-command-execution.md`, which assigns every `dotnet` command and coverage workflow run to the developer
 
 ## Decisions and Tradeoffs

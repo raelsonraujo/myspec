@@ -46,7 +46,7 @@ Nenhum.
 
 ## Documentos relacionados do contrato
 
-- `minhas-specs/ferramentas/crap-score.md`, que combina esta métrica com a complexidade ciclomática
+- `minhas-specs/metricas/crap-score.md`, que combina esta métrica com a complexidade ciclomática
 
 ## Decisões e contrapartidas
 

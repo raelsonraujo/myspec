@@ -16,7 +16,7 @@ Verify the repository from its root with these commands, in order:
 2. Build: `dotnet build {{solution}} --configuration Release --no-restore`
 3. Test: `dotnet test {{solution}} --configuration Release --no-build`
 
-Run them before measuring any metric under `my-specs/tooling/`. When a metric's measurement command already runs the same tests, such as `quality/run-coverage-report`, its test results may stand in for step 3 of the same baseline.
+Run them before measuring any metric under `my-specs/metrics/`. When a metric's measurement command already runs the same tests, such as `quality/run-coverage-report`, its test results may stand in for step 3 of the same baseline.
 
 ## Guidance Precedence
 

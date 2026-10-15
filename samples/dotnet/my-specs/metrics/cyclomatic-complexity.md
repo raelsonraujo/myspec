@@ -27,8 +27,8 @@ Cyclomatic complexity of each developer-controlled method, summarized by class a
 - Measurement command: `pwsh -NoProfile -File quality/run-coverage-report.ps1` or `bash quality/run-coverage-report.sh`
 - Output format: Cobertura XML `complexity` attributes; HTML report
 - Result path: `quality/coverage/report/Cobertura.xml`; `quality/coverage/report/index.html`
-- Scope: same as `my-specs/tooling/test-coverage.md`
-- Exclusions: same as `my-specs/tooling/test-coverage.md`
+- Scope: same as `my-specs/metrics/test-coverage.md`
+- Exclusions: same as `my-specs/metrics/test-coverage.md`
 - Changed-code isolation: use production paths from `my-specs/specs/<spec-name>/file-tree.md` to filter the merged Cobertura report; report method and class cyclomatic-complexity values alongside affected-project totals, keeping the containing-type complexity visible when method extraction materially affects interpretation
 - Reported values: highest cyclomatic complexity among methods (with the member) and the number of methods above 15
 
@@ -49,7 +49,7 @@ Prefer naturally lower complexity when it follows from a clear, cohesive design,
 
 ## Related Contract Documents
 
-- `my-specs/tooling/crap-score.md`, which combines this metric with line coverage
+- `my-specs/metrics/crap-score.md`, which combines this metric with line coverage
 - `my-specs/general-guidelines/dotnet-command-execution.md`
 
 ## Decisions and Tradeoffs

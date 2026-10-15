@@ -1,6 +1,6 @@
 ---
 name: myspec-quantificar
-description: Mede as métricas de qualidade definidas pelos arquivos de métrica aprovados pelo desenvolvedor em minhas-specs/ferramentas no projeto como um todo, julga os resultados frente a seus portões e transforma as áreas mais fracas em oportunidades de melhoria priorizadas que podem originar novas specs. Use para controle de qualidade do projeto, análise de métricas ou para decidir onde investir esforço de melhoria.
+description: Mede as métricas de qualidade definidas pelos arquivos de métrica aprovados pelo desenvolvedor em minhas-specs/metricas no projeto como um todo, julga os resultados frente a seus portões e transforma as áreas mais fracas em oportunidades de melhoria priorizadas que podem originar novas specs. Use para controle de qualidade do projeto, análise de métricas ou para decidir onde investir esforço de melhoria.
 ---
 
 # Myspec Quantificar
@@ -13,7 +13,7 @@ Antes de avançar além da descoberta inicial ou executar medição, leia todos 
 
 ## Fluxo de trabalho
 
-1. Após o portão, leia todos os arquivos de métrica em `minhas-specs/ferramentas/` na raiz. Um arquivo é uma métrica, e somente arquivos com `Status: Aprovado` e definição completa são medidos; somente os arquivos de métrica decidem quais métricas existem, então nunca meça nem peça métrica que nenhum arquivo defina. Eles não substituem as orientações.
+1. Após o portão, leia todos os arquivos de métrica em `minhas-specs/metricas/` na raiz. Um arquivo é uma métrica, e somente arquivos com `Status: Aprovado` e definição completa são medidos; somente os arquivos de métrica decidem quais métricas existem, então nunca meça nem peça métrica que nenhum arquivo defina. Eles não substituem as orientações.
 2. Se nenhum arquivo de métrica estiver aprovado e completo, pare e peça `{{skill:myspec-configurar}}`; se existir apenas o arquivo único legado `minhas-specs/ferramentas.md`, peça que ele seja dividido em arquivos de métrica. Não escolha ferramenta substituta. Liste nas limitações do relatório cada arquivo de métrica não aprovado ou incompleto.
 3. Execute os comandos exatos de build e teste definidos pela orientação geral aprovada `minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md` e, depois, os comandos pré-requisito e de medição de cada métrica aprovada para o projeto inteiro, respeitando escopo, exclusões e orientações aplicáveis.
 4. Julgue os resultados frente aos portões de cada arquivo de métrica que se aplicam ao projeto e identifique os locais que os descumprem ou estão mais mal classificados.

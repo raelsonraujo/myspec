@@ -27,9 +27,9 @@ Change risk of each developer-controlled method, combining cyclomatic complexity
 - Measurement command: `pwsh -NoProfile -File quality/run-coverage-report.ps1` or `bash quality/run-coverage-report.sh`
 - Output format: the Risk Hotspots section of the HTML report
 - Result path: `quality/coverage/report/index.html`
-- Scope: same as `my-specs/tooling/test-coverage.md`
-- Exclusions: same as `my-specs/tooling/test-coverage.md`
-- Changed-code isolation: same as `my-specs/tooling/cyclomatic-complexity.md`
+- Scope: same as `my-specs/metrics/test-coverage.md`
+- Exclusions: same as `my-specs/metrics/test-coverage.md`
+- Changed-code isolation: same as `my-specs/metrics/cyclomatic-complexity.md`
 - Reported values: highest CRAP score among methods (with the member) and the number of methods above 30
 
 ## Gates
@@ -41,12 +41,12 @@ Change risk of each developer-controlled method, combining cyclomatic complexity
 
 This target matches the green boundary of the repository-pinned ReportGenerator 5.5.10 configuration. A method above 30 remains an improvement candidate because its combination of complexity and measured coverage presents elevated change risk.
 
-For every method above this gate or the Cyclomatic Complexity gate, report both measured values and the relevant coverage evidence, and classify it using the repository review policy in `my-specs/tooling/cyclomatic-complexity.md`. Distinguish that classification from ReportGenerator's colors, which evaluate each metric independently and keep showing complexity above 15 as elevated even when a method qualifies for the 16-through-25 tolerance band.
+For every method above this gate or the Cyclomatic Complexity gate, report both measured values and the relevant coverage evidence, and classify it using the repository review policy in `my-specs/metrics/cyclomatic-complexity.md`. Distinguish that classification from ReportGenerator's colors, which evaluate each metric independently and keep showing complexity above 15 as elevated even when a method qualifies for the 16-through-25 tolerance band.
 
 ## Related Contract Documents
 
-- `my-specs/tooling/cyclomatic-complexity.md`
-- `my-specs/tooling/test-coverage.md`
+- `my-specs/metrics/cyclomatic-complexity.md`
+- `my-specs/metrics/test-coverage.md`
 
 ## Decisions and Tradeoffs
 

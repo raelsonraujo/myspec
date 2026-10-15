@@ -39,7 +39,7 @@ The file tree, like everything under the spec folder, is the developer's local w
 ## Interactive Implementation
 
 1. Read the approved file tree, spec, repository instructions, and affected code. When the spec folder has an `inspections/` folder, read its highest-numbered inspection and treat its open findings as input for this implementation; an inspection verdict never prevents implementing.
-2. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/tooling/` when present. Use them to identify quality tooling and the gates the changed code must meet; do not treat them as a substitute for reading the directive and guidance files under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
+2. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/metrics/` when present. Use them to identify quality tooling and the gates the changed code must meet; do not treat them as a substitute for reading the directive and guidance files under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`.
 3. Map each acceptance criterion to implementation work, tests, and the approved product directives it affects. Preserve the directives even when an acceptance criterion omits the relevant invariant.
 4. Before source edits, tell the developer the intended first slice and raise material choices not settled by the spec or approved tree.
 5. Ask rather than assume when a choice changes public behavior, architecture, persistence, security, compatibility, or the approved tree.
