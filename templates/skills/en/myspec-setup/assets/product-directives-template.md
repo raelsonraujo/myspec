@@ -6,7 +6,7 @@ Created by: `<git user.name> <git user.email>`
 
 Created on: `<date>`
 
-Applies to: `{{skill:myspec-implement}}` and `{{skill:myspec-patch}}`
+Applies to: `{{skill:myspec-prescribe}}`, `{{skill:myspec-implement}}`, and `{{skill:myspec-patch}}`
 
 ## Product Scope
 

@@ -321,6 +321,18 @@ describe('skill templates', () => {
     });
   }
 
+  it('makes every skill that writes or changes behavior read the product directives', () => {
+    const readers = {
+      en: { folder: 'my-specs/product-directives/', skills: ['myspec-prescribe', 'myspec-implement', 'myspec-patch', 'myspec-inspect', 'myspec-setup'] },
+      pt: { folder: 'minhas-specs/diretrizes-de-produto/', skills: ['myspec-prescrever', 'myspec-implementar', 'myspec-corrigir', 'myspec-inspecionar', 'myspec-configurar'] },
+    };
+    for (const [language, { folder, skills }] of Object.entries(readers)) {
+      for (const skill of listSkills(language).filter((skill) => skills.includes(skill.name))) {
+        assert.ok(readFileSync(join(skill.dir, 'SKILL.md'), 'utf8').includes(`\`${folder}\``), `${language}: ${skill.name}`);
+      }
+    }
+  });
+
   it('keeps Git identity out of spec documents', () => {
     const specAssets = {
       en: { 'myspec-prescribe': 'spec-template.md', 'myspec-implement': 'file-tree-template.md', 'myspec-inspect': 'inspection-template.md' },
