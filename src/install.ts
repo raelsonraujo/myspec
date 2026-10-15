@@ -16,7 +16,13 @@ import { findManifest, writeManifest } from './manifest.js';
 import { PROVIDERS, UsageError, type ProviderId } from './providers.js';
 import { listSkills, renderTemplate } from './templates.js';
 import { planTooling, type ToolingVariables } from './tooling.js';
-import { migrateWorkspace, renameLegacyMetrics, scaffoldWorkspace, type WorkspaceMigration } from './workspace.js';
+import {
+  migrateWorkspace,
+  relocateLegacyMeasurement,
+  renameLegacyMetrics,
+  scaffoldWorkspace,
+  type WorkspaceMigration,
+} from './workspace.js';
 
 export interface InstallOptions {
   root: string;
@@ -110,27 +116,19 @@ export function install(options: InstallOptions): InstallResult {
   }
 
   if (installed && installed.layout !== options.language) {
-    result.migration = migrateWorkspace(root, installed.layout, options.language);
-    result.warnings.push(...result.migration.warnings);
+    addMigration(result, migrateWorkspace(root, installed.layout, options.language));
   }
 
-  // Runs before the tooling templates, which would otherwise create the new folder beside the old one.
-  const renamed = renameLegacyMetrics(root, options.language);
-  if (renamed.moved.length > 0 || renamed.warnings.length > 0) {
-    result.migration = {
-      moved: [...(result.migration?.moved ?? []), ...renamed.moved],
-      relabeled: result.migration?.relabeled ?? [],
-      warnings: [...(result.migration?.warnings ?? []), ...renamed.warnings],
-    };
-    result.warnings.push(...renamed.warnings);
-  }
+  let variables: ToolingVariables | undefined;
+  const getVariables = () => (variables ??= toolingVariables(root, result.warnings));
+
+  // Runs before the tooling templates, which would otherwise create the new folders beside the old ones.
+  addMigration(result, renameLegacyMetrics(root, options.language));
+  addMigration(result, relocateLegacyMeasurement(root, options.language, previous?.tooling ?? [], getVariables));
 
   // Tooling runs before the workspace scaffold so folders that receive a document get no .gitkeep.
   const tooling = options.tooling ?? [];
-  if (tooling.length > 0) {
-    const variables = toolingVariables(root, result.warnings);
-    result.tooling = tooling.map((id) => applyTooling(root, id, options.language, variables));
-  }
+  result.tooling = tooling.map((id) => applyTooling(root, id, options.language, getVariables()));
 
   result.workspaceCreated = scaffoldWorkspace(root, options.language);
 
@@ -153,6 +151,18 @@ export function install(options: InstallOptions): InstallResult {
   });
 
   return result;
+}
+
+function addMigration(result: InstallResult, migration: WorkspaceMigration): void {
+  const { moved, relabeled, rewritten, warnings } = migration;
+  if (moved.length + relabeled.length + rewritten.length + warnings.length === 0) return;
+  result.migration = {
+    moved: [...(result.migration?.moved ?? []), ...moved],
+    relabeled: [...(result.migration?.relabeled ?? []), ...relabeled],
+    rewritten: [...(result.migration?.rewritten ?? []), ...rewritten],
+    warnings: [...(result.migration?.warnings ?? []), ...warnings],
+  };
+  result.warnings.push(...warnings);
 }
 
 /**

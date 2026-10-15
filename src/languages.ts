@@ -15,6 +15,8 @@ export interface WorkspaceLayout {
   legacyMetrics: string;
   /** Single-file tooling contract of earlier versions, split into `metrics` by the setup skill. */
   legacyTooling: string;
+  /** Folder with the scripts and settings a tooling template generates to measure its metrics. */
+  measurement: string;
   qualityReport: string;
   /** Inside each spec folder. */
   fileTree: string;
@@ -57,6 +59,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       metrics: 'metrics',
       legacyMetrics: 'tooling',
       legacyTooling: 'tooling.md',
+      measurement: 'measurement',
       qualityReport: 'quality-report.md',
       fileTree: 'file-tree.md',
       inspections: 'inspections',
@@ -88,6 +91,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       metrics: 'metricas',
       legacyMetrics: 'ferramentas',
       legacyTooling: 'ferramentas.md',
+      measurement: 'medicao',
       qualityReport: 'relatorio-de-qualidade.md',
       fileTree: 'arvore-de-arquivos.md',
       inspections: 'inspecoes',

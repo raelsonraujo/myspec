@@ -6,7 +6,7 @@ Criado por: `{{author}}`
 
 Criado em: `{{date}}`
 
-> Gerado por `myspec install --tooling dotnet-quality`. Instale as dependências descritas em `quality/README.md`, revise cada valor abaixo frente a este repositório e aprove esta métrica com `myspec-configurar`.
+> Gerado por `myspec install --tooling dotnet-quality`. Instale as dependências descritas em `minhas-specs/medicao/README.md`, revise cada valor abaixo frente a este repositório e aprove esta métrica com `myspec-configurar`.
 
 ## Definição
 
@@ -18,18 +18,18 @@ Complexidade ciclomática de cada método controlado pelo desenvolvedor, consoli
 - Comando de restauração/bootstrap: `dotnet restore {{solution}}` seguido de `dotnet tool restore`
 - Comandos pré-requisito: Nenhum; o comando de medição restaura, compila em Release e executa os testes antes de gerar o relatório
 - Fonte de versão: referência de pacote `coverlet.collector` em cada projeto de testes; manifesto de ferramentas locais (`dotnet-tools.json` ou `.config/dotnet-tools.json`) para o ReportGenerator
-- Execução compartilhada: uma execução de `quality/run-coverage-report` mede esta métrica, a cobertura de testes e o CRAP score; execute-a uma única vez ao medir mais de uma delas
-- Raiz dos resultados gerados: `quality/coverage/` (ignorada por `quality/.gitignore` e recriada a cada execução)
+- Execução compartilhada: uma execução de `minhas-specs/medicao/run-coverage-report` mede esta métrica, a cobertura de testes e o CRAP score; execute-a uma única vez ao medir mais de uma delas
+- Raiz dos resultados gerados: `minhas-specs/medicao/coverage/` (ignorada por `minhas-specs/medicao/.gitignore` e recriada a cada execução)
 
 ## Medição
 
 - Ferramenta: Coverlet (`coverlet.collector`), cujo XML Cobertura registra `complexity` por método, classe e pacote; visualizada pelo ReportGenerator
 - Versão: `coverlet.collector` `6.0.4`; ReportGenerator `5.5.10`
-- Instalação ou restauração: siga `quality/README.md` e depois execute `dotnet restore {{solution}}` e `dotnet tool restore`
-- Comando de medição: `pwsh -NoProfile -File quality/run-coverage-report.ps1 -NoOpen` ou `bash quality/run-coverage-report.sh --no-open`
-- Formato e caminho do resultado: atributos `complexity` do XML Cobertura e relatório HTML; `quality/coverage/report/Cobertura.xml` e `quality/coverage/report/index.html`
+- Instalação ou restauração: siga `minhas-specs/medicao/README.md` e depois execute `dotnet restore {{solution}}` e `dotnet tool restore`
+- Comando de medição: `pwsh -NoProfile -File minhas-specs/medicao/run-coverage-report.ps1 -NoOpen` ou `bash minhas-specs/medicao/run-coverage-report.sh --no-open`
+- Formato e caminho do resultado: atributos `complexity` do XML Cobertura e relatório HTML; `minhas-specs/medicao/coverage/report/Cobertura.xml` e `minhas-specs/medicao/coverage/report/index.html`
 - Escopo: todo assembly que não seja de teste e seja instrumentado por ao menos um projeto de testes de `{{solution}}`
-- Exclusões: assemblies de teste `[*.Tests]*` e `[*.xUnit.*]*`; `**/bin/**`, `**/obj/**`, `**/Migrations/**`, `**/*.g.cs`, `**/*.Designer.cs`, `**/*.generated.cs`, `**/AssemblyInfo.cs` (ver `quality/coverlet.runsettings`)
+- Exclusões: assemblies de teste `[*.Tests]*` e `[*.xUnit.*]*`; `**/bin/**`, `**/obj/**`, `**/Migrations/**`, `**/*.g.cs`, `**/*.Designer.cs`, `**/*.generated.cs`, `**/AssemblyInfo.cs` (ver `minhas-specs/medicao/coverlet.runsettings`)
 - Isolamento de código alterado: filtre o Cobertura consolidado pelos caminhos de produção listados em `minhas-specs/specs/<nome-da-spec>/arvore-de-arquivos.md` e informe os totais dos projetos afetados ao lado dos valores dos arquivos alterados
 - Valores registrados: maior complexidade ciclomática entre os métodos (com o membro) e quantidade de métodos acima de 15
 

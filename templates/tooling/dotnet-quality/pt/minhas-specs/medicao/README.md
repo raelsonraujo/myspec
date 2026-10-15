@@ -9,6 +9,8 @@ Esta pasta foi gerada por `myspec install --tooling dotnet-quality`. Ela gera, e
 
 Uma execução separada de benchmarks mede **bytes alocados e tempo médio por operação** dos caminhos críticos aprovados em `minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md`, usando o BenchmarkDotNet.
 
+A pasta fica no workspace, ao lado de `minhas-specs/metricas/`: as métricas definem o que medir e os portões, e esta pasta guarda como medir. Os scripts encontram a raiz do repositório a partir da própria pasta, então podem ser executados de qualquer diretório.
+
 A CLI `myspec` **não instala dependências**. Siga os passos abaixo antes da primeira execução.
 
 ## Pré-requisitos
@@ -119,11 +121,11 @@ Os scripts já executam as duas restaurações antes de gerar o relatório e nã
 Execute a partir da raiz do repositório:
 
 ```bash
-pwsh -NoProfile -File quality/run-coverage-report.ps1
+pwsh -NoProfile -File minhas-specs/medicao/run-coverage-report.ps1
 ```
 
 ```bash
-bash quality/run-coverage-report.sh
+bash minhas-specs/medicao/run-coverage-report.sh
 ```
 
 Por padrão, o relatório é aberto no navegador. Para apenas gerá-lo, use `-NoOpen` (PowerShell) ou `--no-open` (Bash). Se houver mais de uma solução na raiz, use `-SolutionPath <caminho>` ou `--solution <caminho>`.
@@ -131,27 +133,27 @@ Por padrão, o relatório é aberto no navegador. Para apenas gerá-lo, use `-No
 Execute os benchmarks separadamente; eles levam minutos, então feche outros aplicativos pesados e mantenha a máquina na tomada:
 
 ```bash
-pwsh -NoProfile -File quality/run-benchmarks.ps1
+pwsh -NoProfile -File minhas-specs/medicao/run-benchmarks.ps1
 ```
 
 ```bash
-bash quality/run-benchmarks.sh
+bash minhas-specs/medicao/run-benchmarks.sh
 ```
 
 Para executar apenas alguns caminhos críticos, use `-Categories CP-01,CP-02` (PowerShell) ou `--category CP-01 --category CP-02` (Bash). Use `-Filter <glob>` ou `--filter <glob>` para filtrar nomes de benchmark e `-ProjectPath <caminho>` ou `--project <caminho>` quando houver mais de um `*.Benchmarks.csproj`.
 
 ## Resultados
 
-As pastas `quality/coverage/` e `quality/benchmarks/` são apagadas e recriadas pelos respectivos scripts a cada execução e estão ignoradas pelo Git em `quality/.gitignore`.
+As pastas `minhas-specs/medicao/coverage/` e `minhas-specs/medicao/benchmarks/` são apagadas e recriadas pelos respectivos scripts a cada execução e estão ignoradas pelo Git em `minhas-specs/medicao/.gitignore`.
 
 | Arquivo | Conteúdo |
 | --- | --- |
-| `quality/coverage/report/index.html` | Relatório HTML com cobertura, complexidade e *Risk Hotspots* (CRAP score) |
-| `quality/coverage/report/Cobertura.xml` | Cobertura consolidada de linhas e ramos e `complexity` por método |
-| `quality/coverage/report/Summary.json` | Resumo de cobertura legível por máquina |
-| `quality/coverage/raw/**/coverage.cobertura.xml` | Resultado bruto de cada projeto de testes |
-| `quality/benchmarks/results/*-report-github.md` | Tabela dos benchmarks com `Mean` e `Allocated` por operação |
-| `quality/benchmarks/results/*.json` | Estatísticas e memória dos benchmarks legíveis por máquina |
+| `minhas-specs/medicao/coverage/report/index.html` | Relatório HTML com cobertura, complexidade e *Risk Hotspots* (CRAP score) |
+| `minhas-specs/medicao/coverage/report/Cobertura.xml` | Cobertura consolidada de linhas e ramos e `complexity` por método |
+| `minhas-specs/medicao/coverage/report/Summary.json` | Resumo de cobertura legível por máquina |
+| `minhas-specs/medicao/coverage/raw/**/coverage.cobertura.xml` | Resultado bruto de cada projeto de testes |
+| `minhas-specs/medicao/benchmarks/results/*-report-github.md` | Tabela dos benchmarks com `Mean` e `Allocated` por operação |
+| `minhas-specs/medicao/benchmarks/results/*.json` | Estatísticas e memória dos benchmarks legíveis por máquina |
 
 O CRAP score combina complexidade e cobertura de linhas: `CRAP(m) = CC(m)² × (1 − cov(m))³ + CC(m)`. Por padrão, o ReportGenerator destaca complexidade acima de 15 e CRAP acima de 30.
 
@@ -159,15 +161,15 @@ O CRAP score combina complexidade e cobertura de linhas: `CRAP(m) = CC(m)² × (
 
 1. Restauram os pacotes da solução e as ferramentas locais do .NET.
 2. Compilam a solução em `Release`.
-3. Executam os testes com o coletor `XPlat Code Coverage`, usando `quality/coverlet.runsettings`, e produzem arquivos Cobertura em `quality/coverage/raw/`.
-4. Usam o ReportGenerator para criar o HTML, o resumo JSON e o Cobertura consolidado em `quality/coverage/report/`.
+3. Executam os testes com o coletor `XPlat Code Coverage`, usando `minhas-specs/medicao/coverlet.runsettings`, e produzem arquivos Cobertura em `minhas-specs/medicao/coverage/raw/`.
+4. Usam o ReportGenerator para criar o HTML, o resumo JSON e o Cobertura consolidado em `minhas-specs/medicao/coverage/report/`.
 
-O `run-benchmarks` encontra o projeto `*.Benchmarks`, executa-o em `Release` com o diagnóstico de memória e exporta resultados JSON, além dos relatórios padrão Markdown GitHub, CSV e HTML, para `quality/benchmarks/results/`.
+O `run-benchmarks` encontra o projeto `*.Benchmarks`, executa-o em `Release` com o diagnóstico de memória e exporta resultados JSON, além dos relatórios padrão Markdown GitHub, CSV e HTML, para `minhas-specs/medicao/benchmarks/results/`.
 
 ## Ajustes para este repositório
 
 - Em `coverlet.runsettings`, ajuste `Exclude` aos nomes dos seus assemblies de teste (o padrão exclui `*.Tests` e `*.xUnit.*`) e, se quiser restringir o escopo, adicione `<Include>[MeuProduto.*]*</Include>`.
-- Mantenha `quality/coverage/` e `quality/benchmarks/` fora do controle de versão e os scripts e o `.runsettings` versionados.
+- Mantenha `minhas-specs/medicao/coverage/` e `minhas-specs/medicao/benchmarks/` fora do controle de versão e os scripts e o `.runsettings` versionados.
 - Se o projeto de benchmarks não terminar em `.Benchmarks`, ajuste a exclusão de cobertura `[*.Benchmarks]*` e informe o caminho do projeto ao `run-benchmarks`.
 - Qualquer mudança de versão, comando, escopo ou exclusão deve ser refletida nos arquivos de métrica afetados em `minhas-specs/metricas/`.
 

@@ -6,7 +6,7 @@ Criado por: `{{author}}`
 
 Criado em: `{{date}}`
 
-> Gerado por `myspec install --tooling dotnet-quality`. Instale as dependências descritas em `quality/README.md`, revise cada valor abaixo frente a este repositório e aprove esta métrica com `myspec-configurar`.
+> Gerado por `myspec install --tooling dotnet-quality`. Instale as dependências descritas em `minhas-specs/medicao/README.md`, revise cada valor abaixo frente a este repositório e aprove esta métrica com `myspec-configurar`.
 
 ## Definição
 
@@ -19,15 +19,15 @@ Bytes `Allocated` por operação (principal) e tempo `Mean` por operação de ca
 - Comandos pré-requisito: Nenhum; o comando de medição compila o projeto de benchmarks em Release
 - Fonte de versão: referência de pacote `BenchmarkDotNet` no projeto de benchmarks
 - Ambiente: build Release, sem depurador anexado, e mesma máquina e runtime sempre que o tempo for comparado com execução anterior
-- Raiz dos resultados gerados: `quality/benchmarks/` (ignorada por `quality/.gitignore` e recriada a cada execução)
+- Raiz dos resultados gerados: `minhas-specs/medicao/benchmarks/` (ignorada por `minhas-specs/medicao/.gitignore` e recriada a cada execução)
 
 ## Medição
 
 - Ferramenta: BenchmarkDotNet, executado a partir do único projeto console `*.Benchmarks` do repositório
 - Versão: `BenchmarkDotNet` `0.15.8`, fixada no projeto de benchmarks
-- Instalação ou restauração: siga `quality/README.md` e depois execute `dotnet restore {{solution}}`
-- Comando de medição: `pwsh -NoProfile -File quality/run-benchmarks.ps1` ou `bash quality/run-benchmarks.sh`, que executam `dotnet run --project <benchmarks.csproj> --configuration Release -- --filter "*" --memory --exporters json --artifacts quality/benchmarks`
-- Formato e caminho do resultado: JSON do BenchmarkDotNet (`Statistics.Mean` em nanossegundos e `Memory.BytesAllocatedPerOperation` por benchmark), além dos relatórios padrão Markdown GitHub, CSV e HTML; `quality/benchmarks/results/*.json` e `quality/benchmarks/results/*-report-github.md`
+- Instalação ou restauração: siga `minhas-specs/medicao/README.md` e depois execute `dotnet restore {{solution}}`
+- Comando de medição: `pwsh -NoProfile -File minhas-specs/medicao/run-benchmarks.ps1` ou `bash minhas-specs/medicao/run-benchmarks.sh`, que executam `dotnet run --project <benchmarks.csproj> --configuration Release -- --filter "*" --memory --exporters json --artifacts minhas-specs/medicao/benchmarks`
+- Formato e caminho do resultado: JSON do BenchmarkDotNet (`Statistics.Mean` em nanossegundos e `Memory.BytesAllocatedPerOperation` por benchmark), além dos relatórios padrão Markdown GitHub, CSV e HTML; `minhas-specs/medicao/benchmarks/results/*.json` e `minhas-specs/medicao/benchmarks/results/*-report-github.md`
 - Escopo: benchmarks marcados com os IDs dos caminhos críticos de `minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md`
 - Exclusões: Nenhum
 - Isolamento de código alterado: execute apenas os caminhos críticos tocados pela spec com `-Categories <ID-do-CP>` ou `--category <ID-do-CP>`

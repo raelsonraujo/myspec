@@ -10,6 +10,7 @@ import { listToolingTemplates, planTooling } from '../dist/tooling.js';
 
 const CLI = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
 const TEMPLATES = fileURLToPath(new URL('../templates', import.meta.url));
+const LEGACY_QUALITY = fileURLToPath(new URL('./fixtures/quality-0.4.1', import.meta.url));
 const EN_SKILLS = ['myspec-implement', 'myspec-inspect', 'myspec-patch', 'myspec-prescribe', 'myspec-quantify', 'myspec-setup'];
 const PT_SKILLS = ['myspec-configurar', 'myspec-corrigir', 'myspec-implementar', 'myspec-inspecionar', 'myspec-prescrever', 'myspec-quantificar'];
 
@@ -240,14 +241,14 @@ describe('myspec install --tooling', () => {
     const result = installOk(dir, '-p', 'claude', '-l', 'pt', '-t', 'dotnet-quality');
 
     for (const path of [
-      'quality/README.md',
-      'quality/coverlet.runsettings',
-      'quality/run-coverage-report.ps1',
-      'quality/run-coverage-report.sh',
-      'quality/run-benchmarks.ps1',
-      'quality/run-benchmarks.sh',
-      'quality/.gitignore',
-      'quality/.gitattributes',
+      'minhas-specs/medicao/README.md',
+      'minhas-specs/medicao/coverlet.runsettings',
+      'minhas-specs/medicao/run-coverage-report.ps1',
+      'minhas-specs/medicao/run-coverage-report.sh',
+      'minhas-specs/medicao/run-benchmarks.ps1',
+      'minhas-specs/medicao/run-benchmarks.sh',
+      'minhas-specs/medicao/.gitignore',
+      'minhas-specs/medicao/.gitattributes',
       'minhas-specs/metricas/complexidade-ciclomatica.md',
       'minhas-specs/metricas/cobertura-de-testes.md',
       'minhas-specs/metricas/crap-score.md',
@@ -266,7 +267,9 @@ describe('myspec install --tooling', () => {
     assert.match(read(dir, 'minhas-specs/metricas/crap-score.md'), /^Status: Proposto$/m);
     assert.match(read(dir, 'minhas-specs/metricas/crap-score.md'), /^## Portões$/m);
     assert.match(result.stdout, /aprovar as métricas em minhas-specs\/metricas\//);
-    assert.match(result.stdout, /Instale as dependências seguindo quality\/README\.md/);
+    assert.match(result.stdout, /Instale as dependências seguindo minhas-specs\/medicao\/README\.md/);
+    assert.ok(!existsSync(join(dir, 'quality')));
+    assert.match(read(dir, 'minhas-specs/metricas/crap-score.md'), /`bash minhas-specs\/medicao\/run-coverage-report\.sh --no-open`/);
   });
 
   it('proposes one metric file per measurement with its own gates', () => {
@@ -297,11 +300,11 @@ describe('myspec install --tooling', () => {
     );
     assert.ok(!existsSync(join(dir, 'my-specs/tooling.md')));
     assert.ok(!existsSync(join(dir, 'my-specs/general-guidelines/method-complexity-risk-targets.md')));
-    assert.match(read(dir, 'quality/README.md'), /dotnet restore App\.slnx/);
-    assert.match(read(dir, 'quality/README.md'), /dotnet sln App\.slnx add/);
+    assert.match(read(dir, 'my-specs/measurement/README.md'), /dotnet restore App\.slnx/);
+    assert.match(read(dir, 'my-specs/measurement/README.md'), /dotnet sln App\.slnx add/);
     assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/performance-critical-paths.md')));
-    assert.doesNotMatch(read(dir, 'quality/run-coverage-report.sh'), /\r/);
-    assert.doesNotMatch(read(dir, 'quality/run-benchmarks.sh'), /\r/);
+    assert.doesNotMatch(read(dir, 'my-specs/measurement/run-coverage-report.sh'), /\r/);
+    assert.doesNotMatch(read(dir, 'my-specs/measurement/run-benchmarks.sh'), /\r/);
     assert.deepEqual(JSON.parse(read(dir, 'my-specs/myspec.json')).tooling, ['dotnet-quality']);
   });
 
@@ -315,7 +318,7 @@ describe('myspec install --tooling', () => {
     assert.equal(read(dir, 'my-specs/metrics/test-coverage.md'), 'approved metric');
     assert.match(result.stdout, /= my-specs\/metrics\/test-coverage\.md \(already exists, kept\)/);
     assert.match(result.stdout, /\+ my-specs\/metrics\/crap-score\.md/);
-    assert.ok(existsSync(join(dir, 'quality/run-coverage-report.ps1')));
+    assert.ok(existsSync(join(dir, 'my-specs/measurement/run-coverage-report.ps1')));
   });
 
   it('reuses the installed provider and language when they are omitted', () => {
@@ -335,6 +338,84 @@ describe('myspec install --tooling', () => {
     assert.match(read(dir, 'my-specs/general-guidelines/build-and-test-commands.md'), /`dotnet restore <solution>`/);
   });
 
+  /** Recreates the `quality/` folder 0.4.1 generated at the root, pointing the metric files back at it. */
+  function legacyQuality(dir) {
+    rmSync(join(dir, 'my-specs/measurement'), { recursive: true });
+    mkdirSync(join(dir, 'quality/coverage/report'), { recursive: true });
+    for (const file of readdirSync(LEGACY_QUALITY)) {
+      const content = readFileSync(join(LEGACY_QUALITY, file), 'utf8').replaceAll('{{solution}}', 'App.slnx');
+      writeFileSync(join(dir, 'quality', file.replace(/^dot-/, '.')), content);
+    }
+    writeFileSync(join(dir, 'quality/coverage/report/index.html'), '<html />');
+    for (const metric of readdirSync(join(dir, 'my-specs/metrics'))) {
+      const path = join(dir, 'my-specs/metrics', metric);
+      writeFileSync(path, readFileSync(path, 'utf8').replaceAll('my-specs/measurement/', 'quality/'));
+    }
+  }
+
+  it('moves the quality folder of earlier versions into the workspace', () => {
+    const dir = dotnetRepo();
+    installOk(dir, '-p', 'codex', '-l', 'en', '-t', 'dotnet-quality');
+    legacyQuality(dir);
+    writeFileSync(join(dir, 'quality/run-benchmarks.sh'), `${read(dir, 'quality/run-benchmarks.sh')}# team tweak\n`);
+
+    const result = installOk(dir);
+
+    assert.ok(!existsSync(join(dir, 'quality')));
+    assert.match(result.stdout, /> quality -> my-specs\/measurement/);
+    const planned = planTooling('dotnet-quality', 'en', { solution: 'App.slnx', author: 'A', date: 'D' });
+    for (const file of ['run-coverage-report.sh', 'run-coverage-report.ps1', 'run-benchmarks.ps1', 'README.md']) {
+      assert.equal(read(dir, `my-specs/measurement/${file}`), planned.get(`my-specs/measurement/${file}`), file);
+    }
+    assert.match(read(dir, 'my-specs/measurement/run-benchmarks.sh'), /# team tweak/);
+    assert.match(result.stdout, /my-specs\/measurement\/run-benchmarks\.sh was customized/);
+    assert.equal(read(dir, 'my-specs/measurement/coverage/report/index.html'), '<html />');
+    assert.match(read(dir, 'my-specs/metrics/test-coverage.md'), /`bash my-specs\/measurement\/run-coverage-report\.sh --no-open`/);
+    assert.doesNotMatch(read(dir, 'my-specs/metrics/test-coverage.md'), /[\s`"]quality\//);
+    assert.match(result.stdout, /~ my-specs\/metrics\/crap-score\.md \(paths updated\)/);
+  });
+
+  it('keeps both measurement folders when the workspace already has one', () => {
+    const dir = dotnetRepo();
+    installOk(dir, '-p', 'codex', '-l', 'en', '-t', 'dotnet-quality');
+    mkdirSync(join(dir, 'quality'));
+    writeFileSync(join(dir, 'quality/run-coverage-report.sh'), 'legacy');
+
+    const result = installOk(dir);
+
+    assert.equal(read(dir, 'quality/run-coverage-report.sh'), 'legacy');
+    assert.ok(existsSync(join(dir, 'my-specs/measurement/run-coverage-report.sh')));
+    assert.match(result.stdout, /Both quality and my-specs\/measurement exist/);
+  });
+
+  it('leaves a quality folder Myspec did not generate in place', () => {
+    const dir = dotnetRepo();
+    installOk(dir, '-p', 'codex', '-l', 'en');
+    mkdirSync(join(dir, 'quality'));
+    writeFileSync(join(dir, 'quality/run-coverage-report.sh'), 'not ours');
+    installOk(dir);
+    assert.equal(read(dir, 'quality/run-coverage-report.sh'), 'not ours');
+
+    const other = dotnetRepo();
+    installOk(other, '-p', 'codex', '-l', 'en', '-t', 'dotnet-quality');
+    mkdirSync(join(other, 'quality'));
+    writeFileSync(join(other, 'quality/notes.md'), 'not ours');
+    installOk(other);
+    assert.equal(read(other, 'quality/notes.md'), 'not ours');
+  });
+
+  it('renames the measurement folder and its paths when the language changes', () => {
+    const dir = dotnetRepo();
+    installOk(dir, '-p', 'codex', '-l', 'en', '-t', 'dotnet-quality');
+
+    installOk(dir, '-l', 'pt');
+
+    assert.ok(!existsSync(join(dir, 'my-specs')));
+    assert.ok(existsSync(join(dir, 'minhas-specs/medicao/run-coverage-report.sh')));
+    assert.match(read(dir, 'minhas-specs/metricas/test-coverage.md'), /`bash minhas-specs\/medicao\/run-coverage-report\.sh --no-open`/);
+    assert.doesNotMatch(read(dir, 'minhas-specs/metricas/test-coverage.md'), /my-specs\/measurement/);
+  });
+
   it('rejects unknown tooling templates', () => {
     const dir = repo();
     const result = run('install', '-d', dir, '-p', 'codex', '-l', 'en', '-t', 'java-quality');
@@ -351,6 +432,9 @@ describe('tooling templates', () => {
         const planned = planTooling(template.id, language, { solution: 'S', author: 'A', date: 'D' });
         const tooling = { en: 'my-specs/metrics/', pt: 'minhas-specs/metricas/' }[language];
         assert.ok([...planned.keys()].some((path) => path.startsWith(tooling)), `${language} ${tooling}`);
+        const measurement = { en: 'my-specs/measurement/', pt: 'minhas-specs/medicao/' }[language];
+        assert.ok(planned.has(`${measurement}README.md`), `${language} ${measurement}README.md`);
+        assert.ok([...planned.keys()].every((path) => path.startsWith(measurement) || !/\.(sh|ps1)$/.test(path)), language);
         for (const [path, content] of planned) {
           assert.doesNotMatch(content, /\{\{/, `${language}: ${path} has an unrendered placeholder`);
         }

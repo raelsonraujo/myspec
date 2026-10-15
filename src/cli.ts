@@ -37,7 +37,8 @@ Options:
 When the repository already has a Myspec workspace, -p and -l default to the installed values.
 Switching languages renames the workspace folders and files to the new language.
 
-Tooling templates (artifacts only; dependencies are installed by you, following quality/README.md):
+Tooling templates (artifacts only; dependencies are installed by you, following
+my-specs/measurement/README.md, or minhas-specs/medicao/README.md in pt):
 ${toolingList()}
 
 Examples:
@@ -127,6 +128,7 @@ function printResult(result: InstallResult): void {
   if (result.migration?.relabeled.length) {
     console.log(`  Translated the status and approval labels of ${result.migration.relabeled.length} document(s).`);
   }
+  for (const path of result.migration?.rewritten ?? []) console.log(`  ~ ${path} (paths updated)`);
   for (const path of result.workspaceCreated) console.log(`  + ${path}`);
   console.log(
     `\n  Skill files: ${result.created.length} created, ${result.updated.length} updated, ` +
@@ -148,7 +150,7 @@ function printResult(result: InstallResult): void {
   const metricsPath = `${workspace.dir}/${workspace.metrics}/`;
   const readmes = result.tooling
     .flatMap((tooling) => [...tooling.created, ...tooling.skipped])
-    .filter((path) => path.endsWith('/README.md') && !path.startsWith(`${workspace.dir}/`));
+    .filter((path) => path === `${workspace.dir}/${workspace.measurement}/README.md`);
   const steps =
     result.language === 'pt'
       ? {

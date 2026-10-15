@@ -17,16 +17,16 @@ Cyclomatic complexity of each developer-controlled method, summarized by class a
 - Prerequisite commands: `dotnet build Sample.slnx --configuration Release --no-restore`
 - Version source: test project package references for `coverlet.collector`; `.config/dotnet-tools.json` for ReportGenerator
 - Shared run: one coverage workflow measures this metric, Test Coverage, and CRAP Score; the developer runs it once, as `my-specs/general-guidelines/dotnet-command-execution.md` requires
-- Generated results root: `quality/`
+- Generated results root: `my-specs/measurement/`
 
 ## Measurement
 
 - Tool: method, class, and assembly `complexity` values in Coverlet's Cobertura XML, visualized by ReportGenerator
 - Version: `coverlet.collector` `6.0.4`; ReportGenerator `5.5.10`
 - Installation or restore: `dotnet restore Sample.slnx`; `dotnet tool restore`
-- Measurement command: `pwsh -NoProfile -File quality/run-coverage-report.ps1` or `bash quality/run-coverage-report.sh`
+- Measurement command: `pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1` or `bash my-specs/measurement/run-coverage-report.sh`
 - Output format: Cobertura XML `complexity` attributes; HTML report
-- Result path: `quality/coverage/report/Cobertura.xml`; `quality/coverage/report/index.html`
+- Result path: `my-specs/measurement/coverage/report/Cobertura.xml`; `my-specs/measurement/coverage/report/index.html`
 - Scope: same as `my-specs/metrics/test-coverage.md`
 - Exclusions: same as `my-specs/metrics/test-coverage.md`
 - Changed-code isolation: use production paths from `my-specs/specs/<spec-name>/file-tree.md` to filter the merged Cobertura report; report method and class cyclomatic-complexity values alongside affected-project totals, keeping the containing-type complexity visible when method extraction materially affects interpretation
