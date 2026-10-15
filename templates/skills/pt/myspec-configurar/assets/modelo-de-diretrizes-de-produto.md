@@ -6,7 +6,7 @@ Criado por: `<git user.name> <git user.email>`
 
 Criado em: `<data>`
 
-Aplica-se a: `{{skill:myspec-implementar}}` e `{{skill:myspec-corrigir}}`
+Aplica-se a: `{{skill:myspec-prescrever}}`, `{{skill:myspec-implementar}}` e `{{skill:myspec-corrigir}}`
 
 ## Escopo de produto
 

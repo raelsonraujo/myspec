@@ -30,5 +30,5 @@ Antes de avançar além da descoberta inicial do repositório, leia todos os arq
 - Registre somente as métricas definidas pelo desenvolvedor, cada uma em sua seção sob `## Métricas`. Os demais skills Myspec medem exatamente essas métricas e nenhuma outra.
 - Mantenha as ferramentas em `minhas-specs/ferramentas.md`; diretrizes, práticas e orientações devem ficar em arquivos Markdown separados nas respectivas pastas, com nome conciso em kebab-case, status e histórico de aprovação próprios.
 - Mantenha práticas acionáveis e específicas; diretrizes de produto breves, voltadas a conceitos, terminologia, políticas e invariantes observáveis — não técnica de implementação ou arquitetura.
-- Diretrizes de produto aprovadas restringem especificações e implementações futuras. Se houver conflito, exija sua revisão e aprovação antes de implementar.
+- Diretrizes de produto aprovadas restringem especificações e implementações futuras: `{{skill:myspec-prescrever}}`, `{{skill:myspec-implementar}}` e `{{skill:myspec-corrigir}}` devem preservá-las. Se houver conflito, exija sua revisão e aprovação antes de implementar.
 - Não considere silêncio, ferramenta existente ou comando bem-sucedido como aprovação. Não instale dependências nem altere configuração sem autorização separada. Não deixe este contrato sobrepor instruções de maior prioridade.
