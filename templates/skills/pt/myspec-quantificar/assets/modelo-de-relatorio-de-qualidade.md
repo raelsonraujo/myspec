@@ -17,26 +17,17 @@
 
 | Métrica | Atual | Anterior | Meta aprovada |
 | --- | ---: | ---: | ---: |
-| Cobertura de linhas | `<cobertas>/<total> (<percentual>)` | `<valor ou —>` | `<meta ou —>` |
-| Cobertura de ramos | `<cobertos>/<total> (<percentual>)` | `<valor ou —>` | `<meta ou —>` |
-| Maior complexidade ciclomática | `<valor>` (`<membro>`) | `<valor ou —>` | `<meta ou —>` |
-| Métodos acima da meta de complexidade | `<quantidade>` | `<valor ou —>` | — |
+| <métrica e valor registrado do contrato de ferramentas> | `<valor>` | `<valor ou —>` | `<meta ou —>` |
 
-## Cobertura de testes
+<Repita a próxima seção para cada métrica definida pelo contrato de ferramentas, na mesma ordem.>
 
-- Ferramenta e versão: `<ferramenta>`
-
-| Projeto, módulo ou arquivo | Cobertura de linhas | Cobertura de ramos | Spec relacionada | Lacunas relevantes |
-| --- | ---: | ---: | --- | --- |
-| `<nome>` | `<valor>` | `<valor>` | `<NNN-nome ou —>` | `<comportamento crítico não coberto>` |
-
-## Complexidade ciclomática
+## <Nome da métrica>
 
 - Ferramenta e versão: `<ferramenta>`
 
-| Arquivo ou tipo | Método ou função | Complexidade | Spec relacionada | Observação |
-| --- | --- | ---: | --- | --- |
-| `<nome>` | `<membro>` | `<valor>` | `<NNN-nome ou —>` | `<meta não atingida ou motivo para atenção>` |
+| Local | Valor | Spec relacionada | Observação |
+| --- | ---: | --- | --- |
+| `<projeto, arquivo ou membro, na granularidade definida pelo contrato>` | `<valor>` | `<NNN-nome ou —>` | `<meta não atingida ou motivo para atenção>` |
 
 ## Oportunidades de melhoria
 

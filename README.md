@@ -33,6 +33,8 @@ Sem `-p`/`-l` em um terminal interativo, a CLI pergunta os valores. Se o reposit
 
 Um template de tooling gera, junto com os skills, os artefatos para medir qualidade e uma proposta de `my-specs/tooling.md` (`Status: Proposed`; em português, `minhas-specs/ferramentas.md` com `Status: Proposto`) já preenchida. **A CLI não instala dependências**: cada template traz um README com os comandos para o desenvolvedor executar.
 
+Os skills não supõem métricas: medem exatamente as definidas na seção `## Metrics` (`## Métricas`) do contrato aprovado. Sem template de tooling, o skill de setup pergunta ao desenvolvedor quais métricas medir; um template apenas propõe um conjunto concreto para revisão.
+
 ```bash
 myspec install -p claude -l pt -t dotnet-quality
 ```
@@ -76,11 +78,11 @@ Na versão `pt`, todo o workspace fica em português: pastas, arquivos gerados p
 
 | Inglês (`en`) | Português (`pt`) | Função |
 | --- | --- | --- |
-| `myspec-setup` | `myspec-configurar` | Define ferramentas de qualidade, diretrizes de produto, práticas e orientações |
+| `myspec-setup` | `myspec-configurar` | Define as métricas de qualidade escolhidas pelo desenvolvedor e suas ferramentas, diretrizes de produto, práticas e orientações |
 | `myspec-prescribe` | `myspec-prescrever` | Cria uma spec testável em `specs/NNN-<nome>/` |
 | `myspec-implement` | `myspec-implementar` | Propõe/aprova a árvore de arquivos e implementa a spec |
-| `myspec-inspect` | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede cobertura e complexidade e registra em `specs/NNN-<nome>/inspections/` (`inspecoes/`) uma inspeção com veredito |
-| `myspec-quantify` | `myspec-quantificar` | Julga complexidade ciclomática e cobertura de testes do projeto inteiro em `quality-report.md` (`relatorio-de-qualidade.md`) e sugere melhorias que podem virar novas specs |
+| `myspec-inspect` | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas definidas no contrato de ferramentas e registra em `specs/NNN-<nome>/inspections/` (`inspecoes/`) uma inspeção com veredito |
+| `myspec-quantify` | `myspec-quantificar` | Julga as métricas do contrato de ferramentas no projeto inteiro em `quality-report.md` (`relatorio-de-qualidade.md`) e sugere melhorias que podem virar novas specs |
 | `myspec-patch` | `myspec-corrigir` | Ajuste pequeno (até 3 arquivos) sem nova spec, inclusive dentro de uma spec já implementada |
 
 Um ciclo típico é `prescribe > implement (árvore) > implement > inspect > implement > inspect > patch > inspect`: repita implement ou patch seguido de inspect até obter os resultados desejados. A spec está concluída quando a inspeção mais recente estiver `Ready`/`Apta` ou `Ready with observations`/`Apta com ressalvas`; o veredito não bloqueia nenhum skill. Use implement em vez de patch quando a mudança exigir mais de 3 arquivos ou afetar uma spec cuja árvore nunca foi aprovada.

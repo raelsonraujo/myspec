@@ -12,32 +12,29 @@ Created on: `<date>`
 - Restore or bootstrap command: `<command or None>`
 - Version source: `<tool manifest, lock file, project file, or explicit version>`
 
-## Cyclomatic Complexity
+## Verification
 
+- Build command: `<exact command or None>`
+- Test command: `<exact command or None>`
+
+## Metrics
+
+<One subsection per metric the developer defined, and nothing else. Write `None` when the developer defined no metric.>
+
+### <Metric name>
+
+- Definition: `<what it measures, unit, and granularity>`
 - Tool: `<name>`
 - Version: `<pinned version or controlled version source>`
 - Installation or restore: `<command or repository mechanism>`
 - Measurement command: `<exact command>`
 - Output format: `<format>`
 - Result path: `<repository-relative path>`
-- Production scope: `<projects, paths, or changed-file selection>`
+- Scope: `<projects, paths, or selection>`
 - Exclusions: `<generated code, patterns, or None>`
 - Changed-code isolation: `<method for reporting the implementation under review>`
-
-## Test Coverage
-
-- Test runner: `<name>`
-- Coverage collector: `<name>`
-- Versions: `<pinned versions or controlled version sources>`
-- Installation or restore: `<command or repository mechanism>`
-- Build command: `<exact command>`
-- Coverage command: `<exact command>`
-- Report format: `<format including line and branch coverage support>`
-- Result path: `<repository-relative path>`
-- Production scope: `<projects, assemblies, or paths>`
-- Test scope: `<test projects or selection>`
-- Exclusions: `<generated code, patterns, or None>`
-- Changed-code isolation: `<method for reporting the implementation under review>`
+- Reported values: `<values every inspection and quality report records, e.g. a project total and the worst location>`
+- Interpretation: `<approved guideline under my-specs/general-guidelines/ that defines targets, or None>`
 
 ## Related Contract Documents
 

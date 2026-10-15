@@ -1,4 +1,4 @@
 interface:
   display_name: "Myspec Quantificar"
-  short_description: "Julgar complexidade e cobertura do projeto"
+  short_description: "Julgar as métricas aprovadas do projeto"
   default_prompt: "Use {{skill:myspec-quantificar}} para medir o projeto inteiro e sugerir onde melhorar em seguida."

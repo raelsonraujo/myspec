@@ -12,29 +12,37 @@ Criado em: `<data>`
 - Comando de restauração/bootstrap: `<comando ou Nenhum>`
 - Fonte de versão: `<manifesto, lock file, arquivo de projeto ou versão explícita>`
 
-## Complexidade ciclomática
+## Verificação
 
+- Comando de build: `<comando exato ou Nenhum>`
+- Comando de teste: `<comando exato ou Nenhum>`
+
+## Métricas
+
+<Uma subseção por métrica definida pelo desenvolvedor, e nenhuma outra. Escreva `Nenhum` quando o desenvolvedor não definir métrica alguma.>
+
+### <Nome da métrica>
+
+- Definição: `<o que mede, unidade e granularidade>`
 - Ferramenta: `<nome>`
 - Versão: `<versão fixada ou fonte controlada>`
 - Instalação ou restauração: `<comando ou mecanismo do repositório>`
 - Comando de medição: `<comando exato>`
 - Formato e caminho do resultado: `<formato>`; `<caminho relativo>`
-- Escopo de produção: `<projetos, caminhos ou seleção de arquivos alterados>`
+- Escopo: `<projetos, caminhos ou seleção>`
 - Exclusões: `<código gerado, padrões ou Nenhum>`
 - Isolamento de código alterado: `<método>`
+- Valores registrados: `<valores que toda inspeção e relatório de qualidade registram, ex.: total do projeto e pior local>`
+- Interpretação: `<orientação aprovada em minhas-specs/orientacoes-gerais/ que define metas, ou Nenhum>`
 
-## Cobertura de testes
+## Documentos relacionados do contrato
 
-- Executor: `<nome>`
-- Coletor: `<nome>`
-- Versões: `<versões fixadas ou fontes controladas>`
-- Instalação ou restauração: `<comando ou mecanismo>`
-- Comando de build: `<comando exato>`
-- Comando de cobertura: `<comando exato>`
-- Formato e caminho: `<formato com suporte a linhas e ramos>`; `<caminho relativo>`
-- Escopo de produção e testes: `<projetos, assemblies, caminhos ou seleção>`
-- Exclusões: `<código gerado, padrões ou Nenhum>`
-- Isolamento de código alterado: `<método>`
+- Práticas de código do repositório: `minhas-specs/praticas-de-codigo/*.md`
+- Orientações gerais Myspec: `minhas-specs/orientacoes-gerais/*.md`
+
+## Decisões e contrapartidas
+
+- `<decisão>`: <motivo e alternativa rejeitada, quando relevante>.
 
 ## Histórico de aprovação
 

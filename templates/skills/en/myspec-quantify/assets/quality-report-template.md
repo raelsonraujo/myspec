@@ -17,26 +17,17 @@
 
 | Metric | Current | Previous | Approved target |
 | --- | ---: | ---: | ---: |
-| Line coverage | `<covered>/<total> (<percentage>)` | `<value or —>` | `<target or —>` |
-| Branch coverage | `<covered>/<total> (<percentage>)` | `<value or —>` | `<target or —>` |
-| Highest cyclomatic complexity | `<value>` (`<member>`) | `<value or —>` | `<target or —>` |
-| Methods above the complexity target | `<count>` | `<value or —>` | — |
+| <metric and reported value from the tooling contract> | `<value>` | `<value or —>` | `<target or —>` |
 
-## Test Coverage
+<Repeat the next section for every metric the tooling contract defines, in its order.>
 
-- Tool and version: `<tool>`
-
-| Project, module, or file | Line coverage | Branch coverage | Related spec | Notable gaps |
-| --- | ---: | ---: | --- | --- |
-| `<name>` | `<value>` | `<value>` | `<NNN-name or —>` | `<critical uncovered behavior>` |
-
-## Cyclomatic Complexity
+## <Metric name>
 
 - Tool and version: `<tool>`
 
-| File or type | Method or function | Complexity | Related spec | Observation |
-| --- | --- | ---: | --- | --- |
-| `<name>` | `<member>` | `<value>` | `<NNN-name or —>` | `<target missed or reason this deserves attention>` |
+| Location | Value | Related spec | Observation |
+| --- | ---: | --- | --- |
+| `<project, file, or member, at the granularity the contract defines>` | `<value>` | `<NNN-name or —>` | `<target missed or reason this deserves attention>` |
 
 ## Improvement Opportunities
 

@@ -239,7 +239,9 @@ describe('myspec install --tooling', () => {
     assert.match(tooling, /^Created on: `\d{4}-\d{2}-\d{2}`$/m);
     assert.match(tooling, /`dotnet build App\.slnx --configuration Release --no-restore`/);
     assert.match(tooling, /## CRAP Score/);
-    assert.match(tooling, /^## Performance$/m);
+    assert.match(tooling, /^## Metrics$/m);
+    assert.match(tooling, /^### Performance$/m);
+    assert.match(tooling, /^- Reported values: line coverage and branch coverage/m);
     assert.match(read(dir, 'quality/README.md'), /dotnet restore App\.slnx/);
     assert.match(read(dir, 'quality/README.md'), /dotnet sln App\.slnx add/);
     assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/method-complexity-risk-targets.md')));
@@ -317,6 +319,21 @@ describe('skill templates', () => {
       }
     });
   }
+
+  it('leaves the choice of metrics to the tooling contract', () => {
+    const contracts = {
+      en: ['myspec-setup/assets/tooling-template.md', 'myspec-inspect/assets/inspection-template.md', 'myspec-quantify/assets/quality-report-template.md'],
+      pt: ['myspec-configurar/assets/modelo-de-ferramentas.md', 'myspec-inspecionar/assets/modelo-de-inspecao.md', 'myspec-quantificar/assets/modelo-de-relatorio-de-qualidade.md'],
+    };
+    for (const [language, files] of Object.entries(contracts)) {
+      const dir = (name) => listSkills(language).find((skill) => skill.name === name).dir;
+      for (const file of files) {
+        const [skill, ...path] = file.split('/');
+        const content = readFileSync(join(dir(skill), ...path), 'utf8');
+        assert.doesNotMatch(content, /cyclomatic|coverage|complexity|complexidade|cobertura|CRAP/i, `${language}: ${file}`);
+      }
+    }
+  });
 
   it('pt skills only use Portuguese workspace names and labels', () => {
     const english =

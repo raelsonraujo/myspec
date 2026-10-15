@@ -1,6 +1,6 @@
 ---
 name: myspec-inspect
-description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, applicable approved product directives, and approved Myspec guidance, measure its test coverage and cyclomatic complexity with developer-approved tooling, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
+description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, applicable approved product directives, and approved Myspec guidance, measure the metrics defined by the developer-approved tooling contract, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
 ---
 
 # Myspec Inspect
@@ -28,18 +28,18 @@ Treat an approved product directive governing the implementation under review as
 
 ## Metrics
 
-Every inspection measures the implementation itself. Run the exact build, test, coverage, and complexity commands defined in an approved `my-specs/tooling.md`, applying their documented scope, exclusions, and every applicable approved guideline, and collect:
+Every inspection measures the implementation itself. Run the exact build, test, and metric commands defined in an approved `my-specs/tooling.md`, applying their documented scope, exclusions, and every applicable approved guideline, and collect:
 
 - acceptance criteria met out of the total the spec defines;
-- tests passed out of the total run;
-- line and branch coverage of the production code implemented by the spec;
-- the highest cyclomatic complexity among that code's methods or functions; and
-- any additional metric the approved tooling contract defines, such as a CRAP score.
+- tests passed out of the total run; and
+- for every metric under the contract's `## Metrics`, the values its `Reported values` lists.
+
+The tooling contract alone decides which metrics exist. Never measure, report, or ask for a metric it does not define, such as coverage or complexity, and never treat a missing metric as a gap.
 
 Measurement rules:
 
 - Scope metrics to the spec's implemented production code, identified from the approved file tree, version-control evidence, and repository evidence. When tooling cannot isolate that code, report the whole-project value and mark it `(project)`.
-- Treat failed or skipped tests as findings; never present their coverage run as clean verification.
+- Treat failed or skipped tests as findings; never present measurements from that run as clean verification.
 - Never invent, estimate manually, install, or substitute a metric tool, and ask before changing dependencies, commands, or project configuration. When the tooling contract is absent, incomplete, or unapproved, or an approved command is unavailable or fails, record the affected metrics as `Not measured: <reason>`, keep every metric that could be measured, and suggest `{{skill:myspec-setup}}` when the contract itself is missing or unapproved.
 - Do not create or update `my-specs/quality-report.md`; that project-wide report belongs to `{{skill:myspec-quantify}}`.
 
@@ -70,7 +70,7 @@ Create `my-specs/specs/<spec-name>/inspections/inspection-<NNN>.md` from [assets
 Keep the record short. It reports results, not the process that produced them:
 
 - **Acceptance Criteria**: one row per acceptance criterion in the spec, with the test or location that proves its status.
-- **Metrics**: one row per collected metric, with the previous inspection's value or `—`. Add a row for each additional metric from the tooling contract.
+- **Metrics**: the acceptance-criteria and test rows, then one row per reported value of each metric the tooling contract defines, with the previous inspection's value or `—`.
 - **Findings**: one line per open finding, `Blocking` first. A `Blocking` finding is any item that makes the verdict `Blocked`, including a violation of an approved product directive, coding practice, or general guideline. An `Attention` finding is a non-blocking point the developer must act on or know about, such as an unassessable rule or an unapproved file tree or tooling contract. Write `None` when there is none.
 - **Previous Findings**: only findings the previous inspection left open. Write `None — first inspection.` when there is no previous inspection.
 

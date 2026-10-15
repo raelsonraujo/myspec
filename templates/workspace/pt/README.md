@@ -4,11 +4,11 @@ Contrato do repositório usado pelos skills Myspec. Toda regra nasce como `Statu
 
 | Caminho | Conteúdo | Criado por |
 | --- | --- | --- |
-| `ferramentas.md` | Comandos aprovados de complexidade ciclomática e cobertura de testes | `myspec-configurar` |
+| `ferramentas.md` | Comandos de build e teste e as métricas de qualidade escolhidas pelo desenvolvedor, com como medi-las | `myspec-configurar` |
 | `diretrizes-de-produto/` | Conceitos, terminologia e invariantes de produto | `myspec-configurar` |
 | `praticas-de-codigo/` | Uma prática de código do repositório por arquivo | `myspec-configurar` |
 | `orientacoes-gerais/` | Uma orientação compartilhada por todos os skills Myspec por arquivo | `myspec-configurar` |
-| `relatorio-de-qualidade.md` | Complexidade e cobertura do projeto inteiro com oportunidades de melhoria | `myspec-quantificar` |
+| `relatorio-de-qualidade.md` | Valores das métricas aprovadas no projeto inteiro com oportunidades de melhoria | `myspec-quantificar` |
 | `specs/NNN-<nome>/` | `spec.md`, `arvore-de-arquivos.md` e `inspecoes/inspecao-NNN.md` de cada mudança | `myspec-prescrever`, `myspec-implementar`, `myspec-inspecionar` |
 
 ## Fluxo de trabalho
@@ -18,9 +18,9 @@ Contrato do repositório usado pelos skills Myspec. Toda regra nasce como `Statu
 | `myspec-configurar` | Define ferramentas, diretrizes de produto, práticas de código e orientações. |
 | `myspec-prescrever` | Transforma uma solicitação de mudança em uma spec testável. |
 | `myspec-implementar` | Propõe e aprova a árvore de arquivos e então implementa a spec. |
-| `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede cobertura e complexidade e registra uma inspeção com veredito. |
+| `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas aprovadas e registra uma inspeção com veredito. |
 | `myspec-corrigir` | Faz um ajuste pequeno de no máximo três arquivos, inclusive dentro de uma spec implementada. |
-| `myspec-quantificar` | Julga complexidade e cobertura do projeto inteiro e sugere melhorias que podem originar novas specs. |
+| `myspec-quantificar` | Julga as métricas aprovadas do projeto inteiro e sugere melhorias que podem originar novas specs. |
 
 Um ciclo típico após a configuração:
 
