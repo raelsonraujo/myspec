@@ -12,7 +12,7 @@ Applies to: All Myspec skills
 
 The AI must not run any `dotnet` command. The AI must ask the developer to run each required `dotnet` command and provide its output instead.
 
-This restriction also applies to every script, task, alias, wrapper, or other command that invokes `dotnet` directly or indirectly. In particular, the AI must not run the repository quality-report workflows `bash quality/run-coverage-report.sh` or `pwsh -NoProfile -File quality/run-coverage-report.ps1`. The developer must run those workflows.
+This restriction also applies to every script, task, alias, wrapper, or other command that invokes `dotnet` directly or indirectly. In particular, the AI must not run the repository quality-report workflows `bash my-specs/measurement/run-coverage-report.sh` or `pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1`. The developer must run those workflows.
 
 During `$myspec-quantify`, the AI must ask the developer to generate a new quality report with the approved repository workflow before continuing with metric analysis. The AI must wait for the developer to confirm that the workflow completed and provide its output. A pre-existing report does not satisfy this requirement for a new quantify request.
 

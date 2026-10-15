@@ -19,8 +19,8 @@
 | Command | Result |
 | --- | --- |
 | `dotnet build Sample.slnx --configuration Release --no-restore` | passed |
-| `dotnet test Sample.slnx --configuration Release --no-build --settings quality/coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory quality/coverage/raw` | passed |
-| `dotnet reportgenerator -reports:"quality/coverage/raw/**/coverage.cobertura.xml" -targetdir:"quality/coverage/report" -reporttypes:"Html;JsonSummary;Cobertura"` | passed |
+| `dotnet test Sample.slnx --configuration Release --no-build --settings my-specs/measurement/coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory my-specs/measurement/coverage/raw` | passed |
+| `dotnet reportgenerator -reports:"my-specs/measurement/coverage/raw/**/coverage.cobertura.xml" -targetdir:"my-specs/measurement/coverage/report" -reporttypes:"Html;JsonSummary;Cobertura"` | passed |
 
 ## Test Coverage
 

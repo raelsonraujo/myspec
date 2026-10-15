@@ -7,6 +7,7 @@ Contract documents are shared with the team and record their creator and approve
 | Path | Content | Created by |
 | --- | --- | --- |
 | `metrics/` | One quality metric the developer chose per file, with how to measure it and its gates | `myspec-setup` |
+| `measurement/` | Scripts and settings that measure the metrics, with installation steps in its README; absent without a tooling template | `myspec install --tooling` |
 | `product-directives/` | Product concepts, terminology, and invariants | `myspec-setup` |
 | `coding-practices/` | One repository coding practice per file | `myspec-setup` |
 | `general-guidelines/` | One guideline shared by all Myspec skills per file, including the build and test commands | `myspec-setup` |

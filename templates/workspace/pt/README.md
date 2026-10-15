@@ -7,6 +7,7 @@ Os documentos do contrato são compartilhados com o time e registram criador e a
 | Caminho | Conteúdo | Criado por |
 | --- | --- | --- |
 | `metricas/` | Uma métrica de qualidade escolhida pelo desenvolvedor por arquivo, com como medi-la e seus portões | `myspec-configurar` |
+| `medicao/` | Scripts e configurações que medem as métricas, com a instalação descrita em seu README; ausente sem template de tooling | `myspec install --tooling` |
 | `diretrizes-de-produto/` | Conceitos, terminologia e invariantes de produto | `myspec-configurar` |
 | `praticas-de-codigo/` | Uma prática de código do repositório por arquivo | `myspec-configurar` |
 | `orientacoes-gerais/` | Uma orientação compartilhada por todos os skills Myspec por arquivo, inclusive os comandos de build e teste | `myspec-configurar` |

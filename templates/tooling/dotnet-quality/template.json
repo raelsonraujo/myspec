@@ -2,5 +2,46 @@
   "description": {
     "en": ".NET cyclomatic complexity, line/branch test coverage, and CRAP score with Coverlet and ReportGenerator, plus critical-path performance with BenchmarkDotNet",
     "pt": "Complexidade ciclomática, cobertura de linhas/ramos e CRAP score para .NET com Coverlet e ReportGenerator, além de performance dos caminhos críticos com BenchmarkDotNet"
+  },
+  "legacyMeasurement": {
+    "dir": "quality",
+    "sha256": {
+      ".gitattributes": [
+        "1d5d71dcc6ccd28ab46a335349ecc74742ca4b81f4fcad212f8d134f70f1f13e"
+      ],
+      ".gitignore": [
+        "2eefcbc4235512f4fe15db4e7c3bf2aa7f9872cb8a76bc3fa486bb3ea093649c",
+        "5c5daf48fdf4db42e16c29b5b3de54984bafe0c2ff367a186ca97f1d4ed48290"
+      ],
+      "README.md": [
+        "069e217266625b71e34d63cf5da3abcd2714c7f39d86f3cfb4e47ea560cb07a7",
+        "08aff9c3d6d3a1593e4aaa0d8e01475f3fbbc89d14931dff8781f8d82371130d",
+        "310446e0cef015389ae213fd176c20d31d49d9d111581c496926427db5a3e41e",
+        "7722d50cf870ced69cffdd2e0ce6a48281c3616faa9d44c4afefaf420bdf4c3f",
+        "886ea988e51481d668d3932bb9b5975fbf61c507977d7ddb3a781a03ebdac44a",
+        "96c86580af1e139651927896a56df19794fdc28e0c542fe5a85d8eaf40cee5fb",
+        "9dfcfc8cb637b696e02913c519c4e30479432057eff832dd18f5b40adc396be5",
+        "acdd5ae90cf2429628a370c8a8516ddc3856d2ccec367aeedab513a6233cfc9b",
+        "c7a42e81ec27e8e6aea077cd18ada4ecfa292f44a932b59a048c6fce6c14d599",
+        "f71020705d81f07866b3b43a172eb9f73bc97c2e13c0b42188d3bf70c7156886",
+        "fdc70b5ca2ab81c4b8a8a5c7b7294c6747453d8725b6f786e0d4e5be316f362f"
+      ],
+      "coverlet.runsettings": [
+        "24d71cbc57e5d2b55befd10a0f59f4469d577c60b690cfa09bbcd6b44e6a0bb1",
+        "af7dc478441d6c2a12e3cfe6f70fcf4f9b7dde1bbc3f11f749291e49d886018d"
+      ],
+      "run-benchmarks.ps1": [
+        "4499ce029b49e2a1e85774ceaabb1d04192ebb678f463c3ac3326043238fa8e2"
+      ],
+      "run-benchmarks.sh": [
+        "7d25c9aa21480d341080fd6f230317f654babf8b4089d3aa8a5a2dbf722ee7e6"
+      ],
+      "run-coverage-report.ps1": [
+        "1ca3c84bc63deea5a91953896e845ee2d112ae84b80cfafb50d3ba9f193501a4"
+      ],
+      "run-coverage-report.sh": [
+        "ef1a998c59f5467b1545f81441b1ef0d7c5b3978f50751ada3410411ebd161cc"
+      ]
+    }
   }
 }

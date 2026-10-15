@@ -17,16 +17,16 @@ Change risk of each developer-controlled method, combining cyclomatic complexity
 - Prerequisite commands: `dotnet build Sample.slnx --configuration Release --no-restore`
 - Version source: `.config/dotnet-tools.json` for ReportGenerator; test project package references for `coverlet.collector`
 - Shared run: one coverage workflow measures this metric, Test Coverage, and Cyclomatic Complexity; the developer runs it once, as `my-specs/general-guidelines/dotnet-command-execution.md` requires
-- Generated results root: `quality/`
+- Generated results root: `my-specs/measurement/`
 
 ## Measurement
 
 - Tool: ReportGenerator, which computes the score per method from the Cobertura complexity and coverage data collected by Coverlet
 - Version: ReportGenerator `5.5.10`; `coverlet.collector` `6.0.4`
 - Installation or restore: `dotnet tool restore`
-- Measurement command: `pwsh -NoProfile -File quality/run-coverage-report.ps1` or `bash quality/run-coverage-report.sh`
+- Measurement command: `pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1` or `bash my-specs/measurement/run-coverage-report.sh`
 - Output format: the Risk Hotspots section of the HTML report
-- Result path: `quality/coverage/report/index.html`
+- Result path: `my-specs/measurement/coverage/report/index.html`
 - Scope: same as `my-specs/metrics/test-coverage.md`
 - Exclusions: same as `my-specs/metrics/test-coverage.md`
 - Changed-code isolation: same as `my-specs/metrics/cyclomatic-complexity.md`

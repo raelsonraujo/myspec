@@ -17,7 +17,7 @@ Share of production lines and branches executed by the tests, per file, class, a
 - Prerequisite commands: `dotnet build Sample.slnx --configuration Release --no-restore`
 - Version source: test project package references for `coverlet.collector` and `Microsoft.NET.Test.Sdk`; `.config/dotnet-tools.json` for ReportGenerator
 - Shared run: one coverage workflow measures this metric, Cyclomatic Complexity, and CRAP Score; the developer runs it once, as `my-specs/general-guidelines/dotnet-command-execution.md` requires
-- Generated results root: `quality/`
+- Generated results root: `my-specs/measurement/`
 
 ## Measurement
 
@@ -25,15 +25,15 @@ Share of production lines and branches executed by the tests, per file, class, a
 - Tool: `coverlet.collector`, aggregated by ReportGenerator
 - Version: `coverlet.collector` `6.0.4` and `Microsoft.NET.Test.Sdk` `17.14.1`, pinned in each test project; ReportGenerator `5.5.10`, pinned in `.config/dotnet-tools.json`
 - Installation or restore: `dotnet restore Sample.slnx` for the collector and test SDK packages; `dotnet tool restore` for ReportGenerator
-- Measurement command: `pwsh -NoProfile -File quality/run-coverage-report.ps1` or `bash quality/run-coverage-report.sh`, which run:
-  - coverage: `dotnet test Sample.slnx --configuration Release --no-build --settings quality/coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory quality/coverage/raw`
-  - report: `dotnet reportgenerator -reports:"quality/coverage/raw/**/coverage.cobertura.xml" -targetdir:"quality/coverage/report" -reporttypes:"Html;JsonSummary;Cobertura"`
+- Measurement command: `pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1` or `bash my-specs/measurement/run-coverage-report.sh`, which run:
+  - coverage: `dotnet test Sample.slnx --configuration Release --no-build --settings my-specs/measurement/coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory my-specs/measurement/coverage/raw`
+  - report: `dotnet reportgenerator -reports:"my-specs/measurement/coverage/raw/**/coverage.cobertura.xml" -targetdir:"my-specs/measurement/coverage/report" -reporttypes:"Html;JsonSummary;Cobertura"`
 - Output format: Cobertura XML for line and branch data; JSON summary for machine-readable aggregation; HTML for developer inspection
 - Result path:
-  - raw: `quality/coverage/raw/`
-  - merged: `quality/coverage/report/Cobertura.xml`
-  - summary: `quality/coverage/report/Summary.json`
-  - HTML: `quality/coverage/report/index.html`
+  - raw: `my-specs/measurement/coverage/raw/`
+  - merged: `my-specs/measurement/coverage/report/Cobertura.xml`
+  - summary: `my-specs/measurement/coverage/report/Summary.json`
+  - HTML: `my-specs/measurement/coverage/report/index.html`
 - Scope: all assemblies matching `[Sample.*]*` that are instrumented by at least one test project, measured by all solution projects matching `Sample.*.xUnit.*/*.csproj`; the explicit include filter ensures standalone UI assemblies such as `Sample.Web.UI` are collected, and future matching test projects are included automatically
 - Exclusions:
   - all test assemblies;
