@@ -33,7 +33,7 @@ Specs:
 
 Testes de arquitetura:
 
-- Ficam em um projeto de testes cujo nome termina em `.ArchitectureTests` e carregam os assemblies de produção com o `ArchLoader` do ArchUnitNET.
+- Ficam em um projeto de testes próprio, com nome e pasta nas convenções do repositório (sugestão: `<Produto>.TestesArquitetura`), e carregam os assemblies de produção com o `ArchLoader` do ArchUnitNET.
 - Cada regra é um único teste com `[Trait("Category", "Architecture")]` e `[Trait("Rule", "<ID>")]`, cujo nome começa com o ID, como `DEP_01_...`, porque o relatório TRX registra o nome do teste, mas não seus traits.
 - Uma exceção pontual a uma regra só existe se constar desta orientação, com o tipo exato excluído e a justificativa.
 

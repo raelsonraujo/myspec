@@ -86,7 +86,7 @@ try {
     # violated dependency rule must not stop this run.
     Invoke-DotnetCommand -Arguments @(
         'test', $resolvedSolutionPath, '--configuration', 'Release', '--no-build',
-        '--filter', 'FullyQualifiedName!~.ArchitectureTests.',
+        '--filter', 'Category!=Architecture',
         '--settings', "$measurementPath/$runSettingsName", '--collect:XPlat Code Coverage',
         '--results-directory', "$measurementPath/$coverageName/$rawName"
     )

@@ -60,7 +60,7 @@ Coupling needs no installation: rule CA1506 ships with the .NET SDK analyzers an
 
 ### 3. Architecture test project
 
-The dependency rules are checked by ArchUnitNET tests in a project whose name ends in `.ArchitectureTests`. Create it with the repository's test framework (the example uses xUnit), add it to the solution, and reference the production projects whose dependencies the rules constrain:
+The dependency rules are checked by ArchUnitNET tests in a dedicated test project. Its name and folder follow the repository's conventions: the scripts do not depend on them, because they find these tests by the `Architecture` category. Suggestion: `<Product>.ArchitectureTests`. Create it with the repository's test framework (the example uses xUnit), add it to the solution, and reference the production projects whose dependencies the rules constrain:
 
 ```bash
 dotnet new xunit -n <Product>.ArchitectureTests -o tests/<Product>.ArchitectureTests
@@ -78,7 +78,7 @@ dotnet add tests/<Product>.ArchitectureTests/<Product>.ArchitectureTests.csproj 
 dotnet add tests/<Product>.ArchitectureTests/<Product>.ArchitectureTests.csproj reference <ProductionProject>/<ProductionProject>.csproj
 ```
 
-With xUnit v3, NUnit, or MSTest, use `TngTech.ArchUnitNET.xUnitV3`, `TngTech.ArchUnitNET.NUnit`, or `TngTech.ArchUnitNET.MSTestV2` at the same version. The script filters tests by `Category=Architecture` and `Rule=<ID>`; with NUnit or MSTest, confirm the adapter accepts those names in `--filter` and adjust the script if needed.
+With xUnit v3, NUnit, or MSTest, use `TngTech.ArchUnitNET.xUnitV3`, `TngTech.ArchUnitNET.NUnit`, or `TngTech.ArchUnitNET.MSTestV2` at the same version. The scripts filter tests by `Category=Architecture` and `Rule=<ID>`; with NUnit or MSTest, confirm the adapter accepts those names in `--filter` and adjust the script if needed.
 
 Each rule in the guideline is one test with the `Architecture` category, the `Rule` trait, and a name that starts with the rule ID, because the TRX report records the test name but not its traits:
 
@@ -263,7 +263,7 @@ The CRAP score combines complexity and line coverage: `CRAP(m) = CC(m)² × (1 �
 
 1. Restores the solution packages and the local .NET tools.
 2. Builds the solution in `Release`.
-3. Runs the tests with the `XPlat Code Coverage` collector using `my-specs/measurement/coverlet.runsettings`, producing Cobertura files in `my-specs/measurement/coverage/raw/`. Tests in `*.ArchitectureTests.*` namespaces are left out: they only read the assemblies, add no coverage, and are measured by `run-architecture-tests`, so a violated rule does not stop this run.
+3. Runs the tests with the `XPlat Code Coverage` collector using `my-specs/measurement/coverlet.runsettings`, producing Cobertura files in `my-specs/measurement/coverage/raw/`. Tests in the `Architecture` category are left out: they only read the assemblies, add no coverage, and are measured by `run-architecture-tests`, so a violated rule does not stop this run.
 4. Uses ReportGenerator to create the HTML report, the JSON summary, and the merged Cobertura file in `my-specs/measurement/coverage/report/`.
 
 `run-coupling` rebuilds the solution in `Release`, without incremental build, importing `coupling.targets` into every project that is neither a test nor a benchmark project. That file enables rule CA1506 with the thresholds in `CodeMetricsConfig.txt` and writes one SARIF log per project to `my-specs/measurement/coupling/`; regular builds are unaffected.
