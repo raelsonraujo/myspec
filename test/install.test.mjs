@@ -11,6 +11,7 @@ import { listToolingTemplates, localizeMeasurementPath, planTooling } from '../d
 const CLI = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
 const TEMPLATES = fileURLToPath(new URL('../templates', import.meta.url));
 const LEGACY_QUALITY = fileURLToPath(new URL('./fixtures/quality-0.4.1', import.meta.url));
+const LEGACY_README = fileURLToPath(new URL('./fixtures/workspace-readme-0.4.2-pt.md', import.meta.url));
 const EN_SKILLS = ['myspec-implement', 'myspec-inspect', 'myspec-patch', 'myspec-prescribe', 'myspec-quantify', 'myspec-setup'];
 const PT_SKILLS = ['myspec-configurar', 'myspec-corrigir', 'myspec-implementar', 'myspec-inspecionar', 'myspec-prescrever', 'myspec-quantificar'];
 
@@ -179,6 +180,17 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/README.md'), 'custom readme');
     assert.equal(read(dir, 'minhas-specs/metricas/coverage.md'), 'approved metric');
     assert.equal(read(dir, '.codex/skills/other-skill.md'), 'not ours');
+  });
+
+  it('refreshes a README an earlier version shipped, even with CRLF line endings', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'claude', '-l', 'pt');
+    const legacy = readFileSync(LEGACY_README, 'utf8');
+    writeFileSync(join(dir, 'minhas-specs/README.md'), legacy.replace(/\n/g, '\r\n'));
+
+    installOk(dir);
+
+    assert.equal(read(dir, 'minhas-specs/README.md'), read(join(TEMPLATES, 'workspace/pt'), 'README.md'));
   });
 
   it('keeps a legacy single-file tooling contract and asks for it to be split', () => {

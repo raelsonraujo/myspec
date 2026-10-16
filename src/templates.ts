@@ -1,7 +1,8 @@
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { LanguageId } from './languages.js';
+import { LANGUAGES, type LanguageId } from './languages.js';
 import type { Provider } from './providers.js';
 
 /** `templates/` ships next to `dist/` in the package. */
@@ -29,6 +30,16 @@ export function listSkills(language: LanguageId): SkillTemplate[] {
 
 export function readWorkspaceReadme(language: LanguageId): string {
   return readFileSync(join(TEMPLATES_ROOT, 'workspace', language, 'README.md'), 'utf8');
+}
+
+/** Whether a workspace README is one that this or an earlier version shipped, in any language, without edits. */
+export function isPristineWorkspaceReadme(content: string): boolean {
+  if ((Object.keys(LANGUAGES) as LanguageId[]).some((language) => readWorkspaceReadme(language) === content)) return true;
+  // Hashes of the earlier versions' READMEs with LF line endings; add the released one whenever a README changes.
+  const legacy: { sha256: string[] } = JSON.parse(
+    readFileSync(join(TEMPLATES_ROOT, 'workspace', 'legacy-readme-sha256.json'), 'utf8'),
+  );
+  return legacy.sha256.includes(createHash('sha256').update(content.replace(/\r\n/g, '\n')).digest('hex'));
 }
 
 const SKILL_TOKEN = /\{\{skill:([a-z0-9-]+)\}\}/g;

@@ -13,7 +13,7 @@ import {
 import { join } from 'node:path';
 import { LANGUAGES, type LanguageId, type WorkspaceLayout } from './languages.js';
 import { manifestPath } from './manifest.js';
-import { listFiles, readWorkspaceReadme } from './templates.js';
+import { isPristineWorkspaceReadme, listFiles, readWorkspaceReadme } from './templates.js';
 import {
   legacyHash,
   listToolingTemplates,
@@ -270,10 +270,9 @@ export function scaffoldWorkspace(root: string, language: LanguageId): string[] 
 
   // The README is regenerated only while it still matches a pristine template, so user edits survive.
   const readme = join(workspace, 'README.md');
-  const pristine = (Object.keys(LANGUAGES) as LanguageId[]).map(readWorkspaceReadme);
   const current = existsSync(readme) ? readFileSync(readme, 'utf8') : undefined;
   const wanted = readWorkspaceReadme(language);
-  if (current === undefined || (current !== wanted && pristine.includes(current))) {
+  if (current === undefined || (current !== wanted && isPristineWorkspaceReadme(current))) {
     writeFileSync(readme, wanted);
     if (current === undefined) created.push(`${layout.dir}/README.md`);
   }
