@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { afterEach, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { listSkills, skillReferences } from '../dist/templates.js';
-import { listToolingTemplates, planTooling } from '../dist/tooling.js';
+import { listToolingTemplates, localizeMeasurementPath, planTooling } from '../dist/tooling.js';
 
 const CLI = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
 const TEMPLATES = fileURLToPath(new URL('../templates', import.meta.url));
@@ -242,11 +242,11 @@ describe('myspec install --tooling', () => {
 
     for (const path of [
       'minhas-specs/medicao/README.md',
-      'minhas-specs/medicao/coverlet.runsettings',
-      'minhas-specs/medicao/run-coverage-report.ps1',
-      'minhas-specs/medicao/run-coverage-report.sh',
-      'minhas-specs/medicao/run-benchmarks.ps1',
-      'minhas-specs/medicao/run-benchmarks.sh',
+      'minhas-specs/medicao/cobertura.runsettings',
+      'minhas-specs/medicao/gerar-relatorio-de-cobertura.ps1',
+      'minhas-specs/medicao/gerar-relatorio-de-cobertura.sh',
+      'minhas-specs/medicao/executar-benchmarks.ps1',
+      'minhas-specs/medicao/executar-benchmarks.sh',
       'minhas-specs/medicao/.gitignore',
       'minhas-specs/medicao/.gitattributes',
       'minhas-specs/metricas/complexidade-ciclomatica.md',
@@ -269,7 +269,13 @@ describe('myspec install --tooling', () => {
     assert.match(result.stdout, /aprovar as métricas em minhas-specs\/metricas\//);
     assert.match(result.stdout, /Instale as dependências seguindo minhas-specs\/medicao\/README\.md/);
     assert.ok(!existsSync(join(dir, 'quality')));
-    assert.match(read(dir, 'minhas-specs/metricas/crap-score.md'), /`bash minhas-specs\/medicao\/run-coverage-report\.sh --no-open`/);
+    assert.match(read(dir, 'minhas-specs/metricas/crap-score.md'), /`bash minhas-specs\/medicao\/gerar-relatorio-de-cobertura\.sh --no-open`/);
+    // The scripts carry the names of the language and find each other by them.
+    assert.equal(read(dir, 'minhas-specs/medicao/.gitignore'), 'cobertura/\nbenchmarks/\n');
+    const coverageScript = read(dir, 'minhas-specs/medicao/gerar-relatorio-de-cobertura.sh');
+    assert.match(coverageScript, /^runsettings_name='cobertura\.runsettings'$/m);
+    assert.match(coverageScript, /^coverage_name='cobertura'$/m);
+    assert.ok(!existsSync(join(dir, 'minhas-specs/medicao/run-coverage-report.sh')));
   });
 
   it('proposes one metric file per measurement with its own gates', () => {
@@ -303,8 +309,10 @@ describe('myspec install --tooling', () => {
     assert.match(read(dir, 'my-specs/measurement/README.md'), /dotnet restore App\.slnx/);
     assert.match(read(dir, 'my-specs/measurement/README.md'), /dotnet sln App\.slnx add/);
     assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/performance-critical-paths.md')));
-    assert.doesNotMatch(read(dir, 'my-specs/measurement/run-coverage-report.sh'), /\r/);
-    assert.doesNotMatch(read(dir, 'my-specs/measurement/run-benchmarks.sh'), /\r/);
+    for (const script of ['run-coverage-report', 'run-benchmarks']) {
+      assert.doesNotMatch(read(dir, `my-specs/measurement/${script}.sh`), /\r/, script);
+      assert.ok(existsSync(join(dir, `my-specs/measurement/${script}.ps1`)), script);
+    }
     assert.deepEqual(JSON.parse(read(dir, 'my-specs/myspec.json')).tooling, ['dotnet-quality']);
   });
 
@@ -375,6 +383,37 @@ describe('myspec install --tooling', () => {
     assert.match(result.stdout, /~ my-specs\/metrics\/crap-score\.md \(paths updated\)/);
   });
 
+  it('renames the quality folder files to the installed language', () => {
+    const dir = dotnetRepo();
+    installOk(dir, '-p', 'claude', '-l', 'pt', '-t', 'dotnet-quality');
+    rmSync(join(dir, 'minhas-specs/medicao'), { recursive: true });
+    mkdirSync(join(dir, 'quality/coverage/report'), { recursive: true });
+    for (const file of readdirSync(LEGACY_QUALITY)) {
+      const content = readFileSync(join(LEGACY_QUALITY, file), 'utf8').replaceAll('{{solution}}', 'App.slnx');
+      writeFileSync(join(dir, 'quality', file.replace(/^dot-/, '.')), content);
+    }
+    writeFileSync(join(dir, 'quality/run-benchmarks.ps1'), '# customized');
+    const metric = join(dir, 'minhas-specs/metricas/cobertura-de-testes.md');
+    writeFileSync(metric, '`bash quality/run-coverage-report.sh` e `quality/coverage/raw/**/coverage.cobertura.xml`\n');
+
+    const result = installOk(dir);
+
+    const planned = planTooling('dotnet-quality', 'pt', { solution: 'App.slnx', author: 'A', date: 'D' });
+    for (const file of ['gerar-relatorio-de-cobertura.sh', 'cobertura.runsettings', '.gitignore', 'README.md']) {
+      assert.equal(read(dir, `minhas-specs/medicao/${file}`), planned.get(`minhas-specs/medicao/${file}`), file);
+    }
+    assert.ok(!existsSync(join(dir, 'minhas-specs/medicao/run-coverage-report.sh')));
+    assert.ok(!existsSync(join(dir, 'minhas-specs/medicao/coverlet.runsettings')));
+    assert.equal(read(dir, 'minhas-specs/medicao/run-benchmarks.ps1'), '# customized');
+    assert.match(result.stdout, /run-benchmarks\.ps1 was customized and was kept; .*rename it to minhas-specs\/medicao\/executar-benchmarks\.ps1/);
+    assert.ok(existsSync(join(dir, 'minhas-specs/medicao/cobertura/report')));
+    assert.ok(!existsSync(join(dir, 'minhas-specs/medicao/coverage')));
+    assert.equal(
+      read(dir, 'minhas-specs/metricas/cobertura-de-testes.md'),
+      '`bash minhas-specs/medicao/gerar-relatorio-de-cobertura.sh` e `minhas-specs/medicao/cobertura/bruto/**/coverage.cobertura.xml`\n',
+    );
+  });
+
   it('keeps both measurement folders when the workspace already has one', () => {
     const dir = dotnetRepo();
     installOk(dir, '-p', 'codex', '-l', 'en', '-t', 'dotnet-quality');
@@ -411,6 +450,7 @@ describe('myspec install --tooling', () => {
     installOk(dir, '-l', 'pt');
 
     assert.ok(!existsSync(join(dir, 'my-specs')));
+    // Like document bodies, the files keep the names of the language that generated them.
     assert.ok(existsSync(join(dir, 'minhas-specs/medicao/run-coverage-report.sh')));
     assert.match(read(dir, 'minhas-specs/metricas/test-coverage.md'), /`bash minhas-specs\/medicao\/run-coverage-report\.sh --no-open`/);
     assert.doesNotMatch(read(dir, 'minhas-specs/metricas/test-coverage.md'), /my-specs\/measurement/);
@@ -426,6 +466,34 @@ describe('myspec install --tooling', () => {
 
 describe('tooling templates', () => {
   for (const template of listToolingTemplates()) {
+    it(`${template.id} keeps its measurement scripts identical across languages except for their names`, () => {
+      const englishDir = join(template.dir, 'en/my-specs/measurement');
+      const english = readdirSync(englishDir).filter((file) => file !== 'README.md');
+      for (const [language, folder] of [['pt', 'minhas-specs/medicao']]) {
+        const names = template.measurementNames?.[language] ?? {};
+        const localizedDir = join(template.dir, language, folder);
+        assert.deepEqual(
+          readdirSync(localizedDir).filter((file) => file !== 'README.md').sort(),
+          english.map((file) => localizeMeasurementPath(file, names)).sort(),
+          `${language} measurement files`,
+        );
+        for (const file of english) {
+          const expected = readFileSync(join(englishDir, file), 'utf8')
+            .split('\n')
+            .map((line, index, lines) => {
+              // Inside the names block and in .gitignore, each name is the English one renamed for the language.
+              const inBlock = lines.slice(0, index + 1).some((l) => l.startsWith('# Names of this folder')) &&
+                !lines.slice(0, index).some((l) => l.startsWith('# End of the names'));
+              if (file === '.gitignore') return localizeMeasurementPath(line, names);
+              return inBlock ? line.replace(/'([^']*)'$/, (_, name) => `'${localizeMeasurementPath(name, names)}'`) : line;
+            })
+            .join('\n');
+          const localized = join(localizedDir, localizeMeasurementPath(file, names));
+          assert.equal(readFileSync(localized, 'utf8'), expected, `${language}: ${file}`);
+        }
+      }
+    });
+
     it(`${template.id} provides every language with only known placeholders`, () => {
       for (const language of ['en', 'pt']) {
         assert.ok(template.description[language], `${language} description`);

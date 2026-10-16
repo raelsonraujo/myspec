@@ -28,12 +28,17 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Names of this folder's files and results, in the workspace language. Every line outside this block is
+# identical in the English and Portuguese copies of this script.
+benchmarks_name='benchmarks'
+# End of the names in the workspace language.
+
 # This folder lives two levels below the repository root, in the Myspec workspace (my-specs/measurement or
 # minhas-specs/medicao). Paths are derived from it so a workspace rename does not break the script.
 measurement_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repository_root=$(cd "$measurement_directory/../.." && pwd)
 measurement_path=${measurement_directory#"$repository_root"/}
-benchmarks_directory="$measurement_directory/benchmarks"
+benchmarks_directory="$measurement_directory/$benchmarks_name"
 results_directory="$benchmarks_directory/results"
 
 cd "$repository_root"
@@ -67,7 +72,7 @@ rm -rf "$benchmarks_directory"
 
 arguments=(run --project "$project_path" --configuration Release --
   --filter "$filter" --memory --exporters json
-  --artifacts "$measurement_path/benchmarks")
+  --artifacts "$measurement_path/$benchmarks_name")
 if [[ ${#categories[@]} -gt 0 ]]; then
   arguments+=(--anyCategories "${categories[@]}")
 fi

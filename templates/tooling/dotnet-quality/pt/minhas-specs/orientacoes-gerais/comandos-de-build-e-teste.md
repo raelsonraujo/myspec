@@ -16,7 +16,7 @@ Verifique o repositório a partir da raiz com estes comandos, nesta ordem:
 2. Build: `dotnet build {{solution}} --configuration Release --no-restore`
 3. Testes: `dotnet test {{solution}} --configuration Release --no-build`
 
-Execute-os antes de medir qualquer métrica de `minhas-specs/metricas/`. Quando o comando de medição de uma métrica já executar os mesmos testes, como `minhas-specs/medicao/run-coverage-report`, seus resultados de teste podem substituir o passo 3 na mesma base.
+Execute-os antes de medir qualquer métrica de `minhas-specs/metricas/`. Quando o comando de medição de uma métrica já executar os mesmos testes, como `minhas-specs/medicao/gerar-relatorio-de-cobertura`, seus resultados de teste podem substituir o passo 3 na mesma base.
 
 ## Precedência das orientações
 

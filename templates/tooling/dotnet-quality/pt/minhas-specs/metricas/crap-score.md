@@ -18,16 +18,16 @@ Risco de mudança de cada método controlado pelo desenvolvedor, combinando comp
 - Comando de restauração/bootstrap: `dotnet restore {{solution}}` seguido de `dotnet tool restore`
 - Comandos pré-requisito: Nenhum; o comando de medição restaura, compila em Release e executa os testes antes de gerar o relatório
 - Fonte de versão: referência de pacote `coverlet.collector` em cada projeto de testes; manifesto de ferramentas locais (`dotnet-tools.json` ou `.config/dotnet-tools.json`) para o ReportGenerator
-- Execução compartilhada: uma execução de `minhas-specs/medicao/run-coverage-report` mede esta métrica, a complexidade ciclomática e a cobertura de testes; execute-a uma única vez ao medir mais de uma delas
-- Raiz dos resultados gerados: `minhas-specs/medicao/coverage/` (ignorada por `minhas-specs/medicao/.gitignore` e recriada a cada execução)
+- Execução compartilhada: uma execução de `minhas-specs/medicao/gerar-relatorio-de-cobertura` mede esta métrica, a complexidade ciclomática e a cobertura de testes; execute-a uma única vez ao medir mais de uma delas
+- Raiz dos resultados gerados: `minhas-specs/medicao/cobertura/` (ignorada por `minhas-specs/medicao/.gitignore` e recriada a cada execução)
 
 ## Medição
 
 - Ferramenta: ReportGenerator, que calcula o score por método a partir da complexidade e da cobertura do Cobertura coletado pelo Coverlet
 - Versão: ReportGenerator `5.5.10`; `coverlet.collector` `6.0.4`
 - Instalação ou restauração: siga `minhas-specs/medicao/README.md` e depois execute `dotnet restore {{solution}}` e `dotnet tool restore`
-- Comando de medição: `pwsh -NoProfile -File minhas-specs/medicao/run-coverage-report.ps1 -NoOpen` ou `bash minhas-specs/medicao/run-coverage-report.sh --no-open`
-- Formato e caminho do resultado: seção Risk Hotspots do relatório HTML; `minhas-specs/medicao/coverage/report/index.html`
+- Comando de medição: `pwsh -NoProfile -File minhas-specs/medicao/gerar-relatorio-de-cobertura.ps1 -NoOpen` ou `bash minhas-specs/medicao/gerar-relatorio-de-cobertura.sh --no-open`
+- Formato e caminho do resultado: seção Risk Hotspots do relatório HTML; `minhas-specs/medicao/cobertura/relatorio/index.html`
 - Escopo: todo assembly que não seja de teste e seja instrumentado por ao menos um projeto de testes de `{{solution}}`
 - Exclusões: as mesmas de `minhas-specs/metricas/complexidade-ciclomatica.md`
 - Isolamento de código alterado: o mesmo de `minhas-specs/metricas/complexidade-ciclomatica.md`

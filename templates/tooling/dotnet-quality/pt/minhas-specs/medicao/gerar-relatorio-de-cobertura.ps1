@@ -50,14 +50,22 @@ function Resolve-SolutionPath {
     return $solutions[0].FullName
 }
 
+# Names of this folder's files and results, in the workspace language. Every line outside this block is
+# identical in the English and Portuguese copies of this script.
+$coverageName = 'cobertura'
+$rawName = 'bruto'
+$reportName = 'relatorio'
+$runSettingsName = 'cobertura.runsettings'
+# End of the names in the workspace language.
+
 # This folder lives two levels below the repository root, in the Myspec workspace (my-specs/measurement or
 # minhas-specs/medicao). Paths are derived from it so a workspace rename does not break the script.
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $measurementPath = [System.IO.Path]::GetRelativePath($repositoryRoot, $PSScriptRoot) -replace '\\', '/'
-$coverageDirectory = Join-Path $PSScriptRoot 'coverage'
-$rawCoverageDirectory = Join-Path $coverageDirectory 'raw'
-$reportDirectory = Join-Path $coverageDirectory 'report'
-$runSettingsPath = Join-Path $PSScriptRoot 'coverlet.runsettings'
+$coverageDirectory = Join-Path $PSScriptRoot $coverageName
+$rawCoverageDirectory = Join-Path $coverageDirectory $rawName
+$reportDirectory = Join-Path $coverageDirectory $reportName
+$runSettingsPath = Join-Path $PSScriptRoot $runSettingsName
 $reportPath = Join-Path $reportDirectory 'index.html'
 $resolvedSolutionPath = Resolve-SolutionPath -RepositoryRoot $repositoryRoot -RequestedPath $SolutionPath
 
@@ -76,8 +84,8 @@ try {
     Invoke-DotnetCommand -Arguments @('build', $resolvedSolutionPath, '--configuration', 'Release', '--no-restore')
     Invoke-DotnetCommand -Arguments @(
         'test', $resolvedSolutionPath, '--configuration', 'Release', '--no-build',
-        '--settings', "$measurementPath/coverlet.runsettings", '--collect:XPlat Code Coverage',
-        '--results-directory', "$measurementPath/coverage/raw"
+        '--settings', "$measurementPath/$runSettingsName", '--collect:XPlat Code Coverage',
+        '--results-directory', "$measurementPath/$coverageName/$rawName"
     )
 
     $coverageFiles = Get-ChildItem -LiteralPath $rawCoverageDirectory -Filter 'coverage.cobertura.xml' -File -Recurse
@@ -86,8 +94,8 @@ try {
     }
 
     Invoke-DotnetCommand -Arguments @(
-        'reportgenerator', "-reports:$measurementPath/coverage/raw/**/coverage.cobertura.xml",
-        "-targetdir:$measurementPath/coverage/report", '-reporttypes:Html;JsonSummary;Cobertura'
+        'reportgenerator', "-reports:$measurementPath/$coverageName/$rawName/**/coverage.cobertura.xml",
+        "-targetdir:$measurementPath/$coverageName/$reportName", '-reporttypes:Html;JsonSummary;Cobertura'
     )
 
     if (-not (Test-Path -LiteralPath $reportPath -PathType Leaf)) {
