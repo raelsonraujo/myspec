@@ -120,7 +120,7 @@ As referências entre skills são geradas na sintaxe de cada agente: `$myspec-se
 - A pasta `tooling/` (`ferramentas/`) criada na 0.4.0 é renomeada para `metrics/` (`metricas/`), sem alterar seu conteúdo.
 - A pasta `quality/` que um template de tooling gerou na raiz do repositório até a 0.4.1 é movida para `my-specs/measurement/` (`minhas-specs/medicao/`). Scripts e configurações idênticos a uma versão publicada são substituídos pela atual, com os nomes do idioma instalado (`run-coverage-report.sh` vira `gerar-relatorio-de-cobertura.sh` em `pt`), e as pastas de resultados são renomeadas; os customizados são mantidos com o nome antigo e geram um aviso para ajustar caminhos e nome. Os caminhos `quality/` dos arquivos de métrica e das orientações gerais passam a apontar para os novos caminhos. Se as duas pastas existirem, nada é movido e a CLI avisa.
 - Um `tooling.md` (`ferramentas.md`) de versões anteriores é mantido e gera um aviso: rode o skill de setup para dividi-lo em um arquivo por métrica.
-- Os skills não leem mais `product-directives/` (`diretrizes-de-produto/`): as regras de produto vêm das fontes do time, como ClickUp ou issues do GitHub. Se a pasta só tiver o `.gitkeep` criado pela CLI até a 0.4.2, ela é removida; se tiver documentos, é mantida e a CLI avisa para movê-los e excluí-la.
+- Os skills não leem mais `product-directives/` (`diretrizes-de-produto/`): a spec é a fonte da verdade do produto. Se a pasta só tiver o `.gitkeep` criado pela CLI até a 0.4.2, ela é removida; se tiver documentos, é mantida e a CLI avisa para movê-los e excluí-la.
 - O conteúdo dos documentos do workspace nunca é sobrescrito. O `README.md` do workspace só é regenerado enquanto não tiver sido editado.
 
 ## Desenvolvimento

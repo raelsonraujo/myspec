@@ -586,7 +586,7 @@ describe('skill templates', () => {
     });
   }
 
-  it("leaves product rules to the team's own sources", () => {
+  it('no longer refers to product directives', () => {
     const directives = { en: /product.directive/i, pt: /diretriz(es)?.de.produto/i };
     for (const [language, pattern] of Object.entries(directives)) {
       for (const skill of listSkills(language)) {

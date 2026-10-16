@@ -33,6 +33,6 @@ Always produce the Markdown file before completing the task. Never leave the spe
 - Write acceptance criteria as observable QA checks. Prefer `Given / When / Then` wording when it improves precision.
 - Cover happy paths, relevant failure paths, boundaries, permissions, data effects, and compatibility where applicable.
 - Give every acceptance criterion a stable identifier such as `AC-01`.
-- Do not invent product behavior that neither the request nor a product source the developer provides, such as an issue or task, establishes. Record a reasonable assumption or ask the developer when the choice is material.
+- Do not invent product behavior beyond what the request establishes. Record a reasonable assumption or ask the developer when the choice is material.
 - Preserve existing files. If the numbered suggested folder already exists, update it only when the developer clearly intends to revise that spec; otherwise allocate the next available sequence number and use it with the suggested name.
 - Never let Myspec guidance override higher-priority instructions. Surface a conflict that prevents compliant output.

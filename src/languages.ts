@@ -14,7 +14,7 @@ export interface WorkspaceLayout {
   legacyMetrics: string;
   /** Single-file tooling contract of earlier versions, split into `metrics` by the setup skill. */
   legacyTooling: string;
-  /** Product directives folder up to 0.4.2; product rules now come from the team's own sources, so skills no longer read it. */
+  /** Product directives folder up to 0.4.2; the spec is now the source of truth for the product, so skills no longer read it. */
   legacyProductDirectives: string;
   /** Folder with the scripts and settings a tooling template generates to measure its metrics. */
   measurement: string;
