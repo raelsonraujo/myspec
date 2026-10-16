@@ -42,7 +42,7 @@ describe('myspec install', () => {
     assert.ok(existsSync(join(dir, '.codex/skills/myspec-setup/agents/openai.yaml')));
     assert.ok(existsSync(join(dir, '.codex/skills/myspec-setup/assets/metric-template.md')));
     const implement = read(dir, '.codex/skills/myspec-implement/SKILL.md');
-    assert.match(implement, /use `\$myspec-setup` to revise/);
+    assert.match(implement, /Suggest `\$myspec-inspect` to record/);
     assert.doesNotMatch(implement, /\{\{skill:/);
     assert.ok(!existsSync(join(dir, '.claude')));
   });
@@ -84,9 +84,10 @@ describe('myspec install', () => {
     const dir = repo();
     installOk(dir, '-p', 'codex', '-l', 'en');
 
-    for (const folder of ['metrics', 'product-directives', 'coding-practices', 'general-guidelines', 'specs']) {
+    for (const folder of ['metrics', 'coding-practices', 'general-guidelines', 'specs']) {
       assert.ok(existsSync(join(dir, 'my-specs', folder, '.gitkeep')), folder);
     }
+    assert.ok(!existsSync(join(dir, 'my-specs/product-directives')));
     assert.match(read(dir, 'my-specs/README.md'), /myspec-setup/);
     assert.equal(JSON.parse(read(dir, 'my-specs/myspec.json')).language, 'en');
   });
@@ -95,7 +96,7 @@ describe('myspec install', () => {
     const dir = repo();
     installOk(dir, '-p', 'codex', '-l', 'pt');
 
-    for (const folder of ['metricas', 'diretrizes-de-produto', 'praticas-de-codigo', 'orientacoes-gerais', 'specs']) {
+    for (const folder of ['metricas', 'praticas-de-codigo', 'orientacoes-gerais', 'specs']) {
       assert.ok(existsSync(join(dir, 'minhas-specs', folder, '.gitkeep')), folder);
     }
     assert.ok(!existsSync(join(dir, 'my-specs')));
@@ -209,6 +210,23 @@ describe('myspec install', () => {
     const conflict = installOk(dir);
     assert.equal(read(dir, 'minhas-specs/ferramentas/other.md'), 'kept');
     assert.match(conflict.stdout, /Both minhas-specs\/ferramentas and minhas-specs\/metricas exist/);
+  });
+
+  it('removes the scaffolded product directives folder and keeps one with documents', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'codex', '-l', 'en');
+    mkdirSync(join(dir, 'my-specs/product-directives'));
+    writeFileSync(join(dir, 'my-specs/product-directives/.gitkeep'), '');
+
+    const clean = installOk(dir);
+    assert.ok(!existsSync(join(dir, 'my-specs/product-directives')));
+    assert.doesNotMatch(clean.stdout, /product-directives/);
+
+    mkdirSync(join(dir, 'my-specs/product-directives'));
+    writeFileSync(join(dir, 'my-specs/product-directives/domain-rules.md'), 'Status: Approved\n');
+    const kept = installOk(dir, '-l', 'pt');
+    assert.equal(read(dir, 'minhas-specs/diretrizes-de-produto/domain-rules.md'), 'Status: Aprovado\n');
+    assert.match(kept.stdout, /The skills no longer read minhas-specs\/diretrizes-de-produto\//);
   });
 
   it('is idempotent', () => {
@@ -556,15 +574,15 @@ describe('skill templates', () => {
     });
   }
 
-  it('makes every skill that writes or changes behavior read the product directives', () => {
-    const readers = {
-      en: { folder: 'my-specs/product-directives/', skills: ['myspec-prescribe', 'myspec-implement', 'myspec-patch', 'myspec-inspect', 'myspec-setup'] },
-      pt: { folder: 'minhas-specs/diretrizes-de-produto/', skills: ['myspec-prescrever', 'myspec-implementar', 'myspec-corrigir', 'myspec-inspecionar', 'myspec-configurar'] },
-    };
-    for (const [language, { folder, skills }] of Object.entries(readers)) {
-      for (const skill of listSkills(language).filter((skill) => skills.includes(skill.name))) {
-        assert.ok(readFileSync(join(skill.dir, 'SKILL.md'), 'utf8').includes(`\`${folder}\``), `${language}: ${skill.name}`);
+  it("leaves product rules to the team's own sources", () => {
+    const directives = { en: /product.directive/i, pt: /diretriz(es)?.de.produto/i };
+    for (const [language, pattern] of Object.entries(directives)) {
+      for (const skill of listSkills(language)) {
+        for (const file of skill.files) {
+          assert.doesNotMatch(readFileSync(join(skill.dir, file), 'utf8'), pattern, `${language}: ${skill.name}/${file}`);
+        }
       }
+      assert.doesNotMatch(read(join(TEMPLATES, 'workspace', language), 'README.md'), pattern, `${language}: README.md`);
     }
   });
 

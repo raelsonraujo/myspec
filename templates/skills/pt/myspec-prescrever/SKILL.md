@@ -9,17 +9,15 @@ Transforme uma solicitação de mudança em um contrato compacto para implementa
 
 ## Portão obrigatório de orientações
 
-Antes de avançar além da descoberta da solicitação e do repositório, leia todos os Markdown existentes em `minhas-specs/diretrizes-de-produto/`, `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Todo documento aplicável com `Status: Aprovado` é obrigatório: cumpra-o antes da ação que rege e exponha conflitos com instruções superiores. Ausências, documentos não aprovados ou `Nenhum` não restringem; informe limitações relevantes.
-
-Diretrizes de produto aprovadas definem o vocabulário e os invariantes que uma spec deve respeitar. Trate-as como restrições mesmo que seu campo `Aplica-se a` cite apenas skills de implementação. Escreva a spec com a terminologia delas e mantenha escopo, critérios de aceitação e suposições coerentes com elas. Se a solicitação conflitar com diretriz aprovada, pare antes de criar a spec, cite a regra em conflito e peça ao desenvolvedor que altere a solicitação ou revise e aprove a diretriz com `{{skill:myspec-configurar}}`.
+Antes de avançar além da descoberta da solicitação e do repositório, leia todos os Markdown existentes em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Todo documento aplicável com `Status: Aprovado` é obrigatório: cumpra-o antes da ação que rege e exponha conflitos com instruções superiores. Ausências, documentos não aprovados ou `Nenhum` não restringem; informe limitações relevantes.
 
 ## Fluxo de trabalho
 
-1. Leia a solicitação e inspecione o contexto relevante. Após o portão, leia os arquivos de métrica em `minhas-specs/metricas/` quando existirem, para conhecer as ferramentas e os portões que a mudança deve cumprir, sem que eles substituam as diretrizes e orientações.
+1. Leia a solicitação e inspecione o contexto relevante. Após o portão, leia os arquivos de métrica em `minhas-specs/metricas/` quando existirem, para conhecer as ferramentas e os portões que a mudança deve cumprir, sem que eles substituam as orientações.
 2. Identifique ambiguidades materiais que alterariam substancialmente escopo ou comportamento observável. Faça perguntas objetivas só para elas; caso contrário, declare suposições conservadoras.
 3. Sugira um nome conciso em kebab-case baseado no comportamento solicitado.
 4. Inspecione diretórios imediatos de `minhas-specs/specs` cujo nome comece com três dígitos e `-`. Atribua o próximo prefixo sequencial de três dígitos com zeros, começando em `001`; nunca renumere pastas existentes.
-5. Crie `minhas-specs/specs/<sequência>-<nome-da-spec>/spec.md` a partir de `assets/modelo-de-spec.md` e revise testabilidade, consistência, expansão acidental de escopo e conformidade com diretrizes de produto e orientações aprovadas.
+5. Crie `minhas-specs/specs/<sequência>-<nome-da-spec>/spec.md` a partir de `assets/modelo-de-spec.md` e revise testabilidade, consistência, expansão acidental de escopo e conformidade com orientações aprovadas.
 6. Retorne o caminho criado e as suposições registradas. Sempre crie o Markdown antes de concluir; nunca deixe a especificação apenas no chat.
 
 ## Regras de conteúdo
@@ -28,5 +26,5 @@ Diretrizes de produto aprovadas definem o vocabulário e os invariantes que uma 
 - Defina áreas ou responsabilidades de código esperadas sem prescrever arquivos, salvo quando a solicitação ou evidência do repositório os sustentar.
 - Separe explicitamente escopo e fora de escopo. Escreva critérios como verificações observáveis de QA; prefira `Dado / Quando / Então` quando trouxer precisão.
 - Cubra caminhos felizes, falhas relevantes, limites, permissões, efeitos nos dados e compatibilidade quando aplicável. Dê identificador estável a cada critério, como `CA-01`.
-- Não invente comportamento de produto além do que a solicitação e as diretrizes de produto aprovadas estabelecem. Registre uma suposição razoável ou pergunte se a decisão for material.
+- Não invente comportamento de produto que nem a solicitação nem uma fonte de produto fornecida pelo desenvolvedor, como uma issue ou tarefa, estabeleçam. Registre uma suposição razoável ou pergunte se a decisão for material.
 - Preserve arquivos existentes. Se a pasta sugerida já existir, atualize-a somente se o desenvolvedor quiser claramente revisá-la; caso contrário, aloque a próxima sequência. Nunca deixe orientação Myspec sobrepor instruções superiores.

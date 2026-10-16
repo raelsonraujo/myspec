@@ -1,4 +1,4 @@
 interface:
   display_name: "Myspec Configurar"
-  short_description: "Definir regras de produto e engenharia do Myspec"
-  default_prompt: "Use {{skill:myspec-configurar}} para definir as métricas e ferramentas, diretrizes e orientações Myspec aprovadas deste repositório."
+  short_description: "Definir métricas e regras de engenharia do Myspec"
+  default_prompt: "Use {{skill:myspec-configurar}} para definir as métricas, ferramentas e orientações Myspec aprovadas deste repositório."

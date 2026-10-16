@@ -8,7 +8,6 @@ Contract documents are shared with the team and record their creator and approve
 | --- | --- | --- |
 | `metrics/` | One quality metric the developer chose per file, with how to measure it and its gates | `myspec-setup` |
 | `measurement/` | Scripts and settings that measure the metrics, with installation steps in its README; absent without a tooling template | `myspec install --tooling` |
-| `product-directives/` | Product concepts, terminology, and invariants | `myspec-setup` |
 | `coding-practices/` | One repository coding practice per file | `myspec-setup` |
 | `general-guidelines/` | One guideline shared by all Myspec skills per file, including the build and test commands | `myspec-setup` |
 | `quality-report.md` | Project-wide values of the approved metrics with improvement opportunities | `myspec-quantify` |
@@ -18,7 +17,7 @@ Contract documents are shared with the team and record their creator and approve
 
 | Skill | Role |
 | --- | --- |
-| `myspec-setup` | Define metrics and their gates, product directives, coding practices, and guidelines. |
+| `myspec-setup` | Define metrics and their gates, coding practices, and guidelines. |
 | `myspec-prescribe` | Turn a change request into a testable spec. |
 | `myspec-implement` | Propose and approve a file tree, then implement the spec. |
 | `myspec-inspect` | Review the implementation against the spec and approved rules, measure the approved metrics, and record an inspection with a verdict. |

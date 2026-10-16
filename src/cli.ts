@@ -157,16 +157,16 @@ function printResult(result: InstallResult): void {
           title: 'Próximos passos:',
           dependencies: readmes.map((path) => `Instale as dependências seguindo ${path}.`),
           setup: readmes.length
-            ? `Rode ${invoke(language.setupSkill)} para revisar e aprovar as métricas em ${metricsPath} e definir diretrizes de produto e práticas de código.`
-            : `Rode ${invoke(language.setupSkill)} para definir métricas, diretrizes de produto e práticas de código.`,
+            ? `Rode ${invoke(language.setupSkill)} para revisar e aprovar as métricas em ${metricsPath} e definir práticas de código.`
+            : `Rode ${invoke(language.setupSkill)} para definir métricas e práticas de código.`,
           prescribe: `Rode ${invoke(language.prescribeSkill)} para escrever a primeira especificação.`,
         }
       : {
           title: 'Next steps:',
           dependencies: readmes.map((path) => `Install the dependencies following ${path}.`),
           setup: readmes.length
-            ? `Run ${invoke(language.setupSkill)} to review and approve the metrics in ${metricsPath} and define product directives and coding practices.`
-            : `Run ${invoke(language.setupSkill)} to define metrics, product directives, and coding practices.`,
+            ? `Run ${invoke(language.setupSkill)} to review and approve the metrics in ${metricsPath} and define coding practices.`
+            : `Run ${invoke(language.setupSkill)} to define metrics and coding practices.`,
           prescribe: `Run ${invoke(language.prescribeSkill)} to write your first spec.`,
         };
   console.log(`\n${steps.title}`);

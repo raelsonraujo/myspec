@@ -5,7 +5,6 @@ export type LanguageId = 'en' | 'pt';
 /** Names the skills of a language use inside the workspace. Every language shares the same keys so paths can be migrated. */
 export interface WorkspaceLayout {
   dir: string;
-  productDirectives: string;
   codingPractices: string;
   generalGuidelines: string;
   specs: string;
@@ -15,6 +14,8 @@ export interface WorkspaceLayout {
   legacyMetrics: string;
   /** Single-file tooling contract of earlier versions, split into `metrics` by the setup skill. */
   legacyTooling: string;
+  /** Product directives folder up to 0.4.2; product rules now come from the team's own sources, so skills no longer read it. */
+  legacyProductDirectives: string;
   /** Folder with the scripts and settings a tooling template generates to measure its metrics. */
   measurement: string;
   qualityReport: string;
@@ -52,13 +53,13 @@ export const LANGUAGES: Record<LanguageId, Language> = {
     prescribeSkill: 'myspec-prescribe',
     workspace: {
       dir: 'my-specs',
-      productDirectives: 'product-directives',
       codingPractices: 'coding-practices',
       generalGuidelines: 'general-guidelines',
       specs: 'specs',
       metrics: 'metrics',
       legacyMetrics: 'tooling',
       legacyTooling: 'tooling.md',
+      legacyProductDirectives: 'product-directives',
       measurement: 'measurement',
       qualityReport: 'quality-report.md',
       fileTree: 'file-tree.md',
@@ -84,13 +85,13 @@ export const LANGUAGES: Record<LanguageId, Language> = {
     prescribeSkill: 'myspec-prescrever',
     workspace: {
       dir: 'minhas-specs',
-      productDirectives: 'diretrizes-de-produto',
       codingPractices: 'praticas-de-codigo',
       generalGuidelines: 'orientacoes-gerais',
       specs: 'specs',
       metrics: 'metricas',
       legacyMetrics: 'ferramentas',
       legacyTooling: 'ferramentas.md',
+      legacyProductDirectives: 'diretrizes-de-produto',
       measurement: 'medicao',
       qualityReport: 'relatorio-de-qualidade.md',
       fileTree: 'arvore-de-arquivos.md',

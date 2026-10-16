@@ -20,6 +20,7 @@ import {
   migrateWorkspace,
   relocateLegacyMeasurement,
   renameLegacyMetrics,
+  retireProductDirectives,
   scaffoldWorkspace,
   type WorkspaceMigration,
 } from './workspace.js';
@@ -125,6 +126,7 @@ export function install(options: InstallOptions): InstallResult {
   // Runs before the tooling templates, which would otherwise create the new folders beside the old ones.
   addMigration(result, renameLegacyMetrics(root, options.language));
   addMigration(result, relocateLegacyMeasurement(root, options.language, previous?.tooling ?? [], getVariables));
+  addMigration(result, retireProductDirectives(root, options.language));
 
   // Tooling runs before the workspace scaffold so folders that receive a document get no .gitkeep.
   const tooling = options.tooling ?? [];

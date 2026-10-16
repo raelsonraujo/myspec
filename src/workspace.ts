@@ -1,4 +1,15 @@
-import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { LANGUAGES, type LanguageId, type WorkspaceLayout } from './languages.js';
 import { manifestPath } from './manifest.js';
@@ -55,7 +66,7 @@ export function migrateWorkspace(root: string, from: LanguageId, to: LanguageId)
 
   const inWorkspace = (path: string) => `${target.dir}/${path}`;
   const entries: (keyof WorkspaceLayout)[] = [
-    'productDirectives',
+    'legacyProductDirectives',
     'codingPractices',
     'generalGuidelines',
     'specs',
@@ -126,6 +137,25 @@ export function renameLegacyMetrics(root: string, language: LanguageId): Workspa
   }
   renameSync(join(root, from), join(root, to));
   result.moved.push(`${from} -> ${to}`);
+  return result;
+}
+
+/**
+ * Retires the product directives folder of workspaces up to 0.4.2. A folder holding only the scaffold's `.gitkeep` is
+ * removed; one with documents is kept and reported, since its rules are the repository's to move elsewhere.
+ */
+export function retireProductDirectives(root: string, language: LanguageId): WorkspaceMigration {
+  const layout = LANGUAGES[language].workspace;
+  const path = `${layout.dir}/${layout.legacyProductDirectives}`;
+  const dir = join(root, path);
+  const result = emptyMigration();
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) return result;
+  const entries = readdirSync(dir);
+  if (entries.every((name) => name === '.gitkeep')) {
+    rmSync(dir, { recursive: true });
+  } else {
+    result.warnings.push(`The skills no longer read ${path}/; keep its product rules in your product sources and delete it.`);
+  }
   return result;
 }
 
@@ -229,7 +259,7 @@ export function scaffoldWorkspace(root: string, language: LanguageId): string[] 
   const layout = LANGUAGES[language].workspace;
   const workspace = join(root, layout.dir);
 
-  for (const folder of [layout.metrics, layout.productDirectives, layout.codingPractices, layout.generalGuidelines, layout.specs]) {
+  for (const folder of [layout.metrics, layout.codingPractices, layout.generalGuidelines, layout.specs]) {
     const dir = join(workspace, folder);
     mkdirSync(dir, { recursive: true });
     if (readdirSync(dir).length === 0) {
