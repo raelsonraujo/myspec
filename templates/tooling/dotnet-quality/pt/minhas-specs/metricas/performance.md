@@ -26,7 +26,7 @@ Bytes `Allocated` por operação (principal) e tempo `Mean` por operação de ca
 - Ferramenta: BenchmarkDotNet, executado a partir do único projeto console `*.Benchmarks` do repositório
 - Versão: `BenchmarkDotNet` `0.15.8`, fixada no projeto de benchmarks
 - Instalação ou restauração: siga `minhas-specs/medicao/README.md` e depois execute `dotnet restore {{solution}}`
-- Comando de medição: `pwsh -NoProfile -File minhas-specs/medicao/run-benchmarks.ps1` ou `bash minhas-specs/medicao/run-benchmarks.sh`, que executam `dotnet run --project <benchmarks.csproj> --configuration Release -- --filter "*" --memory --exporters json --artifacts minhas-specs/medicao/benchmarks`
+- Comando de medição: `pwsh -NoProfile -File minhas-specs/medicao/executar-benchmarks.ps1` ou `bash minhas-specs/medicao/executar-benchmarks.sh`, que executam `dotnet run --project <benchmarks.csproj> --configuration Release -- --filter "*" --memory --exporters json --artifacts minhas-specs/medicao/benchmarks`
 - Formato e caminho do resultado: JSON do BenchmarkDotNet (`Statistics.Mean` em nanossegundos e `Memory.BytesAllocatedPerOperation` por benchmark), além dos relatórios padrão Markdown GitHub, CSV e HTML; `minhas-specs/medicao/benchmarks/results/*.json` e `minhas-specs/medicao/benchmarks/results/*-report-github.md`
 - Escopo: benchmarks marcados com os IDs dos caminhos críticos de `minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md`
 - Exclusões: Nenhum

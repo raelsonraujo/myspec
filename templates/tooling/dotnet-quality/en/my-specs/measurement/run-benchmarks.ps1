@@ -51,11 +51,16 @@ function Resolve-BenchmarkProject {
     return $projects[0].FullName
 }
 
+# Names of this folder's files and results, in the workspace language. Every line outside this block is
+# identical in the English and Portuguese copies of this script.
+$benchmarksName = 'benchmarks'
+# End of the names in the workspace language.
+
 # This folder lives two levels below the repository root, in the Myspec workspace (my-specs/measurement or
 # minhas-specs/medicao). Paths are derived from it so a workspace rename does not break the script.
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $measurementPath = [System.IO.Path]::GetRelativePath($repositoryRoot, $PSScriptRoot) -replace '\\', '/'
-$benchmarksDirectory = Join-Path $PSScriptRoot 'benchmarks'
+$benchmarksDirectory = Join-Path $PSScriptRoot $benchmarksName
 $resultsDirectory = Join-Path $benchmarksDirectory 'results'
 $resolvedProjectPath = Resolve-BenchmarkProject -RepositoryRoot $repositoryRoot -RequestedPath $ProjectPath
 
@@ -66,7 +71,7 @@ try {
     $arguments = @(
         'run', '--project', $resolvedProjectPath, '--configuration', 'Release', '--',
         '--filter', $Filter, '--memory', '--exporters', 'json',
-        '--artifacts', "$measurementPath/benchmarks"
+        '--artifacts', "$measurementPath/$benchmarksName"
     )
     # pwsh -File passes "CP-01,CP-02" as a single string, so split it here.
     $categoryIds = @($Categories | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ })

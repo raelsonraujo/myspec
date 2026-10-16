@@ -1,9 +1,15 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LANGUAGES, type LanguageId, type WorkspaceLayout } from './languages.js';
 import { manifestPath } from './manifest.js';
 import { listFiles, readWorkspaceReadme } from './templates.js';
-import { legacyHash, listToolingTemplates, planTooling, type ToolingVariables } from './tooling.js';
+import {
+  legacyHash,
+  listToolingTemplates,
+  localizeMeasurementPath,
+  planToolingArtifacts,
+  type ToolingVariables,
+} from './tooling.js';
 
 export interface WorkspaceMigration {
   /** `from -> to` repository-relative paths that were renamed. */
@@ -126,8 +132,9 @@ export function renameLegacyMetrics(root: string, language: LanguageId): Workspa
 /**
  * Moves the measurement folder that installed tooling templates generated at the repository root up to 0.4.1
  * (`quality/`) into the workspace. Artifacts identical to a version the template shipped are replaced by the current
- * one, whose scripts resolve paths from their own folder, and metric files and general guidelines are pointed at the
- * new folder. Customized artifacts are kept and reported. Like the other migrations, it never overwrites a folder.
+ * one under the language's names, generated result folders are renamed, and metric files and general guidelines are
+ * pointed at the new paths. Customized artifacts are kept under their old names and reported. Like the other
+ * migrations, it never overwrites a folder.
  */
 export function relocateLegacyMeasurement(
   root: string,
@@ -151,27 +158,50 @@ export function relocateLegacyMeasurement(
     renameSync(join(root, from), join(root, to));
     result.moved.push(`${from} -> ${to}`);
 
-    for (const [path, content] of planTooling(template.id, language, variables())) {
-      const absolute = join(root, path);
-      if (!path.startsWith(`${to}/`) || !existsSync(absolute)) continue;
-      const current = readFileSync(absolute, 'utf8');
-      if (current === content) continue;
-      if (sha256[path.slice(to.length + 1)]?.includes(legacyHash(current, variables()))) {
-        writeFileSync(absolute, content);
-        result.rewritten.push(path);
+    // The moved folder still uses the template's own names, which earlier versions shipped.
+    for (const artifact of planToolingArtifacts(template.id, language, variables())) {
+      if (!artifact.templateName) continue;
+      const legacyPath = `${to}/${artifact.templateName}`;
+      if (!existsSync(join(root, legacyPath))) continue;
+      const current = readFileSync(join(root, legacyPath), 'utf8');
+      if (legacyPath === artifact.path && current === artifact.content) continue;
+      if (sha256[artifact.templateName]?.includes(legacyHash(current, variables()))) {
+        if (legacyPath !== artifact.path) unlinkSync(join(root, legacyPath));
+        writeFileSync(join(root, artifact.path), artifact.content);
+        if (artifact.path.endsWith('.sh')) chmodSync(join(root, artifact.path), 0o755);
+        result.rewritten.push(artifact.path);
       } else {
-        result.warnings.push(`${path} was customized and may still refer to ${from}/; update it to ${to}/ manually.`);
+        const rename = legacyPath === artifact.path ? '' : `, rename it to ${artifact.path}`;
+        result.warnings.push(`${legacyPath} was customized and was kept; update its paths to ${to}/${rename} manually.`);
       }
     }
-    result.rewritten.push(...repointDocuments(root, layout, from, to));
+
+    // Generated results are recreated on every run; renaming them keeps them covered by the new .gitignore.
+    const names = template.measurementNames?.[language] ?? {};
+    for (const [name, localized] of Object.entries(names)) {
+      const folder = join(root, to, name);
+      if (name === localized || !existsSync(folder) || !statSync(folder).isDirectory()) continue;
+      if (!existsSync(join(root, to, localized))) renameSync(folder, join(root, to, localized));
+    }
+
+    result.rewritten.push(...repointDocuments(root, layout, from, to, (path) => localizeMeasurementPath(path, names)));
   }
   return result;
 }
 
-/** Points the measurement commands and result paths of metric files and general guidelines at a moved folder. */
-function repointDocuments(root: string, layout: WorkspaceLayout, from: string, to: string): string[] {
+/**
+ * Points the measurement commands and result paths of metric files and general guidelines at a moved folder,
+ * renaming what follows the folder with `localize` when the files inside it were renamed too.
+ */
+function repointDocuments(
+  root: string,
+  layout: WorkspaceLayout,
+  from: string,
+  to: string,
+  localize: (path: string) => string = (path) => path,
+): string[] {
   if (from === to) return [];
-  const pattern = new RegExp(`(^|[\\s\`"'(\\[])${escapeRegExp(from)}/`, 'gm');
+  const pattern = new RegExp(`(^|[\\s\`"'(\\[])${escapeRegExp(from)}/([^\\s\`"')\\]]*)`, 'gm');
   const documents = [layout.metrics, layout.generalGuidelines].flatMap((folder) => {
     const dir = join(root, layout.dir, folder);
     return existsSync(dir) ? listFiles(dir).map((file) => `${layout.dir}/${folder}/${file}`) : [];
@@ -181,7 +211,7 @@ function repointDocuments(root: string, layout: WorkspaceLayout, from: string, t
   const rewritten: string[] = [];
   for (const path of documents.filter((path) => path.endsWith('.md') && existsSync(join(root, path)))) {
     const content = readFileSync(join(root, path), 'utf8');
-    const repointed = content.replace(pattern, `$1${to}/`);
+    const repointed = content.replace(pattern, (_, prefix: string, path: string) => `${prefix}${to}/${localize(path)}`);
     if (repointed === content) continue;
     writeFileSync(join(root, path), repointed);
     rewritten.push(path);

@@ -3,6 +3,17 @@
     "en": ".NET cyclomatic complexity, line/branch test coverage, and CRAP score with Coverlet and ReportGenerator, plus critical-path performance with BenchmarkDotNet",
     "pt": "Complexidade ciclomática, cobertura de linhas/ramos e CRAP score para .NET com Coverlet e ReportGenerator, além de performance dos caminhos críticos com BenchmarkDotNet"
   },
+  "measurementNames": {
+    "pt": {
+      "run-coverage-report": "gerar-relatorio-de-cobertura",
+      "run-benchmarks": "executar-benchmarks",
+      "coverlet": "cobertura",
+      "coverage": "cobertura",
+      "raw": "bruto",
+      "report": "relatorio",
+      "benchmarks": "benchmarks"
+    }
+  },
   "legacyMeasurement": {
     "dir": "quality",
     "sha256": {

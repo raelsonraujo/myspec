@@ -16,7 +16,7 @@ A CLI `myspec` **não instala dependências**. Siga os passos abaixo antes da pr
 ## Pré-requisitos
 
 - .NET SDK compatível com a solução do projeto;
-- PowerShell 7+ para usar `run-coverage-report.ps1`, ou Bash para `run-coverage-report.sh` (no Windows, Git Bash ou WSL);
+- PowerShell 7+ para usar `gerar-relatorio-de-cobertura.ps1`, ou Bash para `gerar-relatorio-de-cobertura.sh` (no Windows, Git Bash ou WSL);
 - acesso aos feeds NuGet na primeira execução, para restaurar pacotes e ferramentas locais;
 - Docker em execução somente se os testes usarem Testcontainers ou outra infraestrutura em contêineres;
 - uma única solução `.sln` ou `.slnx` na raiz do repositório, ou uma solução informada explicitamente ao script.
@@ -121,11 +121,11 @@ Os scripts já executam as duas restaurações antes de gerar o relatório e nã
 Execute a partir da raiz do repositório:
 
 ```bash
-pwsh -NoProfile -File minhas-specs/medicao/run-coverage-report.ps1
+pwsh -NoProfile -File minhas-specs/medicao/gerar-relatorio-de-cobertura.ps1
 ```
 
 ```bash
-bash minhas-specs/medicao/run-coverage-report.sh
+bash minhas-specs/medicao/gerar-relatorio-de-cobertura.sh
 ```
 
 Por padrão, o relatório é aberto no navegador. Para apenas gerá-lo, use `-NoOpen` (PowerShell) ou `--no-open` (Bash). Se houver mais de uma solução na raiz, use `-SolutionPath <caminho>` ou `--solution <caminho>`.
@@ -133,25 +133,25 @@ Por padrão, o relatório é aberto no navegador. Para apenas gerá-lo, use `-No
 Execute os benchmarks separadamente; eles levam minutos, então feche outros aplicativos pesados e mantenha a máquina na tomada:
 
 ```bash
-pwsh -NoProfile -File minhas-specs/medicao/run-benchmarks.ps1
+pwsh -NoProfile -File minhas-specs/medicao/executar-benchmarks.ps1
 ```
 
 ```bash
-bash minhas-specs/medicao/run-benchmarks.sh
+bash minhas-specs/medicao/executar-benchmarks.sh
 ```
 
 Para executar apenas alguns caminhos críticos, use `-Categories CP-01,CP-02` (PowerShell) ou `--category CP-01 --category CP-02` (Bash). Use `-Filter <glob>` ou `--filter <glob>` para filtrar nomes de benchmark e `-ProjectPath <caminho>` ou `--project <caminho>` quando houver mais de um `*.Benchmarks.csproj`.
 
 ## Resultados
 
-As pastas `minhas-specs/medicao/coverage/` e `minhas-specs/medicao/benchmarks/` são apagadas e recriadas pelos respectivos scripts a cada execução e estão ignoradas pelo Git em `minhas-specs/medicao/.gitignore`.
+As pastas `minhas-specs/medicao/cobertura/` e `minhas-specs/medicao/benchmarks/` são apagadas e recriadas pelos respectivos scripts a cada execução e estão ignoradas pelo Git em `minhas-specs/medicao/.gitignore`.
 
 | Arquivo | Conteúdo |
 | --- | --- |
-| `minhas-specs/medicao/coverage/report/index.html` | Relatório HTML com cobertura, complexidade e *Risk Hotspots* (CRAP score) |
-| `minhas-specs/medicao/coverage/report/Cobertura.xml` | Cobertura consolidada de linhas e ramos e `complexity` por método |
-| `minhas-specs/medicao/coverage/report/Summary.json` | Resumo de cobertura legível por máquina |
-| `minhas-specs/medicao/coverage/raw/**/coverage.cobertura.xml` | Resultado bruto de cada projeto de testes |
+| `minhas-specs/medicao/cobertura/relatorio/index.html` | Relatório HTML com cobertura, complexidade e *Risk Hotspots* (CRAP score) |
+| `minhas-specs/medicao/cobertura/relatorio/Cobertura.xml` | Cobertura consolidada de linhas e ramos e `complexity` por método |
+| `minhas-specs/medicao/cobertura/relatorio/Summary.json` | Resumo de cobertura legível por máquina |
+| `minhas-specs/medicao/cobertura/bruto/**/coverage.cobertura.xml` | Resultado bruto de cada projeto de testes |
 | `minhas-specs/medicao/benchmarks/results/*-report-github.md` | Tabela dos benchmarks com `Mean` e `Allocated` por operação |
 | `minhas-specs/medicao/benchmarks/results/*.json` | Estatísticas e memória dos benchmarks legíveis por máquina |
 
@@ -161,16 +161,16 @@ O CRAP score combina complexidade e cobertura de linhas: `CRAP(m) = CC(m)² × (
 
 1. Restauram os pacotes da solução e as ferramentas locais do .NET.
 2. Compilam a solução em `Release`.
-3. Executam os testes com o coletor `XPlat Code Coverage`, usando `minhas-specs/medicao/coverlet.runsettings`, e produzem arquivos Cobertura em `minhas-specs/medicao/coverage/raw/`.
-4. Usam o ReportGenerator para criar o HTML, o resumo JSON e o Cobertura consolidado em `minhas-specs/medicao/coverage/report/`.
+3. Executam os testes com o coletor `XPlat Code Coverage`, usando `minhas-specs/medicao/cobertura.runsettings`, e produzem arquivos Cobertura em `minhas-specs/medicao/cobertura/bruto/`.
+4. Usam o ReportGenerator para criar o HTML, o resumo JSON e o Cobertura consolidado em `minhas-specs/medicao/cobertura/relatorio/`.
 
-O `run-benchmarks` encontra o projeto `*.Benchmarks`, executa-o em `Release` com o diagnóstico de memória e exporta resultados JSON, além dos relatórios padrão Markdown GitHub, CSV e HTML, para `minhas-specs/medicao/benchmarks/results/`.
+O `executar-benchmarks` encontra o projeto `*.Benchmarks`, executa-o em `Release` com o diagnóstico de memória e exporta resultados JSON, além dos relatórios padrão Markdown GitHub, CSV e HTML, para `minhas-specs/medicao/benchmarks/results/`.
 
 ## Ajustes para este repositório
 
-- Em `coverlet.runsettings`, ajuste `Exclude` aos nomes dos seus assemblies de teste (o padrão exclui `*.Tests` e `*.xUnit.*`) e, se quiser restringir o escopo, adicione `<Include>[MeuProduto.*]*</Include>`.
-- Mantenha `minhas-specs/medicao/coverage/` e `minhas-specs/medicao/benchmarks/` fora do controle de versão e os scripts e o `.runsettings` versionados.
-- Se o projeto de benchmarks não terminar em `.Benchmarks`, ajuste a exclusão de cobertura `[*.Benchmarks]*` e informe o caminho do projeto ao `run-benchmarks`.
+- Em `cobertura.runsettings`, ajuste `Exclude` aos nomes dos seus assemblies de teste (o padrão exclui `*.Tests` e `*.xUnit.*`) e, se quiser restringir o escopo, adicione `<Include>[MeuProduto.*]*</Include>`.
+- Mantenha `minhas-specs/medicao/cobertura/` e `minhas-specs/medicao/benchmarks/` fora do controle de versão e os scripts e o `.runsettings` versionados.
+- Se o projeto de benchmarks não terminar em `.Benchmarks`, ajuste a exclusão de cobertura `[*.Benchmarks]*` e informe o caminho do projeto ao `executar-benchmarks`.
 - Qualquer mudança de versão, comando, escopo ou exclusão deve ser refletida nos arquivos de métrica afetados em `minhas-specs/metricas/`.
 
 ## Integração com o Myspec

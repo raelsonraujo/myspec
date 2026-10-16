@@ -43,14 +43,14 @@ myspec install -p claude -l pt -t dotnet-quality
 
 ```text
 minhas-specs/                                      # -l pt (my-specs/ em -l en)
-├── medicao/                                       # measurement/ em -l en: como medir
+├── medicao/                                       # measurement/ em -l en, com os nomes em inglês
 │   ├── README.md                                  # instalação das dependências e uso
-│   ├── coverlet.runsettings                       # filtros de cobertura
-│   ├── run-coverage-report.ps1                    # restore → build → test → relatório
-│   ├── run-coverage-report.sh
-│   ├── run-benchmarks.ps1                         # benchmarks dos caminhos críticos em Release
-│   ├── run-benchmarks.sh
-│   ├── .gitignore                                 # ignora coverage/ e benchmarks/ gerados
+│   ├── cobertura.runsettings                      # filtros de cobertura
+│   ├── gerar-relatorio-de-cobertura.ps1           # restore → build → test → relatório
+│   ├── gerar-relatorio-de-cobertura.sh
+│   ├── executar-benchmarks.ps1                    # benchmarks dos caminhos críticos em Release
+│   ├── executar-benchmarks.sh
+│   ├── .gitignore                                 # ignora cobertura/ e benchmarks/ gerados
 │   └── .gitattributes                             # mantém o .sh com LF
 ├── metricas/
 │   ├── complexidade-ciclomatica.md                # portão: CC ≤ 15
@@ -104,7 +104,7 @@ As referências entre skills são geradas na sintaxe de cada agente: `$myspec-se
 - O idioma vale para todos os providers: trocar de `-l en` para `-l pt` remove os skills em inglês (somente os arquivos listados em `myspec.json`).
 - Trocar de idioma renomeia o workspace para o novo idioma (`my-specs/coding-practices/` → `minhas-specs/praticas-de-codigo/`, `file-tree.md` → `arvore-de-arquivos.md` etc.) e traduz apenas as linhas de status e aprovação dos documentos, para que aprovações existentes continuem valendo; o corpo dos documentos não é traduzido. Um caminho cujo destino já existe não é movido. Workspaces `pt` criados em versões anteriores, ainda em `my-specs/`, são migrados da mesma forma na próxima instalação.
 - A pasta `tooling/` (`ferramentas/`) criada na 0.4.0 é renomeada para `metrics/` (`metricas/`), sem alterar seu conteúdo.
-- A pasta `quality/` que um template de tooling gerou na raiz do repositório até a 0.4.1 é movida para `my-specs/measurement/` (`minhas-specs/medicao/`). Scripts e configurações idênticos a uma versão publicada são substituídos pela atual; os customizados são mantidos e geram um aviso para ajustar os caminhos. Os caminhos `quality/` dos arquivos de métrica e das orientações gerais passam a apontar para a nova pasta. Se as duas pastas existirem, nada é movido e a CLI avisa.
+- A pasta `quality/` que um template de tooling gerou na raiz do repositório até a 0.4.1 é movida para `my-specs/measurement/` (`minhas-specs/medicao/`). Scripts e configurações idênticos a uma versão publicada são substituídos pela atual, com os nomes do idioma instalado (`run-coverage-report.sh` vira `gerar-relatorio-de-cobertura.sh` em `pt`), e as pastas de resultados são renomeadas; os customizados são mantidos com o nome antigo e geram um aviso para ajustar caminhos e nome. Os caminhos `quality/` dos arquivos de métrica e das orientações gerais passam a apontar para os novos caminhos. Se as duas pastas existirem, nada é movido e a CLI avisa.
 - Um `tooling.md` (`ferramentas.md`) de versões anteriores é mantido e gera um aviso: rode o skill de setup para dividi-lo em um arquivo por métrica.
 - O conteúdo dos documentos do workspace nunca é sobrescrito. O `README.md` do workspace só é regenerado enquanto não tiver sido editado.
 

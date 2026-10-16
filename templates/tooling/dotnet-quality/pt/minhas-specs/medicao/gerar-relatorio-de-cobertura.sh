@@ -27,15 +27,23 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Names of this folder's files and results, in the workspace language. Every line outside this block is
+# identical in the English and Portuguese copies of this script.
+coverage_name='cobertura'
+raw_name='bruto'
+report_name='relatorio'
+runsettings_name='cobertura.runsettings'
+# End of the names in the workspace language.
+
 # This folder lives two levels below the repository root, in the Myspec workspace (my-specs/measurement or
 # minhas-specs/medicao). Paths are derived from it so a workspace rename does not break the script.
 measurement_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repository_root=$(cd "$measurement_directory/../.." && pwd)
 measurement_path=${measurement_directory#"$repository_root"/}
-coverage_directory="$measurement_directory/coverage"
-raw_coverage_directory="$coverage_directory/raw"
-report_directory="$coverage_directory/report"
-runsettings_path="$measurement_directory/coverlet.runsettings"
+coverage_directory="$measurement_directory/$coverage_name"
+raw_coverage_directory="$coverage_directory/$raw_name"
+report_directory="$coverage_directory/$report_name"
+runsettings_path="$measurement_directory/$runsettings_name"
 report_path="$report_directory/index.html"
 
 if [[ ! -f $runsettings_path ]]; then
@@ -81,9 +89,9 @@ mkdir -p "$raw_coverage_directory"
 
 dotnet build "$solution_path" --configuration Release --no-restore
 dotnet test "$solution_path" --configuration Release --no-build \
-  --settings "$measurement_path/coverlet.runsettings" \
+  --settings "$measurement_path/$runsettings_name" \
   --collect:"XPlat Code Coverage" \
-  --results-directory "$measurement_path/coverage/raw"
+  --results-directory "$measurement_path/$coverage_name/$raw_name"
 
 coverage_file=$(find "$raw_coverage_directory" -type f -name 'coverage.cobertura.xml' -print -quit)
 if [[ -z $coverage_file ]]; then
@@ -92,8 +100,8 @@ if [[ -z $coverage_file ]]; then
 fi
 
 dotnet reportgenerator \
-  -reports:"$measurement_path/coverage/raw/**/coverage.cobertura.xml" \
-  -targetdir:"$measurement_path/coverage/report" \
+  -reports:"$measurement_path/$coverage_name/$raw_name/**/coverage.cobertura.xml" \
+  -targetdir:"$measurement_path/$coverage_name/$report_name" \
   -reporttypes:"Html;JsonSummary;Cobertura"
 
 if [[ ! -f $report_path ]]; then
