@@ -42,7 +42,7 @@ Created on: `<date>`
 
 ## Related Contract Documents
 
-- `<approved product directive or general guideline this metric depends on, or None>`
+- `<approved general guideline this metric depends on, or None>`
 
 ## Decisions and Tradeoffs
 

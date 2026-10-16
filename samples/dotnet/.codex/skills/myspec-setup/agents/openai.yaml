@@ -1,4 +1,4 @@
 interface:
   display_name: "Myspec Setup"
-  short_description: "Define Myspec product and engineering rules"
-  default_prompt: "Use $myspec-setup to define this repository's approved Myspec metrics and tooling, product directives, and guidance."
+  short_description: "Define Myspec metrics and engineering rules"
+  default_prompt: "Use $myspec-setup to define this repository's approved Myspec metrics, tooling, and guidance."

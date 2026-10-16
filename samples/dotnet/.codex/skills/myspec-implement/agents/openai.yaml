@@ -1,4 +1,4 @@
 interface:
   display_name: "Myspec Implement"
-  short_description: "Implement specs within approved product rules"
-  default_prompt: "Use $myspec-implement to implement the selected spec with an approved file tree and product directives."
+  short_description: "Implement specs with an approved file tree"
+  default_prompt: "Use $myspec-implement to implement the selected spec with an approved file tree."

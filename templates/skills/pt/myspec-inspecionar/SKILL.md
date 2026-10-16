@@ -1,22 +1,22 @@
 ---
 name: myspec-inspecionar
-description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada, diretrizes de produto e orientações Myspec aprovadas, mede as métricas definidas pelos arquivos de métrica aprovados em minhas-specs/metricas, julga-as frente a seus portões e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
+description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada e orientações Myspec aprovadas, mede as métricas definidas pelos arquivos de métrica aprovados em minhas-specs/metricas, julga-as frente a seus portões e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
 ---
 
 # Myspec Inspecionar
 
-Revise e meça uma implementação sem ampliar seu contrato e registre cada execução como uma nova inspeção, de modo que a mais recente sirva de critério de conclusão para avançar à próxima spec. Um ciclo típico repete implementar ou corrigir seguido de inspecionar até obter os resultados desejados. Relate apenas lacunas rastreáveis a requisito explícito, responsabilidade da árvore aprovada, diretriz de produto aplicável ou regra Myspec aprovada.
+Revise e meça uma implementação sem ampliar seu contrato e registre cada execução como uma nova inspeção, de modo que a mais recente sirva de critério de conclusão para avançar à próxima spec. Um ciclo típico repete implementar ou corrigir seguido de inspecionar até obter os resultados desejados. Relate apenas lacunas rastreáveis a requisito explícito, responsabilidade da árvore aprovada ou regra Myspec aprovada.
 
 ## Portão obrigatório de orientações
 
-Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minhas-specs/diretrizes-de-produto/`, `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Documentos aplicáveis com `Status: Aprovado` são obrigatórios; cumpra-os e exponha conflitos superiores. Ausências, documentos não aprovados ou `Nenhum` não criam critério e devem ser relatados quando relevantes. Uma diretriz de produto que governe a implementação é critério mesmo que seu campo `Aplica-se a` cite skills de implementação.
+Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Documentos aplicáveis com `Status: Aprovado` são obrigatórios; cumpra-os e exponha conflitos superiores. Ausências, documentos não aprovados ou `Nenhum` não criam critério e devem ser relatados quando relevantes.
 
 ## Fluxo de trabalho
 
 1. Resolva a pasta nomeada sob `minhas-specs/specs`; leia integralmente `spec.md` e `arvore-de-arquivos.md`, se existir.
-2. Conclua o portão, leia instruções do repositório e todos os arquivos de métrica em `minhas-specs/metricas/` quando existirem. Eles definem ferramentas e portões, mas não substituem a leitura das diretrizes e orientações.
+2. Conclua o portão, leia instruções do repositório e todos os arquivos de métrica em `minhas-specs/metricas/` quando existirem. Eles definem ferramentas e portões, mas não substituem a leitura das orientações.
 3. Liste `minhas-specs/specs/<nome-da-spec>/inspecoes/`. Se houver inspeções, leia integralmente a de maior número: ela é a inspeção anterior. Caso contrário, esta é a primeira.
-4. Estabeleça a base de revisão: especificação, árvore aprovada, diretrizes/orientações aplicáveis, arquivos de implementação e teste, evidência de controle de versão e verificações fornecidas.
+4. Estabeleça a base de revisão: especificação, árvore aprovada, orientações aplicáveis, arquivos de implementação e teste, evidência de controle de versão e verificações fornecidas.
 5. Colete as métricas descritas em [Métricas](#métricas).
 6. Extraia somente critérios explícitos, escopo, fora de escopo, responsabilidades aprovadas e regras aplicáveis. Não converta objetivos, exemplos ou omissões em requisitos.
 7. Rastreie cada item à evidência e marque `Atendido`, `Não atendido`, `Evidência insuficiente`, `Não aplicável` ou `Conflito de base`. Ausência de teste prova apenas falta de evidência, salvo se a spec ou orientação aplicável exigir esse teste.
@@ -48,7 +48,7 @@ Julgue cada valor registrado frente aos `## Portões` do seu arquivo de métrica
 - valor que descumpre portão `Atenção` é achado `Atenção`;
 - valor medido apenas como `(projeto)` não comprova portão de código alterado; registre o portão como `Evidência insuficiente`, salvo se ele também se aplicar ao projeto.
 
-Requisito da spec ou diretriz de produto aprovada e aplicável que defina uma meta é julgado como portão `Bloqueante`. Valor sem portão ou meta é informado sem achado.
+Requisito da spec aplicável que defina uma meta é julgado como portão `Bloqueante`. Valor sem portão ou meta é informado sem achado.
 
 ## Acompanhamento
 
@@ -56,7 +56,7 @@ Havendo inspeção anterior, dê a cada achado que ela deixou aberto exatamente 
 
 - `Resolvido`: a evidência atual satisfaz o item. Cite essa evidência.
 - `Aberto`: a lacuna permanece. Mantenha o achado na nova inspeção com o ID original.
-- `Superado`: a spec, árvore aprovada, diretriz ou regra de origem mudou ou foi retirada. Cite a mudança.
+- `Superado`: a spec, árvore aprovada ou regra de origem mudou ou foi retirada. Cite a mudança.
 
 Um item antes `Atendido` que agora falha é achado novo marcado `(regressão)`. Numere achados novos após o maior ID de qualquer inspeção anterior, mantendo IDs estáveis.
 
@@ -76,11 +76,11 @@ Mantenha o registro curto. Ele relata resultados, não o processo que os produzi
 
 - **Critérios de aceitação**: uma linha por critério da spec, com o teste ou local que comprova o status.
 - **Métricas**: as linhas de critérios de aceitação e de testes e, depois, uma linha por valor registrado de cada arquivo de métrica, com o valor da inspeção anterior, ou `—`, e o portão que o julga, ou `—`.
-- **Achados**: uma linha por achado aberto, `Bloqueante` primeiro. `Bloqueante` é todo item que torna o veredito `Bloqueada`, inclusive violação de diretriz de produto, prática de código ou orientação geral aprovada. `Atenção` é um ponto não bloqueante que o desenvolvedor precisa tratar ou conhecer, como portão `Atenção` descumprido, regra não avaliável ou árvore ou arquivo de métrica não aprovado. Escreva `Nenhum` quando não houver.
+- **Achados**: uma linha por achado aberto, `Bloqueante` primeiro. `Bloqueante` é todo item que torna o veredito `Bloqueada`, inclusive violação de prática de código ou orientação geral aprovada. `Atenção` é um ponto não bloqueante que o desenvolvedor precisa tratar ou conhecer, como portão `Atenção` descumprido, regra não avaliável ou árvore ou arquivo de métrica não aprovado. Escreva `Nenhum` quando não houver.
 - **Achados anteriores**: apenas os achados que a inspeção anterior deixou abertos. Escreva `Nenhum — primeira inspeção.` quando não houver inspeção anterior.
 
 Omita o que o desenvolvedor já conhece ou que não muda uma decisão: nomes e versões de ferramentas, comandos, configuração, autor, listas de arquivos medidos ou excluídos, tabelas por arquivo ou método, itens `Atendido` que não sejam critérios de aceitação, texto repetido da spec, interpretações das métricas e sugestões gerais de melhoria.
 
 ## Limites
 
-Não proponha funcionalidades, arquitetura, dependências, controles, fluxos, categorias de teste, desempenho ou compatibilidade fora da base. Não trate árvore proposta ou não aprovada como restrição; registre-a como achado `Atenção`. Não infira requisitos por práticas comuns. Para ambiguidade, use `Evidência insuficiente` e diga qual evidência falta. Conflito entre spec/árvore e diretriz aprovada é `Conflito de base`. Nunca mantenha ou marque como `Resolvido` um achado anterior sem reavaliar a evidência atual. Separe fatos observados de inferências.
+Não proponha funcionalidades, arquitetura, dependências, controles, fluxos, categorias de teste, desempenho ou compatibilidade fora da base. Não trate árvore proposta ou não aprovada como restrição; registre-a como achado `Atenção`. Não infira requisitos por práticas comuns. Para ambiguidade, use `Evidência insuficiente` e diga qual evidência falta. Conflito entre spec/árvore e prática ou orientação aprovada é `Conflito de base`. Nunca mantenha ou marque como `Resolvido` um achado anterior sem reavaliar a evidência atual. Separe fatos observados de inferências.

@@ -41,7 +41,7 @@ Criado em: `<data>`
 
 ## Documentos relacionados do contrato
 
-- `<diretriz de produto ou orientação geral aprovada da qual a métrica depende, ou Nenhum>`
+- `<orientação geral aprovada da qual a métrica depende, ou Nenhum>`
 
 ## Decisões e contrapartidas
 

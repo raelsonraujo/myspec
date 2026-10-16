@@ -8,7 +8,6 @@ Os documentos do contrato são compartilhados com o time e registram criador e a
 | --- | --- | --- |
 | `metricas/` | Uma métrica de qualidade escolhida pelo desenvolvedor por arquivo, com como medi-la e seus portões | `myspec-configurar` |
 | `medicao/` | Scripts e configurações que medem as métricas, com a instalação descrita em seu README; ausente sem template de tooling | `myspec install --tooling` |
-| `diretrizes-de-produto/` | Conceitos, terminologia e invariantes de produto | `myspec-configurar` |
 | `praticas-de-codigo/` | Uma prática de código do repositório por arquivo | `myspec-configurar` |
 | `orientacoes-gerais/` | Uma orientação compartilhada por todos os skills Myspec por arquivo, inclusive os comandos de build e teste | `myspec-configurar` |
 | `relatorio-de-qualidade.md` | Valores das métricas aprovadas no projeto inteiro com oportunidades de melhoria | `myspec-quantificar` |
@@ -18,7 +17,7 @@ Os documentos do contrato são compartilhados com o time e registram criador e a
 
 | Skill | Papel |
 | --- | --- |
-| `myspec-configurar` | Define métricas e seus portões, diretrizes de produto, práticas de código e orientações. |
+| `myspec-configurar` | Define métricas e seus portões, práticas de código e orientações. |
 | `myspec-prescrever` | Transforma uma solicitação de mudança em uma spec testável. |
 | `myspec-implementar` | Propõe e aprova a árvore de arquivos e então implementa a spec. |
 | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas aprovadas e registra uma inspeção com veredito. |

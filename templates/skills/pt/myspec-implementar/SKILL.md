@@ -1,6 +1,6 @@
 ---
 name: myspec-implementar
-description: Implementa uma especificação existente em uma pasta nomeada sob minhas-specs/specs, preservando diretrizes de produto aprovadas, estrutura de arquivos aprovada, código limpo e testes dos caminhos críticos. Use para implementar, continuar ou concluir uma especificação de código.
+description: Implementa uma especificação existente em uma pasta nomeada sob minhas-specs/specs, preservando estrutura de arquivos aprovada, código limpo e testes dos caminhos críticos. Use para implementar, continuar ou concluir uma especificação de código.
 ---
 
 # Myspec Implementar
@@ -9,9 +9,7 @@ Implemente uma especificação sem decidir silenciosamente sua arquitetura ou co
 
 ## Portão obrigatório de orientações
 
-Antes de avançar além da descoberta inicial e somente-leitura do repositório e da especificação, leia todos os Markdown em `minhas-specs/diretrizes-de-produto/`, `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Todo documento aplicável com `Status: Aprovado` é obrigatório; cumpra-o antes da ação correspondente e exponha conflitos com instruções de maior prioridade. Ausências, documentos não aprovados ou `Nenhum` não impõem restrição; informe limitações relevantes.
-
-Diretrizes de produto aprovadas definem vocabulário e invariantes. Trate-as como restrições da especificação e da árvore de arquivos. Se a especificação conflitar, pare antes de propor ou alterar implementação e peça revisão da especificação ou use `{{skill:myspec-configurar}}` para revisar e aprovar a diretriz.
+Antes de avançar além da descoberta inicial e somente-leitura do repositório e da especificação, leia todos os Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Todo documento aplicável com `Status: Aprovado` é obrigatório; cumpra-o antes da ação correspondente e exponha conflitos com instruções de maior prioridade. Ausências, documentos não aprovados ou `Nenhum` não impõem restrição; informe limitações relevantes.
 
 ## Portão rígido: árvore de arquivos
 
@@ -24,7 +22,7 @@ A árvore, como tudo na pasta da spec, é um registro de trabalho local do desen
 ## Implementação interativa
 
 1. Leia árvore aprovada, especificação, instruções do repositório e código afetado. Se a pasta da spec tiver `inspecoes/`, leia a inspeção de maior número e use seus achados abertos como entrada; o veredito de uma inspeção nunca impede a implementação. Após o portão, leia os arquivos de métrica em `minhas-specs/metricas/` quando existirem, para conhecer as ferramentas e os portões que o código alterado deve cumprir, sem que eles substituam as orientações.
-2. Mapeie cada critério de aceitação para implementação, testes e diretrizes de produto afetadas.
+2. Mapeie cada critério de aceitação para implementação e testes.
 3. Antes de editar, informe a primeira fatia pretendida e levante escolhas materiais não resolvidas. Pergunte, em vez de supor, quando a escolha alterar comportamento público, arquitetura, persistência, segurança, compatibilidade ou a árvore aprovada.
 4. Implemente em fatias revisáveis; se evidência invalidar a árvore, pause e proponha atualização.
 5. Execute testes focados durante a iteração e, depois, o build e conjunto de testes mais amplo proporcionalmente relevante.

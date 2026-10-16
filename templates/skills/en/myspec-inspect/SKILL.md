@@ -1,26 +1,24 @@
 ---
 name: myspec-inspect
-description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, applicable approved product directives, and approved Myspec guidance, measure the metrics defined by the developer-approved metric files under my-specs/metrics and judge them against their gates, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
+description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, and approved Myspec guidance, measure the metrics defined by the developer-approved metric files under my-specs/metrics and judge them against their gates, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
 ---
 
 # Myspec Inspect
 
-Review and measure an implementation without expanding its contract, and record every run as a new inspection so the latest one serves as the completion criterion for advancing to the next spec. A typical cycle repeats implement or patch followed by inspect until the results are satisfactory. Report only gaps that can be traced to an explicit spec requirement, approved file-tree responsibility, applicable approved product directive, or applicable approved Myspec rule.
+Review and measure an implementation without expanding its contract, and record every run as a new inspection so the latest one serves as the completion criterion for advancing to the next spec. A typical cycle repeats implement or patch followed by inspect until the results are satisfactory. Report only gaps that can be traced to an explicit spec requirement, approved file-tree responsibility, or applicable approved Myspec rule.
 
 ## Mandatory Guidance Gate
 
-Before moving beyond initial read-only repository and specification discovery, read every Markdown file that exists under `my-specs/product-directives/`, `my-specs/coding-practices/`, and `my-specs/general-guidelines/`. Treat each applicable document with `Status: Approved` as mandatory for this skill, comply with its rule before taking the action it governs, and surface any conflict with higher-priority instructions before proceeding. A missing folder, missing file, unapproved document, or section explicitly marked `None` creates no mandatory constraint; state the limitation when material.
-
-Treat an approved product directive governing the implementation under review as an inspection criterion even when its `Applies to` field names implementation skills rather than `{{skill:myspec-inspect}}`. Product directives constrain the product behavior being inspected; they do not need to govern the inspection workflow itself.
+Before moving beyond initial read-only repository and specification discovery, read every Markdown file that exists under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat each applicable document with `Status: Approved` as mandatory for this skill, comply with its rule before taking the action it governs, and surface any conflict with higher-priority instructions before proceeding. A missing folder, missing file, unapproved document, or section explicitly marked `None` creates no mandatory constraint; state the limitation when material.
 
 ## Workflow
 
 1. Resolve the named folder under repository-root `my-specs/specs`. Read `spec.md` and, when present, `file-tree.md` in full.
-2. Complete the Mandatory Guidance Gate. Read repository instructions and every metric file under `my-specs/metrics/` when present. Use the metric files to establish quality-tooling applicability and gates, but do not treat them as a substitute for reading the directive and guidance files.
+2. Complete the Mandatory Guidance Gate. Read repository instructions and every metric file under `my-specs/metrics/` when present. Use the metric files to establish quality-tooling applicability and gates, but do not treat them as a substitute for reading the guidance files.
 3. List `my-specs/specs/<spec-name>/inspections/`. When it holds earlier inspections, read the highest-numbered one in full; it is the previous inspection. Otherwise this is the first inspection.
-4. Establish the review baseline from the spec, the approved file tree, applicable approved product directives and guidance, relevant implementation and test files, version-control evidence, and any verification output the developer supplied.
+4. Establish the review baseline from the spec, the approved file tree, applicable approved guidance, relevant implementation and test files, version-control evidence, and any verification output the developer supplied.
 5. Collect the metrics described under [Metrics](#metrics).
-6. Extract only explicit acceptance criteria, defined scope, out-of-scope statements, approved file-tree responsibilities, applicable approved product directives, and applicable guidance rules. Do not turn goals, examples, or absent details into new requirements.
+6. Extract only explicit acceptance criteria, defined scope, out-of-scope statements, approved file-tree responsibilities, and applicable guidance rules. Do not turn goals, examples, or absent details into new requirements.
 7. Trace each extracted item to implementation or test evidence. Inspect only files reasonably connected to that item. Mark an item as `Met`, `Not met`, `Insufficient evidence`, `Not applicable`, or `Baseline conflict`. A missing test proves only that the item lacks test evidence unless the spec or applicable guidance explicitly requires that test.
 8. Re-examine every finding the previous inspection left open, as described under [Follow-up](#follow-up).
 9. Decide the verdict using [Verdict](#verdict).
@@ -50,7 +48,7 @@ Judge each reported value against the `## Gates` of its approved metric file tha
 - a value that misses an `Attention` gate is an `Attention` finding;
 - a value measured only as `(project)` cannot prove a changed-code gate; report the gate as `Insufficient evidence` unless the gate also applies to the project.
 
-An applicable approved spec requirement or product directive that defines a target is judged the same way as a `Blocking` gate. A value with no gate or target is reported without a finding.
+An applicable approved spec requirement that defines a target is judged the same way as a `Blocking` gate. A value with no gate or target is reported without a finding.
 
 ## Follow-up
 
@@ -58,7 +56,7 @@ When a previous inspection exists, give every finding it left open exactly one c
 
 - `Resolved`: current evidence satisfies the item. Name that evidence.
 - `Open`: the gap remains. Keep the finding in the new inspection with its original ID.
-- `Superseded`: the spec, approved file tree, product directive, or rule it traced to changed or was withdrawn. Name the change.
+- `Superseded`: the spec, approved file tree, or rule it traced to changed or was withdrawn. Name the change.
 
 A previously `Met` item that now fails is a new finding marked `(regression)`. Number new findings after the highest finding ID in any earlier inspection so IDs stay stable across inspections.
 
@@ -78,7 +76,7 @@ Keep the record short. It reports results, not the process that produced them:
 
 - **Acceptance Criteria**: one row per acceptance criterion in the spec, with the test or location that proves its status.
 - **Metrics**: the acceptance-criteria and test rows, then one row per reported value of each metric file, with the previous inspection's value, or `—`, and the gate that judges it, or `—`.
-- **Findings**: one line per open finding, `Blocking` first. A `Blocking` finding is any item that makes the verdict `Blocked`, including a violation of an approved product directive, coding practice, or general guideline. An `Attention` finding is a non-blocking point the developer must act on or know about, such as a missed `Attention` gate, an unassessable rule, or an unapproved file tree or metric file. Write `None` when there is none.
+- **Findings**: one line per open finding, `Blocking` first. A `Blocking` finding is any item that makes the verdict `Blocked`, including a violation of an approved coding practice or general guideline. An `Attention` finding is a non-blocking point the developer must act on or know about, such as a missed `Attention` gate, an unassessable rule, or an unapproved file tree or metric file. Write `None` when there is none.
 - **Previous Findings**: only findings the previous inspection left open. Write `None — first inspection.` when there is no previous inspection.
 
 Leave out anything the developer already knows or that does not change a decision: tool names and versions, commands, configuration, author, lists of measured or excluded files, per-file or per-method tables, `Met` items other than acceptance criteria, restated spec text, metric interpretations, and general improvement suggestions.
@@ -89,8 +87,8 @@ Leave out anything the developer already knows or that does not change a decisio
 - Do not treat a proposed or unapproved file tree as an implementation constraint. Report its approval state as an `Attention` finding instead.
 - Do not infer requirements from common practices, framework conventions, naming, or likely intent.
 - When evidence is ambiguous, report `Insufficient evidence` and name the precise evidence needed to decide; do not guess.
-- Do not make a compliance finding against a rule or product directive whose applicability or approval status cannot be established.
-- If the spec or approved file tree conflicts with an applicable approved product directive, mark the affected items as `Baseline conflict`; do not silently choose one contract or recommend implementing the conflict.
+- Do not make a compliance finding against a rule whose applicability or approval status cannot be established.
+- If the spec or approved file tree conflicts with an applicable approved coding practice or general guideline, mark the affected items as `Baseline conflict`; do not silently choose one contract or recommend implementing the conflict.
 - Never carry a previous finding forward or mark it `Resolved` without re-examining current evidence.
 - Preserve the distinction between facts observed in code and an inference drawn from those facts.
 - Respect higher-priority repository and developer instructions. If they conflict with this skill, explain the conflict and inspect unaffected criteria.
