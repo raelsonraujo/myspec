@@ -1,16 +1,23 @@
 {
   "description": {
-    "en": ".NET cyclomatic complexity, line/branch test coverage, and CRAP score with Coverlet and ReportGenerator, plus critical-path performance with BenchmarkDotNet",
-    "pt": "Complexidade ciclomática, cobertura de linhas/ramos e CRAP score para .NET com Coverlet e ReportGenerator, além de performance dos caminhos críticos com BenchmarkDotNet"
+    "en": ".NET cyclomatic complexity, line/branch coverage, CRAP score, and module size with Coverlet and ReportGenerator; coupling with analyzer rule CA1506; dependency rules with ArchUnitNET; mutation score with Stryker.NET; and critical-path performance with BenchmarkDotNet",
+    "pt": "Complexidade ciclomática, cobertura de linhas/ramos, CRAP score e tamanho de módulo para .NET com Coverlet e ReportGenerator; acoplamento com a regra CA1506; regras de dependência com ArchUnitNET; pontuação de mutação com Stryker.NET; e performance dos caminhos críticos com BenchmarkDotNet"
   },
   "measurementNames": {
     "pt": {
       "run-coverage-report": "gerar-relatorio-de-cobertura",
       "run-benchmarks": "executar-benchmarks",
+      "run-coupling": "medir-acoplamento",
+      "run-architecture-tests": "executar-testes-de-arquitetura",
+      "run-mutation": "executar-testes-de-mutacao",
       "coverlet": "cobertura",
+      "stryker-config": "configuracao-do-stryker",
+      "coupling": "acoplamento",
       "coverage": "cobertura",
       "raw": "bruto",
       "report": "relatorio",
+      "architecture": "arquitetura",
+      "mutation": "mutacao",
       "benchmarks": "benchmarks"
     }
   },

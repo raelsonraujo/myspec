@@ -82,8 +82,11 @@ try {
     New-Item -ItemType Directory -Path $rawCoverageDirectory -Force | Out-Null
 
     Invoke-DotnetCommand -Arguments @('build', $resolvedSolutionPath, '--configuration', 'Release', '--no-restore')
+    # Architecture tests only inspect assemblies, add no coverage, and are measured by the architecture tests script, so a
+    # violated dependency rule must not stop this run.
     Invoke-DotnetCommand -Arguments @(
         'test', $resolvedSolutionPath, '--configuration', 'Release', '--no-build',
+        '--filter', 'FullyQualifiedName!~.ArchitectureTests.',
         '--settings', "$measurementPath/$runSettingsName", '--collect:XPlat Code Coverage',
         '--results-directory', "$measurementPath/$coverageName/$rawName"
     )

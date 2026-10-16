@@ -1,0 +1,4 @@
+is_global = true
+
+# Class coupling, applied only to the builds that import the .targets file of the same name.
+dotnet_diagnostic.CA1506.severity = warning

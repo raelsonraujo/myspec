@@ -18,7 +18,7 @@ Complexidade ciclomática de cada método controlado pelo desenvolvedor, consoli
 - Comando de restauração/bootstrap: `dotnet restore {{solution}}` seguido de `dotnet tool restore`
 - Comandos pré-requisito: Nenhum; o comando de medição restaura, compila em Release e executa os testes antes de gerar o relatório
 - Fonte de versão: referência de pacote `coverlet.collector` em cada projeto de testes; manifesto de ferramentas locais (`dotnet-tools.json` ou `.config/dotnet-tools.json`) para o ReportGenerator
-- Execução compartilhada: uma execução de `minhas-specs/medicao/gerar-relatorio-de-cobertura` mede esta métrica, a cobertura de testes e o CRAP score; execute-a uma única vez ao medir mais de uma delas
+- Execução compartilhada: uma execução de `minhas-specs/medicao/gerar-relatorio-de-cobertura` mede esta métrica, a cobertura de testes, o CRAP score e o tamanho de módulo; execute-a uma única vez ao medir mais de uma delas
 - Raiz dos resultados gerados: `minhas-specs/medicao/cobertura/` (ignorada por `minhas-specs/medicao/.gitignore` e recriada a cada execução)
 
 ## Medição
