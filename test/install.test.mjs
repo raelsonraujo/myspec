@@ -247,13 +247,28 @@ describe('myspec install --tooling', () => {
       'minhas-specs/medicao/gerar-relatorio-de-cobertura.sh',
       'minhas-specs/medicao/executar-benchmarks.ps1',
       'minhas-specs/medicao/executar-benchmarks.sh',
+      'minhas-specs/medicao/medir-acoplamento.ps1',
+      'minhas-specs/medicao/medir-acoplamento.sh',
+      'minhas-specs/medicao/acoplamento.targets',
+      'minhas-specs/medicao/acoplamento.globalconfig',
+      'minhas-specs/medicao/CodeMetricsConfig.txt',
+      'minhas-specs/medicao/executar-testes-de-arquitetura.ps1',
+      'minhas-specs/medicao/executar-testes-de-arquitetura.sh',
+      'minhas-specs/medicao/executar-testes-de-mutacao.ps1',
+      'minhas-specs/medicao/executar-testes-de-mutacao.sh',
+      'minhas-specs/medicao/configuracao-do-stryker.json',
       'minhas-specs/medicao/.gitignore',
       'minhas-specs/medicao/.gitattributes',
       'minhas-specs/metricas/complexidade-ciclomatica.md',
       'minhas-specs/metricas/cobertura-de-testes.md',
       'minhas-specs/metricas/crap-score.md',
+      'minhas-specs/metricas/tamanho-de-modulo.md',
+      'minhas-specs/metricas/acoplamento.md',
+      'minhas-specs/metricas/conformidade-de-dependencias.md',
+      'minhas-specs/metricas/pontuacao-de-mutacao.md',
       'minhas-specs/metricas/performance.md',
       'minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md',
+      'minhas-specs/orientacoes-gerais/regras-de-dependencia.md',
       'minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md',
     ]) {
       assert.ok(existsSync(join(dir, path)), path);
@@ -283,8 +298,12 @@ describe('myspec install --tooling', () => {
     installOk(dir, '-p', 'codex', '-l', 'en', '-t', 'dotnet-quality');
 
     assert.deepEqual(readdirSync(join(dir, 'my-specs/metrics')).sort(), [
+      'coupling.md',
       'crap-score.md',
       'cyclomatic-complexity.md',
+      'dependency-conformance.md',
+      'module-size.md',
+      'mutation-score.md',
       'performance.md',
       'test-coverage.md',
     ]);
@@ -300,6 +319,15 @@ describe('myspec install --tooling', () => {
     assert.match(read(dir, 'my-specs/metrics/crap-score.md'), /^\| Highest CRAP score among methods \| `≤ 30` \| Both \| Attention \|$/m);
     assert.match(read(dir, 'my-specs/metrics/test-coverage.md'), /^- Reported values: line coverage and branch coverage/m);
     assert.match(read(dir, 'my-specs/metrics/test-coverage.md'), /^## Gates\n\nNone\.$/m);
+    assert.match(read(dir, 'my-specs/metrics/module-size.md'), /^\| Methods above 30 executable lines \| `= 0` \| Both \| Attention \|$/m);
+    assert.match(read(dir, 'my-specs/metrics/coupling.md'), /^\| Members with coupling above 40 \| `= 0` \| Both \| Attention \|$/m);
+    assert.match(read(dir, 'my-specs/metrics/dependency-conformance.md'), /^\| Violated dependency rules \| `= 0` \| Both \| Blocking \|$/m);
+    assert.match(read(dir, 'my-specs/metrics/mutation-score.md'), /^\| Mutation score of the changed files \| `≥ 60%` \| Changed code \| Attention \|$/m);
+    assert.match(read(dir, 'my-specs/metrics/mutation-score.md'), /`dotnet stryker --solution App\.slnx /);
+    assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/dependency-rules.md')));
+    // The coupling thresholds and the gates of its metric must stay in sync.
+    assert.equal(read(dir, 'my-specs/measurement/CodeMetricsConfig.txt'), 'CA1506(Type): 95\nCA1506: 40\n');
+    assert.match(read(dir, 'my-specs/metrics/coupling.md'), /^\| Types with coupling above 95 \|/m);
     assert.match(
       read(dir, 'my-specs/general-guidelines/build-and-test-commands.md'),
       /`dotnet build App\.slnx --configuration Release --no-restore`/,
@@ -309,7 +337,7 @@ describe('myspec install --tooling', () => {
     assert.match(read(dir, 'my-specs/measurement/README.md'), /dotnet restore App\.slnx/);
     assert.match(read(dir, 'my-specs/measurement/README.md'), /dotnet sln App\.slnx add/);
     assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/performance-critical-paths.md')));
-    for (const script of ['run-coverage-report', 'run-benchmarks']) {
+    for (const script of ['run-coverage-report', 'run-benchmarks', 'run-coupling', 'run-architecture-tests', 'run-mutation']) {
       assert.doesNotMatch(read(dir, `my-specs/measurement/${script}.sh`), /\r/, script);
       assert.ok(existsSync(join(dir, `my-specs/measurement/${script}.ps1`)), script);
     }

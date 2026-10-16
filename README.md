@@ -39,25 +39,40 @@ Os skills não supõem métricas: cada arquivo em `metrics/` (`metricas/`) é um
 myspec install -p claude -l pt -t dotnet-quality
 ```
 
-`dotnet-quality` mede complexidade ciclomática, cobertura de linhas/ramos e CRAP score em .NET com Coverlet e ReportGenerator, em uma única execução de testes. Em uma execução separada, mede a performance dos caminhos críticos aprovados (bytes alocados e tempo médio por operação) com BenchmarkDotNet:
+`dotnet-quality` mede em .NET, com um script por grupo de métricas:
+
+- complexidade ciclomática, cobertura de linhas/ramos, CRAP score e tamanho de módulo com Coverlet e ReportGenerator, em uma única execução de testes;
+- acoplamento de tipos e membros com a regra CA1506 dos analisadores do SDK, ativada só nessa compilação;
+- conformidade com as regras de dependência aprovadas, por testes de arquitetura do ArchUnitNET;
+- pontuação de mutação com Stryker.NET, isolável pelos arquivos de uma spec;
+- performance dos caminhos críticos aprovados (bytes alocados e tempo médio por operação) com BenchmarkDotNet.
 
 ```text
 minhas-specs/                                      # -l pt (my-specs/ em -l en)
 ├── medicao/                                       # measurement/ em -l en, com os nomes em inglês
 │   ├── README.md                                  # instalação das dependências e uso
 │   ├── cobertura.runsettings                      # filtros de cobertura
-│   ├── gerar-relatorio-de-cobertura.ps1           # restore → build → test → relatório
-│   ├── gerar-relatorio-de-cobertura.sh
-│   ├── executar-benchmarks.ps1                    # benchmarks dos caminhos críticos em Release
-│   ├── executar-benchmarks.sh
+│   ├── gerar-relatorio-de-cobertura.ps1/.sh       # restore → build → test → relatório
+│   ├── medir-acoplamento.ps1/.sh                  # build Release com CA1506 → SARIF
+│   ├── acoplamento.targets, .globalconfig         # ativam a CA1506 só nessa compilação
+│   ├── CodeMetricsConfig.txt                      # limites de acoplamento
+│   ├── executar-testes-de-arquitetura.ps1/.sh     # testes de arquitetura → TRX
+│   ├── executar-testes-de-mutacao.ps1/.sh         # Stryker.NET → relatório JSON/HTML
+│   ├── configuracao-do-stryker.json               # exclusões e limites da mutação
+│   ├── executar-benchmarks.ps1/.sh                # benchmarks dos caminhos críticos em Release
 │   ├── .gitignore                                 # ignora cobertura/ e benchmarks/ gerados
 │   └── .gitattributes                             # mantém o .sh com LF
 ├── metricas/
 │   ├── complexidade-ciclomatica.md                # portão: CC ≤ 15
 │   ├── cobertura-de-testes.md
 │   ├── crap-score.md                              # portão: CRAP ≤ 30
+│   ├── tamanho-de-modulo.md                       # portões: método ≤ 30 e classe ≤ 300 linhas executáveis
+│   ├── acoplamento.md                             # portões: tipo ≤ 95 e membro ≤ 40 tipos acoplados
+│   ├── conformidade-de-dependencias.md            # portão bloqueante: nenhuma regra violada
+│   ├── pontuacao-de-mutacao.md                    # portão: ≥ 60% no código alterado
 │   └── performance.md                             # portões: orçamentos de alocação/tempo de cada caminho crítico
 ├── orientacoes-gerais/comandos-de-build-e-teste.md  # restore, build e testes com a solução detectada na raiz
+├── orientacoes-gerais/regras-de-dependencia.md      # orientação proposta: regras de dependência entre camadas e módulos
 └── orientacoes-gerais/<caminhos críticos>.md      # orientação proposta: caminhos críticos e seus orçamentos
 ```
 

@@ -18,7 +18,7 @@ Share of production lines and branches executed by the tests, per file, class, a
 - Restore or bootstrap command: `dotnet restore {{solution}}` followed by `dotnet tool restore`
 - Prerequisite commands: None; the measurement command restores, builds in Release, and runs the tests before reporting
 - Version source: `coverlet.collector` and `Microsoft.NET.Test.Sdk` package references in each test project; the local tool manifest (`dotnet-tools.json` or `.config/dotnet-tools.json`) for ReportGenerator
-- Shared run: one execution of `my-specs/measurement/run-coverage-report` measures this metric, Cyclomatic Complexity, and CRAP Score; run it once when measuring more than one of them
+- Shared run: one execution of `my-specs/measurement/run-coverage-report` measures this metric, Cyclomatic Complexity, CRAP Score, and Module Size; run it once when measuring more than one of them
 - Generated results root: `my-specs/measurement/coverage/` (ignored through `my-specs/measurement/.gitignore` and recreated on every run)
 
 ## Measurement
@@ -28,7 +28,7 @@ Share of production lines and branches executed by the tests, per file, class, a
 - Version: `coverlet.collector` `6.0.4` and `Microsoft.NET.Test.Sdk` `17.14.1`, pinned in each test project; ReportGenerator `5.5.10`, pinned in the local tool manifest
 - Installation or restore: follow `my-specs/measurement/README.md`, then `dotnet restore {{solution}}` and `dotnet tool restore`
 - Measurement command: `pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1 -NoOpen` or `bash my-specs/measurement/run-coverage-report.sh --no-open` (restore, build, test, and report in order), which run:
-  - coverage: `dotnet test {{solution}} --configuration Release --no-build --settings my-specs/measurement/coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory my-specs/measurement/coverage/raw`
+  - coverage: `dotnet test {{solution}} --configuration Release --no-build --filter "FullyQualifiedName!~.ArchitectureTests." --settings my-specs/measurement/coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory my-specs/measurement/coverage/raw`
   - report: `dotnet reportgenerator -reports:"my-specs/measurement/coverage/raw/**/coverage.cobertura.xml" -targetdir:"my-specs/measurement/coverage/report" -reporttypes:"Html;JsonSummary;Cobertura"`
 - Output format: Cobertura XML with line and branch coverage; JSON summary; HTML
 - Result path:

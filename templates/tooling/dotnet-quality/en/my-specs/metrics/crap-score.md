@@ -18,7 +18,7 @@ Change risk of each developer-controlled method, combining cyclomatic complexity
 - Restore or bootstrap command: `dotnet restore {{solution}}` followed by `dotnet tool restore`
 - Prerequisite commands: None; the measurement command restores, builds in Release, and runs the tests before reporting
 - Version source: `coverlet.collector` package reference in each test project; the local tool manifest (`dotnet-tools.json` or `.config/dotnet-tools.json`) for ReportGenerator
-- Shared run: one execution of `my-specs/measurement/run-coverage-report` measures this metric, Cyclomatic Complexity, and Test Coverage; run it once when measuring more than one of them
+- Shared run: one execution of `my-specs/measurement/run-coverage-report` measures this metric, Cyclomatic Complexity, Test Coverage, and Module Size; run it once when measuring more than one of them
 - Generated results root: `my-specs/measurement/coverage/` (ignored through `my-specs/measurement/.gitignore` and recreated on every run)
 
 ## Measurement

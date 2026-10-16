@@ -1,0 +1,15 @@
+{
+  "stryker-config": {
+    "reporters": ["json", "html", "progress"],
+    "thresholds": { "high": 80, "low": 60, "break": 0 },
+    "mutate": [
+      "!**/bin/**/*.cs",
+      "!**/obj/**/*.cs",
+      "!**/Migrations/**/*.cs",
+      "!**/*.g.cs",
+      "!**/*.Designer.cs",
+      "!**/*.generated.cs",
+      "!**/AssemblyInfo.cs"
+    ]
+  }
+}

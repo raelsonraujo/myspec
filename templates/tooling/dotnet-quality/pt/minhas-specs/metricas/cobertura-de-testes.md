@@ -18,7 +18,7 @@ Proporção de linhas e de ramos de produção executados pelos testes, por arqu
 - Comando de restauração/bootstrap: `dotnet restore {{solution}}` seguido de `dotnet tool restore`
 - Comandos pré-requisito: Nenhum; o comando de medição restaura, compila em Release e executa os testes antes de gerar o relatório
 - Fonte de versão: referências de pacote `coverlet.collector` e `Microsoft.NET.Test.Sdk` em cada projeto de testes; manifesto de ferramentas locais (`dotnet-tools.json` ou `.config/dotnet-tools.json`) para o ReportGenerator
-- Execução compartilhada: uma execução de `minhas-specs/medicao/gerar-relatorio-de-cobertura` mede esta métrica, a complexidade ciclomática e o CRAP score; execute-a uma única vez ao medir mais de uma delas
+- Execução compartilhada: uma execução de `minhas-specs/medicao/gerar-relatorio-de-cobertura` mede esta métrica, a complexidade ciclomática, o CRAP score e o tamanho de módulo; execute-a uma única vez ao medir mais de uma delas
 - Raiz dos resultados gerados: `minhas-specs/medicao/cobertura/` (ignorada por `minhas-specs/medicao/.gitignore` e recriada a cada execução)
 
 ## Medição
@@ -28,7 +28,7 @@ Proporção de linhas e de ramos de produção executados pelos testes, por arqu
 - Versão: `coverlet.collector` `6.0.4` e `Microsoft.NET.Test.Sdk` `17.14.1`, fixadas em cada projeto de testes; ReportGenerator `5.5.10`, fixado no manifesto de ferramentas locais
 - Instalação ou restauração: siga `minhas-specs/medicao/README.md` e depois execute `dotnet restore {{solution}}` e `dotnet tool restore`
 - Comando de medição: `pwsh -NoProfile -File minhas-specs/medicao/gerar-relatorio-de-cobertura.ps1 -NoOpen` ou `bash minhas-specs/medicao/gerar-relatorio-de-cobertura.sh --no-open` (restauração, build, testes e relatório, nessa ordem), que executam:
-  - cobertura: `dotnet test {{solution}} --configuration Release --no-build --settings minhas-specs/medicao/cobertura.runsettings --collect:"XPlat Code Coverage" --results-directory minhas-specs/medicao/cobertura/bruto`
+  - cobertura: `dotnet test {{solution}} --configuration Release --no-build --filter "FullyQualifiedName!~.ArchitectureTests." --settings minhas-specs/medicao/cobertura.runsettings --collect:"XPlat Code Coverage" --results-directory minhas-specs/medicao/cobertura/bruto`
   - relatório: `dotnet reportgenerator -reports:"minhas-specs/medicao/cobertura/bruto/**/coverage.cobertura.xml" -targetdir:"minhas-specs/medicao/cobertura/relatorio" -reporttypes:"Html;JsonSummary;Cobertura"`
 - Formato e caminho do resultado:
   - bruto: `minhas-specs/medicao/cobertura/bruto/**/coverage.cobertura.xml`

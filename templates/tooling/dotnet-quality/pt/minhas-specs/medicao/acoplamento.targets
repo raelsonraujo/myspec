@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    Imported only by the coupling script of this folder through CustomAfterMicrosoftCommonTargets, so regular builds are unaffected.
+    Enables rule CA1506 (class coupling) in production projects and writes one SARIF log per project.
+  -->
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true' and !$(MSBuildProjectName.EndsWith('.Benchmarks'))">
+    <RunAnalyzers>true</RunAnalyzers>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+    <ErrorLog>$(CouplingResultsDirectory)/$(MSBuildProjectName).sarif,version=2.1</ErrorLog>
+  </PropertyGroup>
+  <!-- The SDK turns discovered .globalconfig files into EditorConfigFiles before this file is imported. -->
+  <ItemGroup Condition="'$(IsTestProject)' != 'true' and !$(MSBuildProjectName.EndsWith('.Benchmarks'))">
+    <EditorConfigFiles Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).globalconfig" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)CodeMetricsConfig.txt" />
+  </ItemGroup>
+</Project>
