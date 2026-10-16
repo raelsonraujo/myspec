@@ -91,7 +91,7 @@ dotnet build "$solution_path" --configuration Release --no-restore
 # Architecture tests only inspect assemblies, add no coverage, and are measured by the architecture tests script, so a
 # violated dependency rule must not stop this run.
 dotnet test "$solution_path" --configuration Release --no-build \
-  --filter 'FullyQualifiedName!~.ArchitectureTests.' \
+  --filter 'Category!=Architecture' \
   --settings "$measurement_path/$runsettings_name" \
   --collect:"XPlat Code Coverage" \
   --results-directory "$measurement_path/$coverage_name/$raw_name"

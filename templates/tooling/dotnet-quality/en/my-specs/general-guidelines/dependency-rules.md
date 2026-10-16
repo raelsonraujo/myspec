@@ -33,7 +33,7 @@ Specs:
 
 Architecture tests:
 
-- Live in a test project whose name ends in `.ArchitectureTests` and load the production assemblies with ArchUnitNET's `ArchLoader`.
+- Live in a dedicated test project, named and placed by the repository's conventions (suggestion: `<Product>.ArchitectureTests`), and load the production assemblies with ArchUnitNET's `ArchLoader`.
 - Each rule is a single test with `[Trait("Category", "Architecture")]` and `[Trait("Rule", "<ID>")]`, whose name starts with the ID, such as `DEP_01_...`, because the TRX report records the test name but not its traits.
 - A one-off exception to a rule exists only when this guideline lists it, with the exact excluded type and its rationale.
 

@@ -17,13 +17,13 @@ Violações das regras de dependência aprovadas em `minhas-specs/orientacoes-ge
 - Diretório de trabalho: raiz do repositório
 - Comando de restauração/bootstrap: `dotnet restore {{solution}}`
 - Comandos pré-requisito: Nenhum; o comando de medição compila a solução em Release antes de executar os testes
-- Fonte de versão: referência de pacote `TngTech.ArchUnitNET` e da integração com o framework de testes no projeto `*.ArchitectureTests`
+- Fonte de versão: referência de pacote `TngTech.ArchUnitNET` e da integração com o framework de testes no projeto de testes de arquitetura
 - Raiz dos resultados gerados: `minhas-specs/medicao/arquitetura/` (ignorada por um `.gitignore` que o script grava nela e recriada a cada execução)
 
 ## Medição
 
 - Executor de testes: VSTest via `dotnet test`
-- Ferramenta: ArchUnitNET, nos testes do projeto `*.ArchitectureTests` marcados com `[Trait("Category", "Architecture")]`
+- Ferramenta: ArchUnitNET, nos testes do projeto de testes de arquitetura marcados com `[Trait("Category", "Architecture")]`
 - Versão: `TngTech.ArchUnitNET` `0.13.4` e a integração correspondente (`TngTech.ArchUnitNET.xUnit`, `TngTech.ArchUnitNET.xUnitV3`, `TngTech.ArchUnitNET.NUnit` ou `TngTech.ArchUnitNET.MSTestV2`) `0.13.4`, fixadas no projeto de testes de arquitetura
 - Instalação ou restauração: siga `minhas-specs/medicao/README.md` e depois execute `dotnet restore {{solution}}`
 - Comando de medição: `pwsh -NoProfile -File minhas-specs/medicao/executar-testes-de-arquitetura.ps1` ou `bash minhas-specs/medicao/executar-testes-de-arquitetura.sh`, que executam `dotnet test {{solution}} --configuration Release --filter "Category=Architecture" --logger "trx;LogFilePrefix=arquitetura" --results-directory minhas-specs/medicao/arquitetura`

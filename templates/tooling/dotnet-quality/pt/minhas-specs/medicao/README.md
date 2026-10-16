@@ -60,25 +60,25 @@ O acoplamento não precisa de instalação: a regra CA1506 faz parte dos analisa
 
 ### 3. Projeto de testes de arquitetura
 
-As regras de dependência são verificadas por testes do ArchUnitNET em um projeto cujo nome termina em `.ArchitectureTests`. Crie-o com o framework de testes do repositório (o exemplo usa xUnit), adicione-o à solução e referencie os projetos de produção cujas dependências as regras restringem:
+As regras de dependência são verificadas por testes do ArchUnitNET em um projeto de testes próprio. Nome e pasta seguem as convenções do repositório: os scripts não dependem deles, porque encontram esses testes pela categoria `Architecture`. Sugestão: `<Produto>.TestesArquitetura`. Crie-o com o framework de testes do repositório (o exemplo usa xUnit), adicione-o à solução e referencie os projetos de produção cujas dependências as regras restringem:
 
 ```bash
-dotnet new xunit -n <Produto>.ArchitectureTests -o tests/<Produto>.ArchitectureTests
+dotnet new xunit -n <Produto>.TestesArquitetura -o tests/<Produto>.TestesArquitetura
 ```
 
 ```bash
-dotnet sln {{solution}} add tests/<Produto>.ArchitectureTests/<Produto>.ArchitectureTests.csproj
+dotnet sln {{solution}} add tests/<Produto>.TestesArquitetura/<Produto>.TestesArquitetura.csproj
 ```
 
 ```bash
-dotnet add tests/<Produto>.ArchitectureTests/<Produto>.ArchitectureTests.csproj package TngTech.ArchUnitNET.xUnit --version 0.13.4
+dotnet add tests/<Produto>.TestesArquitetura/<Produto>.TestesArquitetura.csproj package TngTech.ArchUnitNET.xUnit --version 0.13.4
 ```
 
 ```bash
-dotnet add tests/<Produto>.ArchitectureTests/<Produto>.ArchitectureTests.csproj reference <ProjetoDeProducao>/<ProjetoDeProducao>.csproj
+dotnet add tests/<Produto>.TestesArquitetura/<Produto>.TestesArquitetura.csproj reference <ProjetoDeProducao>/<ProjetoDeProducao>.csproj
 ```
 
-Com xUnit v3, NUnit ou MSTest, use `TngTech.ArchUnitNET.xUnitV3`, `TngTech.ArchUnitNET.NUnit` ou `TngTech.ArchUnitNET.MSTestV2` na mesma versão. O script filtra os testes por `Category=Architecture` e `Rule=<ID>`; com NUnit ou MSTest, confirme que o adaptador aceita esses nomes no `--filter` e ajuste o script se preciso.
+Com xUnit v3, NUnit ou MSTest, use `TngTech.ArchUnitNET.xUnitV3`, `TngTech.ArchUnitNET.NUnit` ou `TngTech.ArchUnitNET.MSTestV2` na mesma versão. Os scripts filtram os testes por `Category=Architecture` e `Rule=<ID>`; com NUnit ou MSTest, confirme que o adaptador aceita esses nomes no `--filter` e ajuste o script se preciso.
 
 Cada regra da orientação é um teste com a categoria `Architecture`, o trait `Rule` e um nome que começa com o ID da regra, porque o relatório TRX registra o nome do teste, mas não seus traits:
 
@@ -263,7 +263,7 @@ O `gerar-relatorio-de-cobertura`:
 
 1. Restaura os pacotes da solução e as ferramentas locais do .NET.
 2. Compila a solução em `Release`.
-3. Executa os testes com o coletor `XPlat Code Coverage`, usando `minhas-specs/medicao/cobertura.runsettings`, e produz arquivos Cobertura em `minhas-specs/medicao/cobertura/bruto/`. Os testes dos namespaces `*.ArchitectureTests.*` ficam de fora: eles só leem os assemblies, não acrescentam cobertura e são medidos pelo `executar-testes-de-arquitetura`, então uma regra violada não interrompe esta execução.
+3. Executa os testes com o coletor `XPlat Code Coverage`, usando `minhas-specs/medicao/cobertura.runsettings`, e produz arquivos Cobertura em `minhas-specs/medicao/cobertura/bruto/`. Os testes da categoria `Architecture` ficam de fora: eles só leem os assemblies, não acrescentam cobertura e são medidos pelo `executar-testes-de-arquitetura`, então uma regra violada não interrompe esta execução.
 4. Usa o ReportGenerator para criar o HTML, o resumo JSON e o Cobertura consolidado em `minhas-specs/medicao/cobertura/relatorio/`.
 
 O `medir-acoplamento` recompila a solução em `Release`, sem build incremental, importando `acoplamento.targets` em cada projeto que não seja de testes nem de benchmarks. Esse arquivo ativa a regra CA1506 com os limites de `CodeMetricsConfig.txt` e grava um log SARIF por projeto em `minhas-specs/medicao/acoplamento/`; os builds normais não mudam.

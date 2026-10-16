@@ -17,13 +17,13 @@ Violations of the dependency rules approved in `my-specs/general-guidelines/depe
 - Working directory: repository root
 - Restore or bootstrap command: `dotnet restore {{solution}}`
 - Prerequisite commands: None; the measurement command builds the solution in Release before running the tests
-- Version source: the `TngTech.ArchUnitNET` and test framework integration package references in the `*.ArchitectureTests` project
+- Version source: the `TngTech.ArchUnitNET` and test framework integration package references in the architecture test project
 - Generated results root: `my-specs/measurement/architecture/` (ignored through a `.gitignore` the script writes into it, and recreated on every run)
 
 ## Measurement
 
 - Test runner: VSTest through `dotnet test`
-- Tool: ArchUnitNET, in the `*.ArchitectureTests` project's tests marked with `[Trait("Category", "Architecture")]`
+- Tool: ArchUnitNET, in the architecture test project's tests marked with `[Trait("Category", "Architecture")]`
 - Version: `TngTech.ArchUnitNET` `0.13.4` and the matching integration (`TngTech.ArchUnitNET.xUnit`, `TngTech.ArchUnitNET.xUnitV3`, `TngTech.ArchUnitNET.NUnit`, or `TngTech.ArchUnitNET.MSTestV2`) `0.13.4`, pinned in the architecture test project
 - Installation or restore: follow `my-specs/measurement/README.md`, then `dotnet restore {{solution}}`
 - Measurement command: `pwsh -NoProfile -File my-specs/measurement/run-architecture-tests.ps1` or `bash my-specs/measurement/run-architecture-tests.sh`, which run `dotnet test {{solution}} --configuration Release --filter "Category=Architecture" --logger "trx;LogFilePrefix=architecture" --results-directory my-specs/measurement/architecture`
