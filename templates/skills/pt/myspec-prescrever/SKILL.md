@@ -26,5 +26,5 @@ Antes de avançar além da descoberta da solicitação e do repositório, leia t
 - Defina áreas ou responsabilidades de código esperadas sem prescrever arquivos, salvo quando a solicitação ou evidência do repositório os sustentar.
 - Separe explicitamente escopo e fora de escopo. Escreva critérios como verificações observáveis de QA; prefira `Dado / Quando / Então` quando trouxer precisão.
 - Cubra caminhos felizes, falhas relevantes, limites, permissões, efeitos nos dados e compatibilidade quando aplicável. Dê identificador estável a cada critério, como `CA-01`.
-- Não invente comportamento de produto que nem a solicitação nem uma fonte de produto fornecida pelo desenvolvedor, como uma issue ou tarefa, estabeleçam. Registre uma suposição razoável ou pergunte se a decisão for material.
+- Não invente comportamento de produto além do que a solicitação estabelece. Registre uma suposição razoável ou pergunte se a decisão for material.
 - Preserve arquivos existentes. Se a pasta sugerida já existir, atualize-a somente se o desenvolvedor quiser claramente revisá-la; caso contrário, aloque a próxima sequência. Nunca deixe orientação Myspec sobrepor instruções superiores.

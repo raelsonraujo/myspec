@@ -154,7 +154,7 @@ export function retireProductDirectives(root: string, language: LanguageId): Wor
   if (entries.every((name) => name === '.gitkeep')) {
     rmSync(dir, { recursive: true });
   } else {
-    result.warnings.push(`The skills no longer read ${path}/; keep its product rules in your product sources and delete it.`);
+    result.warnings.push(`The skills no longer read ${path}/; carry the product rules it holds into your specs and delete it.`);
   }
   return result;
 }
