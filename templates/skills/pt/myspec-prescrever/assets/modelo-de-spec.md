@@ -14,7 +14,9 @@
 
 ## Critérios de aceitação
 
-Estes cenários BDD são a fonte única da verdade dos comportamentos mensuráveis desta mudança. Dê a cada cenário distinto um ID estável `CA-NN` e referencie-o na árvore, nas evidências de implementação e nas inspeções. Mantenha aqui todos os resultados observáveis obrigatórios, inclusive os resumidos em outras seções desta spec.
+Estes cenários BDD são a fonte única da verdade dos comportamentos mensuráveis específicos desta mudança. Dê a cada cenário distinto um ID estável `CA-NN` e referencie-o na árvore, nas evidências de implementação e nas inspeções. Mantenha aqui todos os resultados observáveis obrigatórios específicos da mudança, inclusive os resumidos em outras seções desta spec.
+
+Não repita práticas de código ou orientações gerais como critérios; regras aprovadas aplicáveis são exigidas diretamente de seus documentos, sem CA. Referencie a origem quando precisar de contexto e especifique apenas comportamento que a mudança acrescenta ou altera.
 
 ### CA-01: <Resultado observável>
 

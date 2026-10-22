@@ -18,7 +18,7 @@ Before moving beyond initial read-only repository and specification discovery, r
 3. List `my-specs/specs/<spec-name>/inspections/`. When it holds earlier inspections, read the highest-numbered one in full; it is the previous inspection. Otherwise this is the first inspection.
 4. Establish the review baseline from the spec, the approved file tree, applicable approved guidance, relevant implementation and test files, version-control evidence, and any verification output the developer supplied.
 5. Collect the metrics described under [Metrics](#metrics).
-6. Use the identified BDD acceptance criteria in `spec.md` as the single source of truth for measurable behavior. Check for explicit `Given / When / Then` steps and verifiable outcomes. Scope and out-of-scope statements constrain boundaries; approved file-tree responsibilities, guidance, and metric gates remain engineering checks. Do not derive additional behavioral requirements from goals, examples, assumptions, code, tests, the tree, or previous findings. If a required behavior appears only elsewhere in the spec, report a contract gap and recommend `{{skill:myspec-prescribe}}` to express it as a criterion.
+6. Use the identified BDD acceptance criteria in `spec.md` as the single source of truth for change-specific measurable behavior. Check for explicit `Given / When / Then` steps and verifiable outcomes. Scope and out-of-scope statements constrain boundaries; approved file-tree responsibilities, guidance, and metric gates remain engineering checks. Do not derive additional behavioral requirements from goals, examples, assumptions, code, tests, the tree, or previous findings. If a required change-specific behavior not already established by applicable approved guidance appears only elsewhere in the spec, report a contract gap and recommend `{{skill:myspec-prescribe}}` to express it as a criterion.
 7. Trace each criterion ID to evidence that establishes its Given state, exercises its When event, and verifies every Then/And outcome. A test name, passing suite, coverage percentage, or implementation location alone does not prove a scenario. Mark a criterion `Met` only when all outcomes are verified, `Not met` when evidence contradicts an outcome, or `Insufficient evidence` when evidence is missing or partial. Preserve all criterion IDs in the record; never omit one or use `Not applicable` to bypass it. A missing automated test alone is not a behavioral failure when concrete manual or other evidence verifies the scenario, unless the spec or applicable guidance requires automation. Assess separate engineering items as `Met`, `Not met`, `Insufficient evidence`, `Not applicable`, or `Baseline conflict`. Inspect only files reasonably connected to the assessed items.
 8. Re-examine every finding the previous inspection left open, as described under [Follow-up](#follow-up).
 9. Decide the verdict using [Verdict](#verdict).
@@ -48,7 +48,7 @@ Judge each reported value against the `## Gates` of its approved metric file tha
 - a value that misses an `Attention` gate is an `Attention` finding;
 - a value measured only as `(project)` cannot prove a changed-code gate; report the gate as `Insufficient evidence` unless the gate also applies to the project.
 
-A spec-specific measurable behavior or target must be defined in a BDD acceptance criterion and judged with that criterion's conditions and expected outcomes, with the same blocking effect as a `Blocking` gate. If the target appears only elsewhere in the spec, report a contract gap instead of creating a parallel acceptance rule. A value with no gate or criterion target is reported without a finding.
+A new spec-specific measurable behavior or target not already established by applicable approved guidance must be defined in a BDD acceptance criterion and judged with that criterion's conditions and expected outcomes, with the same blocking effect as a `Blocking` gate. If the target appears only elsewhere in the spec, report a contract gap instead of creating a parallel acceptance rule. A value with no gate or criterion target is reported without a finding.
 
 ## Follow-up
 
@@ -62,7 +62,7 @@ A previously `Met` item that now fails is a new finding marked `(regression)`. N
 
 ## Verdict
 
-- `Blocked`: at least one item is `Not met` or `Baseline conflict`, an acceptance criterion is `Insufficient evidence`, the build or tests failed, or the spec has a contract gap (missing criteria, missing BDD steps, unverifiable or contradictory outcomes, or required behavior outside the criteria). Recommend `{{skill:myspec-prescribe}}` for contract gaps without rewriting the spec during inspection; continue inspecting unaffected criteria.
+- `Blocked`: at least one item is `Not met` or `Baseline conflict`, an acceptance criterion is `Insufficient evidence`, the build or tests failed, or the spec has a contract gap (missing criteria, missing BDD steps, unverifiable or contradictory outcomes, or required change-specific behavior outside the criteria that is not already established by applicable approved guidance). Recommend `{{skill:myspec-prescribe}}` for contract gaps without rewriting the spec during inspection; continue inspecting unaffected criteria.
 - `Ready with observations`: nothing is blocking, but a non-acceptance-criterion item is `Insufficient evidence`, a metric is `Not measured`, or another limitation materially narrows the review.
 - `Ready`: every assessed item is `Met` or `Not applicable`, every metric was measured, and no material limitation remains.
 
@@ -83,6 +83,7 @@ Leave out anything the developer already knows or that does not change a decisio
 
 ## Inspection Boundaries
 
+- Enforce each applicable approved coding practice and general guideline directly, even when no AC mentions it. Do not request or create duplicate compliance criteria, and do not report their absence as a contract gap. Trace a violation to the source document and rule, with evidence and the normal blocking effect of an approved rule violation; keep it separate from AC rows and counts. A contextual reference to guidance does not create another criterion. If existing criteria duplicate guidance, assess them without silently editing the spec; recommend removing the duplication on revision while preserving any change-specific behavior.
 - Never propose features, architecture, dependencies, security controls, user flows, test categories, performance targets, or compatibility behavior that are not required by the inspection baseline.
 - Do not treat a proposed or unapproved file tree as an implementation constraint. Report its approval state as an `Attention` finding instead.
 - Do not infer requirements from common practices, framework conventions, naming, or likely intent.

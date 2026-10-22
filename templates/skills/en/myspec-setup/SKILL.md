@@ -50,6 +50,7 @@ Do not treat silence, a pre-existing tool, or a successful command as approval. 
 - Record only the metrics the developer defined, one Markdown file per metric under `my-specs/metrics/`. Other Myspec skills measure exactly those metrics and nothing else.
 - Keep everything needed to measure a metric, including its gates, in that metric's file so each one can be approved and revised on its own. Never define a threshold outside the `## Gates` section of the metric it judges.
 - Store every repository coding practice and general Myspec guideline in a separate Markdown file under its respective folder; do not embed their rule text in metric files.
+- Make each practice and guideline enforceable from its own document: define when it applies, the required behavior or output, and how to verify compliance. Once approved, it applies independently of any spec's acceptance criteria, including during eligible patches. Never require a matching AC in every spec or copy its rule into spec criteria; implementation and inspection must cite and enforce the source rule directly.
 - Use a concise kebab-case filename that identifies the rule.
 - Give every metric, practice, and guideline file its own status and append-only approval history.
 - Give every contract document immutable `Created by` and `Created on` metadata. Format the creator as `<git user.name> <git user.email>` and ask the developer for an identity only when either Git value is unavailable.

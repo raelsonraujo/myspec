@@ -12,6 +12,10 @@ Aplica-se a: `<skills Myspec aplicáveis>`
 
 <Uma orientação compartilhada de comportamento ou saída.>
 
+## Verificação
+
+<Quando a regra se aplica e a evidência ou verificação que comprova conformidade. Exija a regra aprovada diretamente deste documento; não é necessário critério de aceitação em cada spec.>
+
 ## Precedência das orientações
 
 - Siga instruções de sistema, desenvolvedor, usuário e repositório antes desta orientação.
