@@ -14,11 +14,14 @@
 
 ## Critérios de aceitação
 
+Estes cenários BDD são a fonte única da verdade dos comportamentos mensuráveis desta mudança. Dê a cada cenário distinto um ID estável `CA-NN` e referencie-o na árvore, nas evidências de implementação e nas inspeções. Mantenha aqui todos os resultados observáveis obrigatórios, inclusive os resumidos em outras seções desta spec.
+
 ### CA-01: <Resultado observável>
 
-- Dado <estado inicial>
-- Quando <ação ou evento>
-- Então <resultado verificável>
+- Dado <estado inicial concreto e entradas relevantes>
+- Quando <uma ação ou evento>
+- Então <resultado observável com valores esperados ou limite e unidades exigidos>
+- E <resultado observável adicional ou estado que deve ser preservado, se aplicável>
 
 ## Suposições
 

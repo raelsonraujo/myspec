@@ -109,6 +109,12 @@ Na versão `pt`, todo o workspace fica em português: pastas (`metricas/`, `orie
 
 Um ciclo típico é `prescribe > implement (árvore) > implement > inspect > implement > inspect > patch > inspect`: repita implement ou patch seguido de inspect até obter os resultados desejados. A spec está concluída quando a inspeção mais recente estiver `Ready`/`Apta` ou `Ready with observations`/`Apta com ressalvas`; o veredito não bloqueia nenhum skill. Use implement em vez de patch quando a mudança exigir mais de 3 arquivos ou afetar uma spec cuja árvore nunca foi aprovada.
 
+Os critérios de aceitação de `spec.md` seguem obrigatoriamente BDD: cada cenário tem ID estável (`AC-01`/`CA-01`), precondições `Given`/`Dado`, ação `When`/`Quando` e resultados observáveis `Then`/`Então`, com `And`/`E` quando necessário. Eles são a fonte única da verdade dos comportamentos mensuráveis da mudança em todo o fluxo. Todo resultado obrigatório ou meta específica da spec deve constar nesses critérios; resumo, escopo e suposições dão contexto e limites. Práticas, orientações e portões de métricas aprovados continuam como restrições de engenharia separadas.
+
+A árvore de arquivos referencia cada ID e seus locais de produção e verificação. A implementação verifica todos os resultados do cenário e relata evidências por ID; a inspeção avalia esses mesmos cenários e só conta um critério como atendido quando todos os seus resultados tiverem evidência nas condições especificadas. Lacunas ou mudanças de comportamento voltam à prescrição antes da implementação afetada; a inspeção registra lacunas de contrato como bloqueantes. Não é necessário adotar executor Gherkin nem mudar convenções de nomes de teste. A instalação preserva specs existentes; sua adequação ocorre ao revisar o contrato pelo fluxo de prescrição.
+
+Patching (`myspec-patch`/`myspec-corrigir`) é a exceção: um ajuste elegível de até três arquivos não precisa de nova spec nem critérios BDD. Mantêm-se seus portões de escopo e a obrigação de preservar o contrato de qualquer spec já implementada que tocar; mudar esse contrato exige revisar a spec.
+
 As referências entre skills são geradas na sintaxe de cada agente: `$myspec-setup` no Codex e `/myspec-setup` no Claude Code.
 
 ## Reinstalação

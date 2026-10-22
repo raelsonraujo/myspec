@@ -52,11 +52,13 @@ Sample.App.xUnit.Api/
 
 ## Acceptance Criteria Coverage
 
-- `AC-01`: `Order.cs`, `CancelOrderHandler.cs`; `OrderTests.cs`, `CancelOrderHandlerTests.cs`.
+- `AC-01`: `Order.cs`, `CancelOrderHandler.cs`, `CancelOrderEndpoint.cs`; `OrderTests.cs`, `CancelOrderHandlerTests.cs`, `CancelOrderEndpointTests.cs`.
 - `AC-02`: `OrderRepository.cs`, `CancelOrderEndpoint.cs`; `CancelOrderEndpointTests.cs`.
 - `AC-03`: `Order.cs`, `OrderAlreadyShippedException.cs`; `OrderTests.cs`, `CancelOrderEndpointTests.cs`.
 - `AC-04`: `Order.cs`, `OrderAlreadyCancelledException.cs`; `OrderTests.cs`, `CancelOrderEndpointTests.cs`.
 - `AC-05`: `CancelOrderEndpoint.cs`; `CancelOrderEndpointTests.cs`.
+- `AC-06`: `CancelOrderEndpoint.cs`; `CancelOrderEndpointTests.cs`.
+- `AC-07`: `OrderRepository.cs`; `CancelOrderEndpointTests.cs` (cancel, then retrieve the owner's history and verify the order is included).
 
 ## Structural Decisions
 

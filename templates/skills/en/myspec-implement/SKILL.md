@@ -15,12 +15,14 @@ Before moving beyond initial read-only repository and spec discovery, read every
 
 Resolve the requested spec folder under the repository-root `my-specs/specs` directory and read `spec.md`.
 
+Use its identified BDD acceptance criteria as the single source of truth for measurable behavior. Before proposing or implementing the tree, check that each criterion has explicit `Given / When / Then` steps and verifiable outcomes, and that required behaviors elsewhere in the spec are represented there. If criteria are missing, ambiguous, non-BDD, or contradictory, surface the precise gap and recommend `{{skill:myspec-prescribe}}` to revise the spec before affected implementation work; never invent scenarios from code or silently rewrite the contract. Approved engineering rules and metric gates still apply separately.
+
 If `file-tree.md` is absent:
 
 1. Inspect the repository structure and the spec.
 2. Create `file-tree.md` in the same spec folder using [assets/file-tree-template.md](assets/file-tree-template.md).
 3. Set its status to `Proposed` and add a `Proposed` entry dated today (`YYYY-MM-DD`) to `Revision History`.
-4. Include files to add, modify, or delete; the responsibility of each file; test locations; and important structural decisions.
+4. Include files to add, modify, or delete; the responsibility of each file; test locations; and important structural decisions. Map every acceptance-criterion ID to its production and planned test or verification locations; the tree must not introduce or redefine behavior.
 5. End the task after presenting the proposal. Do not edit implementation files.
 
 If `file-tree.md` exists but its status is not `Approved`:
@@ -38,7 +40,7 @@ The file tree, like everything under the spec folder, is the developer's local w
 
 1. Read the approved file tree, spec, repository instructions, and affected code. When the spec folder has an `inspections/` folder, read its highest-numbered inspection and treat its open findings as input for this implementation; an inspection verdict never prevents implementing.
 2. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/metrics/` when present. Use them to identify quality tooling and the gates the changed code must meet; do not treat them as a substitute for reading the guidance files under `my-specs/coding-practices/` and `my-specs/general-guidelines/`.
-3. Map each acceptance criterion to implementation work and tests.
+3. Map each acceptance-criterion ID to implementation work and tests that establish its Given state, exercise its When event, and verify every Then/And outcome. Preserve these IDs in coverage records and the implementation report; test names may follow repository conventions.
 4. Before source edits, tell the developer the intended first slice and raise material choices not settled by the spec or approved tree.
 5. Ask rather than assume when a choice changes public behavior, architecture, persistence, security, compatibility, or the approved tree.
 6. Implement in reviewable slices and report meaningful checkpoints. If evidence invalidates the approved tree, pause and propose an update.
@@ -50,7 +52,8 @@ Developer interaction is a design constraint. Do not silently fill important gap
 ## Coding Rules
 
 - Follow repository instructions and established patterns.
-- Cover every acceptance criterion and all critical success, failure, boundary, authorization, and data-integrity paths with automated tests where feasible.
+- Cover every BDD acceptance scenario with automated tests where feasible, including all its outcomes and specified critical success, failure, boundary, authorization, and data-integrity paths. When automation is infeasible, name the criterion, the limitation, and a concrete manual or other verification procedure and its result; an unverified scenario remains a gap.
+- If implementation or inspection reveals a required behavioral change, resolve it in `spec.md` through `{{skill:myspec-prescribe}}` before implementing that change, then update affected mappings and tests. Never weaken criteria to fit the implementation or treat inspection suggestions as new behavioral requirements.
 - Keep production logic free of avoidable duplication.
 - Put at most one top-level class, record, struct, or interface definition in each source file, except language-generated or established repository exceptions.
 - Keep responsibilities cohesive and dependencies explicit.

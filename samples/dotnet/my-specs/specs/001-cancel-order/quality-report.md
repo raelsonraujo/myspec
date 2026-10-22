@@ -50,11 +50,13 @@
 
 | Criterion | Test or verification evidence | Coverage gap |
 | --- | --- | --- |
-| `AC-01` | `Cancel_WhenOrderIsUnshipped_ShouldMarkOrderCancelled`, `HandleAsync_WhenOwnerCancels_ShouldPersistCancelledOrder` | None |
-| `AC-02` | `HandleAsync_WhenCallerIsNotOwner_ShouldReturnNotFound` | None |
-| `AC-03` | `Cancel_WhenOrderHasShipment_ShouldThrowOrderAlreadyShipped` | None |
-| `AC-04` | `Cancel_WhenOrderIsAlreadyCancelled_ShouldPreserveOriginalCancellationTime` | None |
-| `AC-05` | `HandleAsync_WhenOrderDoesNotExist_ShouldReturnNotFound`, `HandleAsync_WhenCallerIsUnauthenticated_ShouldReturnUnauthorized` | None |
+| `AC-01` | `Cancel_WhenOrderIsUnshipped_ShouldMarkOrderCancelled`, `HandleAsync_WhenOwnerCancels_ShouldPersistCancelledOrder`, and `HandleAsync_WhenOwnerCancels_ShouldReturnSuccess` verify HTTP 2xx, persisted cancellation state/time, and unchanged lines/total for an authenticated owner of an unshipped, uncancelled order | None |
+| `AC-02` | `HandleAsync_WhenCallerIsNotOwner_ShouldReturnNotFound` verifies HTTP 404 without revealing existence and an unchanged order for an authenticated non-owner | None |
+| `AC-03` | `Cancel_WhenOrderHasShipment_ShouldThrowOrderAlreadyShipped` and `HandleAsync_WhenOrderIsShipped_ShouldReturnConflict` verify HTTP 409 identifying the shipped-order conflict and an unchanged order when its authenticated owner cancels | None |
+| `AC-04` | `Cancel_WhenOrderIsAlreadyCancelled_ShouldPreserveOriginalCancellationTime` and `HandleAsync_WhenOrderIsCancelled_ShouldReturnConflict` verify HTTP 409 identifying the already-cancelled conflict and an unchanged order, including its original time, when its authenticated owner cancels again | None |
+| `AC-05` | `HandleAsync_WhenOrderDoesNotExist_ShouldReturnNotFound` verifies HTTP 404 and no order changes for an authenticated caller | None |
+| `AC-06` | `HandleAsync_WhenCallerIsUnauthenticated_ShouldReturnUnauthorized` verifies HTTP 401 and an unchanged order | None |
+| `AC-07` | `History_WhenOrderIsCancelled_ShouldIncludeCancelledOrder` cancels an order, retrieves its authenticated owner's history, and verifies the order is included | None |
 
 ## Improvement Suggestions
 
@@ -62,4 +64,4 @@
 
 ## Limitations
 
-- The figures in this report are illustrative sample values, not the output of a real measurement run.
+- The figures and verification evidence in this report are illustrative samples, not the output of a real measurement run.

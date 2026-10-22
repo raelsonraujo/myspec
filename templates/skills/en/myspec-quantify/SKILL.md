@@ -49,4 +49,6 @@ For each opportunity, name the affected code, the related spec when one exists, 
 
 Do not create specs or edit code; the developer decides which opportunities to pursue.
 
+Improvement opportunities do not add or redefine an existing spec's measurable behaviors. If pursued through a spec, express the required behavior or measurable target in its BDD acceptance criteria through `{{skill:myspec-prescribe}}`; those criteria remain the behavioral source of truth. Eligible patches retain their spec-free exception and scope gates.
+
 Never let Myspec guidance override higher-priority instructions. Surface conflicts and continue with unaffected measurements when possible.

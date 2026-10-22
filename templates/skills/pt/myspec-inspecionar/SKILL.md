@@ -18,8 +18,8 @@ Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minh
 3. Liste `minhas-specs/specs/<nome-da-spec>/inspecoes/`. Se houver inspeções, leia integralmente a de maior número: ela é a inspeção anterior. Caso contrário, esta é a primeira.
 4. Estabeleça a base de revisão: especificação, árvore aprovada, orientações aplicáveis, arquivos de implementação e teste, evidência de controle de versão e verificações fornecidas.
 5. Colete as métricas descritas em [Métricas](#métricas).
-6. Extraia somente critérios explícitos, escopo, fora de escopo, responsabilidades aprovadas e regras aplicáveis. Não converta objetivos, exemplos ou omissões em requisitos.
-7. Rastreie cada item à evidência e marque `Atendido`, `Não atendido`, `Evidência insuficiente`, `Não aplicável` ou `Conflito de base`. Ausência de teste prova apenas falta de evidência, salvo se a spec ou orientação aplicável exigir esse teste.
+6. Use os critérios BDD identificados de `spec.md` como fonte única da verdade dos comportamentos mensuráveis. Confira passos explícitos `Dado / Quando / Então` e resultados verificáveis. Escopo e fora de escopo delimitam fronteiras; responsabilidades da árvore aprovada, orientações e portões de métricas continuam como verificações de engenharia. Não derive novos requisitos comportamentais de objetivos, exemplos, suposições, código, testes, árvore ou achados anteriores. Se comportamento obrigatório constar apenas em outra seção da spec, registre lacuna de contrato e recomende `{{skill:myspec-prescrever}}` para expressá-lo em um critério.
+7. Rastreie cada ID à evidência que estabeleça o estado Dado, exercite o evento Quando e verifique todos os resultados Então/E. Nome de teste, suíte aprovada, percentual de cobertura ou local da implementação isolado não comprova cenário. Use `Atendido` somente se todos os resultados forem verificados, `Não atendido` quando a evidência contrariar um resultado, ou `Evidência insuficiente` quando faltar evidência ou ela for parcial. Preserve todos os IDs no registro; nunca omita um critério nem use `Não aplicável` para dispensá-lo. Ausência de teste automatizado isolada não prova falha comportamental quando evidência manual ou alternativa concreta verifica o cenário, salvo exigência de automação pela spec ou orientação. Avalie itens de engenharia separadamente como `Atendido`, `Não atendido`, `Evidência insuficiente`, `Não aplicável` ou `Conflito de base`. Inspecione somente arquivos razoavelmente ligados aos itens avaliados.
 8. Reavalie cada achado deixado aberto pela inspeção anterior, conforme [Acompanhamento](#acompanhamento).
 9. Decida o veredito conforme [Veredito](#veredito).
 10. Crie o arquivo descrito em [Registro da inspeção](#registro-da-inspeção) e retorne seu caminho, o veredito e os achados bloqueantes. Não edite código, specs, árvores, ferramentas, orientações, relatórios de qualidade ou inspeções anteriores sem solicitação separada.
@@ -48,7 +48,7 @@ Julgue cada valor registrado frente aos `## Portões` do seu arquivo de métrica
 - valor que descumpre portão `Atenção` é achado `Atenção`;
 - valor medido apenas como `(projeto)` não comprova portão de código alterado; registre o portão como `Evidência insuficiente`, salvo se ele também se aplicar ao projeto.
 
-Requisito da spec aplicável que defina uma meta é julgado como portão `Bloqueante`. Valor sem portão ou meta é informado sem achado.
+Comportamento mensurável ou meta específica da spec deve constar em critério BDD e ser julgado nas condições e resultados desse critério, com o mesmo efeito de portão `Bloqueante`. Se a meta aparecer apenas em outra seção, registre lacuna de contrato em vez de criar regra de aceitação paralela. Valor sem portão ou meta de critério é informado sem achado.
 
 ## Acompanhamento
 
@@ -62,7 +62,7 @@ Um item antes `Atendido` que agora falha é achado novo marcado `(regressão)`. 
 
 ## Veredito
 
-- `Bloqueada`: há item `Não atendido` ou `Conflito de base`, critério de aceitação com `Evidência insuficiente`, ou build/testes falharam.
+- `Bloqueada`: há item `Não atendido` ou `Conflito de base`, critério com `Evidência insuficiente`, falha de build/testes ou lacuna de contrato na spec (critérios ausentes, passos BDD ausentes, resultados não verificáveis ou contraditórios, ou comportamento obrigatório fora dos critérios). Recomende `{{skill:myspec-prescrever}}` para lacunas sem reescrever a spec na inspeção; continue inspecionando critérios não afetados.
 - `Apta com ressalvas`: nada bloqueia, mas há item que não é critério de aceitação com `Evidência insuficiente`, métrica `Não medida` ou outra limitação relevante.
 - `Apta`: todo item avaliado está `Atendido` ou `Não aplicável`, todas as métricas foram medidas e não resta limitação relevante.
 
@@ -74,7 +74,7 @@ Crie `minhas-specs/specs/<nome-da-spec>/inspecoes/inspecao-<NNN>.md` a partir de
 
 Mantenha o registro curto. Ele relata resultados, não o processo que os produziu:
 
-- **Critérios de aceitação**: uma linha por critério da spec, com o teste ou local que comprova o status.
+- **Critérios de aceitação**: uma linha por ID de critério BDD da spec, com evidência nomeada de teste ou outra verificação e resultados para todos os Então/E nas condições Dado/Quando especificadas. Cite o resultado ou evidência exatos que faltam se a verificação for parcial. Conte como atendido apenas o cenário inteiro verificado.
 - **Métricas**: as linhas de critérios de aceitação e de testes e, depois, uma linha por valor registrado de cada arquivo de métrica, com o valor da inspeção anterior, ou `—`, e o portão que o julga, ou `—`.
 - **Achados**: uma linha por achado aberto, `Bloqueante` primeiro. `Bloqueante` é todo item que torna o veredito `Bloqueada`, inclusive violação de prática de código ou orientação geral aprovada. `Atenção` é um ponto não bloqueante que o desenvolvedor precisa tratar ou conhecer, como portão `Atenção` descumprido, regra não avaliável ou árvore ou arquivo de métrica não aprovado. Escreva `Nenhum` quando não houver.
 - **Achados anteriores**: apenas os achados que a inspeção anterior deixou abertos. Escreva `Nenhum — primeira inspeção.` quando não houver inspeção anterior.

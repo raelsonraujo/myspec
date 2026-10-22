@@ -7,6 +7,8 @@ description: Faz um ajuste de código pequeno e delimitado, de no máximo três 
 
 Faça uma pequena mudança com a disciplina da implementação Myspec, sem criar nem exigir especificação ou árvore de arquivos.
 
+Corrigir é a exceção ao fluxo BDD baseado em spec: um ajuste elegível é regido pela solicitação delimitada e não exige nova spec nem critérios BDD. A exceção não dispensa o contrato comportamental de uma spec existente; se a solicitação o alterar, recomende `{{skill:myspec-prescrever}}` para revisá-lo em vez de contornar seus critérios com uma correção. Mantenha os portões de escopo abaixo.
+
 ## Portão obrigatório de orientações
 
 Antes de avançar além da descoberta somente-leitura, leia todos os Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Documentos aplicáveis com `Status: Aprovado` são obrigatórios; cumpra-os antes da ação correspondente e exponha conflitos superiores. Ausências, documentos não aprovados ou `Nenhum` não restringem; informe limitações relevantes.
