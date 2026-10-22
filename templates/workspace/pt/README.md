@@ -15,7 +15,9 @@ Os documentos do contrato são compartilhados com o time e registram criador e a
 
 ## Fluxo de trabalho
 
-Os critérios BDD de cada `spec.md` são a fonte única da verdade dos comportamentos mensuráveis da mudança. A prescrição define cada resultado obrigatório em cenário identificado com `Dado / Quando / Então` (`CA-01` etc.); a árvore mapeia esses IDs para locais de produção e verificação, a implementação verifica seus resultados e a inspeção julga os mesmos cenários com evidências. Resumo, escopo e suposições dão contexto e limites, sem criar requisitos comportamentais adicionais. Orientações de engenharia e portões de métricas aprovados continuam aplicáveis separadamente.
+Os critérios BDD de cada `spec.md` são a fonte única da verdade dos comportamentos mensuráveis específicos da mudança. A prescrição define cada resultado obrigatório específico da mudança em cenário identificado com `Dado / Quando / Então` (`CA-01` etc.); a árvore mapeia esses IDs para locais de produção e verificação, a implementação verifica seus resultados e a inspeção julga os mesmos cenários com evidências. Resumo, escopo e suposições dão contexto e limites, sem criar requisitos comportamentais adicionais.
+
+Práticas de código, orientações gerais e portões de métricas aprovados são exigidos diretamente de seus documentos, sem CA em cada spec. Não repita nem parafraseie práticas ou orientações como critérios, inclusive critérios genéricos de conformidade; referencie a origem somente quando precisar de contexto. Sua ausência nos critérios não é lacuna de contrato, e a inspeção registra violações contra a regra de origem separadamente dos resultados de CAs.
 
 Resolva comportamentos ausentes, ambíguos ou alterados nos critérios antes da implementação afetada. A inspeção relata lacunas de contrato e não pode declarar conclusão enquanto um critério não for atendido ou faltar evidência. A instalação não reescreve specs existentes automaticamente. Cenários BDD podem permanecer em Markdown, com ferramentas e nomes de teste já usados pelo repositório.
 

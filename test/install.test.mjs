@@ -193,42 +193,44 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/README.md'), read(join(TEMPLATES, 'workspace/pt'), 'README.md'));
   });
 
-  for (const [language, workspace] of [['en', 'my-specs'], ['pt', 'minhas-specs']]) {
-    it(`refreshes the released ${language} workflow guidance without rewriting existing specs`, () => {
-      const dir = repo();
-      installOk(dir, '-p', 'codex/claude', '-l', language);
-      const legacyReadme = readFileSync(new URL(`./fixtures/workspace-readme-0.4.5-${language}.md`, import.meta.url), 'utf8');
-      writeFileSync(join(dir, workspace, 'README.md'), legacyReadme.replace(/\n/g, '\r\n'));
-      const specFolder = join(dir, workspace, 'specs/001-existing');
-      mkdirSync(specFolder, { recursive: true });
-      const legacySpec = '# Existing change\n\n## Acceptance Criteria\n\n- The result is visible.\n';
-      writeFileSync(join(specFolder, 'spec.md'), legacySpec);
-      const managedSkills = listSkills(language);
-      for (const provider of ['codex', 'claude']) {
-        for (const skill of managedSkills) {
-          writeFileSync(join(dir, `.${provider}/skills`, skill.name, 'SKILL.md'), '# Previous managed skill\n');
-        }
-      }
-
-      installOk(dir);
-
-      assert.equal(read(dir, `${workspace}/README.md`), read(join(TEMPLATES, 'workspace', language), 'README.md'));
-      assert.equal(readFileSync(join(specFolder, 'spec.md'), 'utf8'), legacySpec);
-      for (const provider of ['codex', 'claude']) {
-        const prefix = provider === 'codex' ? '$' : '/';
-        for (const skill of managedSkills) {
-          for (const file of skill.files.filter((path) => path.endsWith('.md'))) {
-            const expected = read(skill.dir, file).replace(/\{\{skill:([a-z0-9-]+)\}\}/g, (_, name) => `${prefix}${name}`);
-            assert.equal(read(dir, `.${provider}/skills/${skill.name}/${file}`), expected);
+  for (const version of ['0.4.5', '0.5.0']) {
+    for (const [language, workspace] of [['en', 'my-specs'], ['pt', 'minhas-specs']]) {
+      it(`refreshes the ${version} ${language} workflow guidance without rewriting existing specs`, () => {
+        const dir = repo();
+        installOk(dir, '-p', 'codex/claude', '-l', language);
+        const legacyReadme = readFileSync(new URL(`./fixtures/workspace-readme-${version}-${language}.md`, import.meta.url), 'utf8');
+        writeFileSync(join(dir, workspace, 'README.md'), legacyReadme.replace(/\n/g, '\r\n'));
+        const specFolder = join(dir, workspace, 'specs/001-existing');
+        mkdirSync(specFolder, { recursive: true });
+        const legacySpec = '# Existing change\n\n## Acceptance Criteria\n\n- The result is visible.\n';
+        writeFileSync(join(specFolder, 'spec.md'), legacySpec);
+        const managedSkills = listSkills(language);
+        for (const provider of ['codex', 'claude']) {
+          for (const skill of managedSkills) {
+            writeFileSync(join(dir, `.${provider}/skills`, skill.name, 'SKILL.md'), '# Previous managed skill\n');
           }
         }
-      }
 
-      const editedReadme = `${legacyReadme}\nRepository-specific guidance.\n`;
-      writeFileSync(join(dir, workspace, 'README.md'), editedReadme);
-      installOk(dir);
-      assert.equal(read(dir, `${workspace}/README.md`), editedReadme);
-    });
+        installOk(dir);
+
+        assert.equal(read(dir, `${workspace}/README.md`), read(join(TEMPLATES, 'workspace', language), 'README.md'));
+        assert.equal(readFileSync(join(specFolder, 'spec.md'), 'utf8'), legacySpec);
+        for (const provider of ['codex', 'claude']) {
+          const prefix = provider === 'codex' ? '$' : '/';
+          for (const skill of managedSkills) {
+            for (const file of skill.files.filter((path) => path.endsWith('.md'))) {
+              const expected = read(skill.dir, file).replace(/\{\{skill:([a-z0-9-]+)\}\}/g, (_, name) => `${prefix}${name}`);
+              assert.equal(read(dir, `.${provider}/skills/${skill.name}/${file}`), expected);
+            }
+          }
+        }
+
+        const editedReadme = `${legacyReadme}\nRepository-specific guidance.\n`;
+        writeFileSync(join(dir, workspace, 'README.md'), editedReadme);
+        installOk(dir);
+        assert.equal(read(dir, `${workspace}/README.md`), editedReadme);
+      });
+    }
   }
 
   it('keeps a legacy single-file tooling contract and asks for it to be split', () => {

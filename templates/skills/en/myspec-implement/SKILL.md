@@ -15,7 +15,9 @@ Before moving beyond initial read-only repository and spec discovery, read every
 
 Resolve the requested spec folder under the repository-root `my-specs/specs` directory and read `spec.md`.
 
-Use its identified BDD acceptance criteria as the single source of truth for measurable behavior. Before proposing or implementing the tree, check that each criterion has explicit `Given / When / Then` steps and verifiable outcomes, and that required behaviors elsewhere in the spec are represented there. If criteria are missing, ambiguous, non-BDD, or contradictory, surface the precise gap and recommend `{{skill:myspec-prescribe}}` to revise the spec before affected implementation work; never invent scenarios from code or silently rewrite the contract. Approved engineering rules and metric gates still apply separately.
+Use its identified BDD acceptance criteria as the single source of truth for change-specific measurable behavior. Before proposing or implementing the tree, check that each criterion has explicit `Given / When / Then` steps and verifiable outcomes, and that required change-specific behaviors elsewhere in the spec are represented there.
+
+Rules already established by applicable approved coding practices or general guidelines are enforced from those documents without repeating them as ACs; their absence from the criteria is not a contract gap. Do not add compliance criteria or require a spec revision merely to restate guidance. When context is needed, reference the rule's source rather than copying it. If criteria are missing, ambiguous, non-BDD, or contradictory, surface the precise gap and recommend `{{skill:myspec-prescribe}}` to revise the spec before affected implementation work; never invent scenarios from code or silently rewrite the contract. Approved engineering rules and metric gates still apply separately.
 
 If `file-tree.md` is absent:
 

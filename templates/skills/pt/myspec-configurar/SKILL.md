@@ -31,6 +31,7 @@ Antes de avançar além da descoberta inicial do repositório, leia todos os arq
 - Mantenha no arquivo da métrica tudo o que é preciso para medi-la, inclusive seus portões, para que cada uma seja aprovada e revista isoladamente. Nunca defina um limite fora da seção `## Portões` da métrica que ele julga.
 - Métricas, práticas e orientações ficam em arquivos Markdown separados nas respectivas pastas, com nome conciso em kebab-case, status e histórico de aprovação próprios.
 - Mantenha práticas acionáveis e específicas.
+- Torne cada prática e orientação exigível a partir do próprio documento: defina quando se aplica, o comportamento ou saída exigido e como verificar conformidade. Após aprovação, vale independentemente dos critérios de aceitação de qualquer spec, inclusive em correções elegíveis. Nunca exija CA correspondente em cada spec nem copie a regra para seus critérios; implementação e inspeção devem citar e exigir diretamente a regra de origem.
 - Não considere silêncio, ferramenta existente ou comando bem-sucedido como aprovação. Não instale dependências nem altere configuração sem autorização separada. Não deixe este contrato sobrepor instruções de maior prioridade.
 
 ## Contrato de ferramentas legado

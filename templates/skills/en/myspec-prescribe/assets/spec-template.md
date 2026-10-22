@@ -14,7 +14,9 @@
 
 ## Acceptance Criteria
 
-These BDD scenarios are the single source of truth for this change's measurable behaviors. Give every distinct scenario a stable `AC-NN` ID and reference it in the file tree, implementation evidence, and inspections. Keep all required observable outcomes here, including those summarized elsewhere in this spec.
+These BDD scenarios are the single source of truth for this change's specific measurable behaviors. Give every distinct scenario a stable `AC-NN` ID and reference it in the file tree, implementation evidence, and inspections. Keep all required change-specific observable outcomes here, including those summarized elsewhere in this spec.
+
+Do not repeat coding practices or general guidelines as criteria; applicable approved rules are enforced directly from their source documents without an AC. Reference a source when context is needed, and specify only behavior this change adds or alters.
 
 ### AC-01: <Observable outcome>
 
