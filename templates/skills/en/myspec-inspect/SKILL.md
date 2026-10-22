@@ -18,8 +18,8 @@ Before moving beyond initial read-only repository and specification discovery, r
 3. List `my-specs/specs/<spec-name>/inspections/`. When it holds earlier inspections, read the highest-numbered one in full; it is the previous inspection. Otherwise this is the first inspection.
 4. Establish the review baseline from the spec, the approved file tree, applicable approved guidance, relevant implementation and test files, version-control evidence, and any verification output the developer supplied.
 5. Collect the metrics described under [Metrics](#metrics).
-6. Extract only explicit acceptance criteria, defined scope, out-of-scope statements, approved file-tree responsibilities, and applicable guidance rules. Do not turn goals, examples, or absent details into new requirements.
-7. Trace each extracted item to implementation or test evidence. Inspect only files reasonably connected to that item. Mark an item as `Met`, `Not met`, `Insufficient evidence`, `Not applicable`, or `Baseline conflict`. A missing test proves only that the item lacks test evidence unless the spec or applicable guidance explicitly requires that test.
+6. Use the identified BDD acceptance criteria in `spec.md` as the single source of truth for measurable behavior. Check for explicit `Given / When / Then` steps and verifiable outcomes. Scope and out-of-scope statements constrain boundaries; approved file-tree responsibilities, guidance, and metric gates remain engineering checks. Do not derive additional behavioral requirements from goals, examples, assumptions, code, tests, the tree, or previous findings. If a required behavior appears only elsewhere in the spec, report a contract gap and recommend `{{skill:myspec-prescribe}}` to express it as a criterion.
+7. Trace each criterion ID to evidence that establishes its Given state, exercises its When event, and verifies every Then/And outcome. A test name, passing suite, coverage percentage, or implementation location alone does not prove a scenario. Mark a criterion `Met` only when all outcomes are verified, `Not met` when evidence contradicts an outcome, or `Insufficient evidence` when evidence is missing or partial. Preserve all criterion IDs in the record; never omit one or use `Not applicable` to bypass it. A missing automated test alone is not a behavioral failure when concrete manual or other evidence verifies the scenario, unless the spec or applicable guidance requires automation. Assess separate engineering items as `Met`, `Not met`, `Insufficient evidence`, `Not applicable`, or `Baseline conflict`. Inspect only files reasonably connected to the assessed items.
 8. Re-examine every finding the previous inspection left open, as described under [Follow-up](#follow-up).
 9. Decide the verdict using [Verdict](#verdict).
 10. Create the inspection file described under [Inspection Record](#inspection-record). Return its path, the verdict, and the blocking findings. Do not edit source, specs, file trees, tooling, guidance, quality reports, or earlier inspections unless the developer separately requests a change.
@@ -48,7 +48,7 @@ Judge each reported value against the `## Gates` of its approved metric file tha
 - a value that misses an `Attention` gate is an `Attention` finding;
 - a value measured only as `(project)` cannot prove a changed-code gate; report the gate as `Insufficient evidence` unless the gate also applies to the project.
 
-An applicable approved spec requirement that defines a target is judged the same way as a `Blocking` gate. A value with no gate or target is reported without a finding.
+A spec-specific measurable behavior or target must be defined in a BDD acceptance criterion and judged with that criterion's conditions and expected outcomes, with the same blocking effect as a `Blocking` gate. If the target appears only elsewhere in the spec, report a contract gap instead of creating a parallel acceptance rule. A value with no gate or criterion target is reported without a finding.
 
 ## Follow-up
 
@@ -62,7 +62,7 @@ A previously `Met` item that now fails is a new finding marked `(regression)`. N
 
 ## Verdict
 
-- `Blocked`: at least one item is `Not met` or `Baseline conflict`, an acceptance criterion is `Insufficient evidence`, or the build or tests failed.
+- `Blocked`: at least one item is `Not met` or `Baseline conflict`, an acceptance criterion is `Insufficient evidence`, the build or tests failed, or the spec has a contract gap (missing criteria, missing BDD steps, unverifiable or contradictory outcomes, or required behavior outside the criteria). Recommend `{{skill:myspec-prescribe}}` for contract gaps without rewriting the spec during inspection; continue inspecting unaffected criteria.
 - `Ready with observations`: nothing is blocking, but a non-acceptance-criterion item is `Insufficient evidence`, a metric is `Not measured`, or another limitation materially narrows the review.
 - `Ready`: every assessed item is `Met` or `Not applicable`, every metric was measured, and no material limitation remains.
 
@@ -74,7 +74,7 @@ Create `my-specs/specs/<spec-name>/inspections/inspection-<NNN>.md` from [assets
 
 Keep the record short. It reports results, not the process that produced them:
 
-- **Acceptance Criteria**: one row per acceptance criterion in the spec, with the test or location that proves its status.
+- **Acceptance Criteria**: one row per BDD criterion ID in the spec, with named test or other verification evidence and results for all Then/And outcomes under the specified Given/When conditions. Name the precise missing outcome or evidence for any partial verification. Count a criterion as met only when the whole scenario is verified.
 - **Metrics**: the acceptance-criteria and test rows, then one row per reported value of each metric file, with the previous inspection's value, or `—`, and the gate that judges it, or `—`.
 - **Findings**: one line per open finding, `Blocking` first. A `Blocking` finding is any item that makes the verdict `Blocked`, including a violation of an approved coding practice or general guideline. An `Attention` finding is a non-blocking point the developer must act on or know about, such as a missed `Attention` gate, an unassessable rule, or an unapproved file tree or metric file. Write `None` when there is none.
 - **Previous Findings**: only findings the previous inspection left open. Write `None — first inspection.` when there is no previous inspection.

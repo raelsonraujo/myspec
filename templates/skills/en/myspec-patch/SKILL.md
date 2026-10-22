@@ -7,6 +7,8 @@ description: Make a small, bounded code adjustment of at most three files withou
 
 Make a small change with the same engineering discipline as Myspec implementation, without creating or requiring a specification or file tree.
 
+Patching is the exception to the spec-based BDD workflow: an eligible patch is governed by the bounded request and does not need a new spec or BDD acceptance criteria. This exception does not waive an existing spec's behavioral contract; if the request would change that contract, recommend `{{skill:myspec-prescribe}}` to revise it instead of patching around its criteria. Keep the scope gates below.
+
 ## Mandatory Guidance Gate
 
 Before moving beyond initial read-only repository and request discovery, read every Markdown file that exists under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat each applicable document with `Status: Approved` as mandatory for this skill, comply with its rule before taking the action it governs, and surface any conflict with higher-priority instructions before proceeding. A missing folder, missing file, unapproved document, or section explicitly marked `None` creates no mandatory constraint; state the limitation when material.

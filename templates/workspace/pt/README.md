@@ -15,6 +15,12 @@ Os documentos do contrato são compartilhados com o time e registram criador e a
 
 ## Fluxo de trabalho
 
+Os critérios BDD de cada `spec.md` são a fonte única da verdade dos comportamentos mensuráveis da mudança. A prescrição define cada resultado obrigatório em cenário identificado com `Dado / Quando / Então` (`CA-01` etc.); a árvore mapeia esses IDs para locais de produção e verificação, a implementação verifica seus resultados e a inspeção julga os mesmos cenários com evidências. Resumo, escopo e suposições dão contexto e limites, sem criar requisitos comportamentais adicionais. Orientações de engenharia e portões de métricas aprovados continuam aplicáveis separadamente.
+
+Resolva comportamentos ausentes, ambíguos ou alterados nos critérios antes da implementação afetada. A inspeção relata lacunas de contrato e não pode declarar conclusão enquanto um critério não for atendido ou faltar evidência. A instalação não reescreve specs existentes automaticamente. Cenários BDD podem permanecer em Markdown, com ferramentas e nomes de teste já usados pelo repositório.
+
+Corrigir é a exceção: uma mudança elegível de no máximo três arquivos não exige nova spec nem critérios BDD. Os portões de escopo existentes continuam aplicáveis, e o ajuste deve preservar os critérios de qualquer spec implementada que tocar.
+
 | Skill | Papel |
 | --- | --- |
 | `myspec-configurar` | Define métricas e seus portões, práticas de código e orientações. |

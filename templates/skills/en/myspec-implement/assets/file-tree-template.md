@@ -22,7 +22,9 @@ End every file entry with a comment beginning with exactly one operation marker:
 
 ## Acceptance Criteria Coverage
 
-- `AC-01`: <production location>; <test location>.
+Reference every BDD criterion ID from `spec.md`; this mapping does not redefine its behavior.
+
+- `AC-01`: <production location>; <planned test location or concrete verification procedure for every Then/And outcome>.
 
 ## Structural Decisions
 

@@ -10,7 +10,7 @@
 
 | Critério | Status | Evidência |
 | --- | --- | --- |
-| `CA-01` <título curto> | <Atendido / Não atendido / Evidência insuficiente> | `<nome do teste ou arquivo:linha>` |
+| `CA-01` <título curto> | <Atendido / Não atendido / Evidência insuficiente> | <referência de teste ou verificação e resultado de cada Então/E nas condições Dado/Quando; evidência exata que falta se parcial> |
 
 ## Métricas
 

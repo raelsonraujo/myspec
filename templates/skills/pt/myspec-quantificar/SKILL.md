@@ -39,4 +39,6 @@ Para cada oportunidade, cite o código afetado, a spec relacionada quando houver
 - `{{skill:myspec-prescrever}}` para abrir uma nova spec de melhoria, o padrão para oportunidades que exijam mais de três arquivos ou não tenham spec implementada que as cubra;
 - `{{skill:myspec-corrigir}}` para mudança de no máximo três arquivos no escopo de uma spec implementada ou fora de qualquer spec.
 
+Oportunidades não acrescentam nem redefinem comportamentos mensuráveis de uma spec existente. Se forem seguidas por meio de spec, expresse o comportamento ou meta exigida nos critérios BDD por `{{skill:myspec-prescrever}}`; eles continuam como fonte da verdade comportamental. Ajustes elegíveis mantêm a exceção sem spec e seus portões de escopo.
+
 Não crie specs nem edite código; o desenvolvedor decide quais oportunidades seguir. Nunca deixe orientações Myspec sobrepor instruções superiores.

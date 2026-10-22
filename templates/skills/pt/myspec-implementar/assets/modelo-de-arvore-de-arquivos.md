@@ -22,7 +22,9 @@ Termine cada entrada de arquivo com um comentário que comece exatamente com um 
 
 ## Cobertura dos critérios de aceitação
 
-- `CA-01`: <local de produção>; <local de teste>.
+Referencie todo ID de critério BDD de `spec.md`; este mapeamento não redefine seu comportamento.
+
+- `CA-01`: <local de produção>; <local de teste planejado ou procedimento concreto de verificação de todos os resultados Então/E>.
 
 ## Decisões estruturais
 

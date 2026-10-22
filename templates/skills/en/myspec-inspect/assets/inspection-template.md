@@ -10,7 +10,7 @@
 
 | Criterion | Status | Evidence |
 | --- | --- | --- |
-| `AC-01` <short title> | <Met / Not met / Insufficient evidence> | `<test name or file:line>` |
+| `AC-01` <short title> | <Met / Not met / Insufficient evidence> | <test or verification reference and result for every Then/And outcome under this scenario's Given/When; precise missing evidence if partial> |
 
 ## Metrics
 

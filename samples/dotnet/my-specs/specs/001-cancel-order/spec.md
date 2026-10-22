@@ -22,46 +22,60 @@ Let a customer cancel their own order through the App API while the order has no
 
 ## Acceptance Criteria
 
+These BDD scenarios are the single source of truth for the change's measurable behaviors. The file tree and verification records reference their stable IDs.
+
 ### AC-01: Owner cancels an unshipped order
 
-- Given an authenticated customer who owns an order that has no shipment
+- Given an authenticated customer who owns an order that has no shipment and is not cancelled
 - When the customer requests cancellation of that order
-- Then the API responds with success and the order is stored as cancelled with the cancellation time.
+- Then the API responds with HTTP 2xx and the order is stored as cancelled with the cancellation time.
 - And the order's lines and total are unchanged.
 
 ### AC-02: Other customers cannot cancel the order
 
 - Given an authenticated customer who does not own the order
 - When the customer requests cancellation of that order
-- Then the API responds with a not-found result that does not reveal the order's existence.
+- Then the API responds with HTTP 404 without revealing the order's existence.
 - And the order remains unchanged.
 
 ### AC-03: Shipped orders cannot be cancelled
 
-- Given an order that has a shipment
+- Given an authenticated customer who owns an order that has a shipment
 - When its owner requests cancellation
-- Then the API responds with a conflict result identifying that the order was already shipped.
+- Then the API responds with HTTP 409 identifying that the order was already shipped.
 - And the order remains unchanged.
 
 ### AC-04: Cancelling is not repeatable
 
-- Given an order that is already cancelled
+- Given an authenticated customer who owns an order that is already cancelled
 - When its owner requests cancellation again
-- Then the API responds with a conflict result identifying that the order is already cancelled.
-- And the original cancellation time is preserved.
+- Then the API responds with HTTP 409 identifying that the order is already cancelled.
+- And the order remains unchanged, including its original cancellation time.
 
-### AC-05: Unknown orders and unauthenticated callers are rejected
+### AC-05: Unknown orders are rejected
 
-- Given an order id that does not exist, or a caller who is not authenticated
-- When cancellation is requested
-- Then the API responds with a not-found result for the unknown id and an unauthorized result for the unauthenticated caller.
+- Given an authenticated customer and an order id that does not exist
+- When the customer requests cancellation of that order
+- Then the API responds with HTTP 404.
 - And no order is modified.
+
+### AC-06: Unauthenticated callers are rejected
+
+- Given a caller who is not authenticated and an existing order
+- When the caller requests cancellation of that order
+- Then the API responds with HTTP 401.
+- And the order remains unchanged.
+
+### AC-07: Cancelled orders remain in the owner's history
+
+- Given an authenticated customer whose order was cancelled
+- When the customer retrieves their order history
+- Then the cancelled order is included in the customer's order history.
 
 ## Assumptions
 
 - The order already exposes whether it has a shipment; no new shipment concept is needed.
 - Authentication and the current customer identity are already available to API endpoints from the authenticated context.
-- A cancelled order remains visible in the customer's order history.
 
 ## Open Questions
 

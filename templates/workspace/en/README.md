@@ -15,6 +15,12 @@ Contract documents are shared with the team and record their creator and approve
 
 ## Workflow
 
+The BDD acceptance criteria in each `spec.md` are the single source of truth for that change's measurable behaviors. Prescription defines every required outcome as an identified `Given / When / Then` scenario (`AC-01`, etc.); the file tree maps those IDs to production and verification locations, implementation verifies their outcomes, and inspection judges the same scenarios with evidence. Summary, scope, and assumptions provide context and boundaries, without creating additional behavioral requirements. Approved engineering guidance and quality metric gates still apply separately.
+
+Resolve missing, ambiguous, or changed behaviors in the spec's criteria before affected implementation work. Inspection reports contract gaps and cannot declare completion while a criterion is unmet or lacks evidence. Existing specs are not rewritten automatically on install. BDD scenarios may stay in Markdown and use the repository's existing test tooling and naming conventions.
+
+Patching is the exception: an eligible change of at most three files needs no new spec or BDD criteria. Its existing scope gates still apply, and it must preserve the criteria of any implemented spec it touches.
+
 | Skill | Role |
 | --- | --- |
 | `myspec-setup` | Define metrics and their gates, coding practices, and guidelines. |
