@@ -66,7 +66,7 @@ describe('myspec install', () => {
     assert.match(template, /^## Acceptance Criteria$/m);
     assert.doesNotMatch(template, /version/i);
     assert.match(read(dir, '.claude/skills/myspec-inspect/SKILL.md'), /inspections\/inspection-<NNN>\.md/);
-    assert.match(read(dir, '.claude/skills/myspec-patch/SKILL.md'), /more than three files/);
+    assert.match(read(dir, '.claude/skills/myspec-patch/SKILL.md'), /exceeds the applicable file limit/);
 
     installOk(dir, '-l', 'pt');
     assert.match(read(dir, '.codex/skills/myspec-inspecionar/assets/modelo-de-inspecao.md'), /^## Critérios de aceitação$/m);
@@ -193,7 +193,7 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/README.md'), read(join(TEMPLATES, 'workspace/pt'), 'README.md'));
   });
 
-  for (const version of ['0.4.5', '0.5.0']) {
+  for (const version of ['0.4.5', '0.5.0', '0.5.1']) {
     for (const [language, workspace] of [['en', 'my-specs'], ['pt', 'minhas-specs']]) {
       it(`refreshes the ${version} ${language} workflow guidance without rewriting existing specs`, () => {
         const dir = repo();

@@ -21,7 +21,7 @@ Práticas de código, orientações gerais e portões de métricas aprovados sã
 
 Resolva comportamentos ausentes, ambíguos ou alterados nos critérios antes da implementação afetada. A inspeção relata lacunas de contrato e não pode declarar conclusão enquanto um critério não for atendido ou faltar evidência. A instalação não reescreve specs existentes automaticamente. Cenários BDD podem permanecer em Markdown, com ferramentas e nomes de teste já usados pelo repositório.
 
-Corrigir é a exceção: uma mudança elegível de no máximo três arquivos não exige nova spec nem critérios BDD. Os portões de escopo existentes continuam aplicáveis, e o ajuste deve preservar os critérios de qualquer spec implementada que tocar.
+Corrigir é a exceção: uma mudança elegível não exige nova spec nem critérios BDD. O limite padrão é de cinco arquivos, incluindo testes; uma orientação geral aplicável do projeto com `Status: Aprovado` em `orientacoes-gerais/` pode substituir esse limite de arquivos. Os demais portões de escopo continuam aplicáveis, e o ajuste deve preservar os critérios de qualquer spec implementada que tocar.
 
 | Skill | Papel |
 | --- | --- |
@@ -29,7 +29,7 @@ Corrigir é a exceção: uma mudança elegível de no máximo três arquivos nã
 | `myspec-prescrever` | Transforma uma solicitação de mudança em uma spec testável. |
 | `myspec-implementar` | Propõe e aprova a árvore de arquivos e então implementa a spec. |
 | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas aprovadas e registra uma inspeção com veredito. |
-| `myspec-corrigir` | Faz um ajuste pequeno de no máximo três arquivos, inclusive dentro de uma spec implementada. |
+| `myspec-corrigir` | Faz um ajuste pequeno de no máximo cinco arquivos por padrão, com limite substituível por orientação geral aprovada do projeto, inclusive dentro de uma spec implementada. |
 | `myspec-quantificar` | Julga as métricas aprovadas do projeto inteiro e sugere melhorias que podem originar novas specs. |
 
 Um ciclo típico após a configuração:
@@ -38,7 +38,7 @@ Um ciclo típico após a configuração:
 prescrever > implementar (árvore) > implementar > inspecionar > implementar > inspecionar > corrigir > inspecionar
 ```
 
-Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Uma spec está concluída, e o trabalho pode avançar para a próxima, quando sua inspeção mais recente estiver `Apta` ou `Apta com ressalvas`; o veredito nunca impede a execução de nenhum skill. Prefira implementar a corrigir quando a mudança exigir mais de três arquivos ou afetar uma spec cuja árvore nunca foi aprovada.
+Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Uma spec está concluída, e o trabalho pode avançar para a próxima, quando sua inspeção mais recente estiver `Apta` ou `Apta com ressalvas`; o veredito nunca impede a execução de nenhum skill. Prefira implementar a corrigir quando a mudança exceder o limite de arquivos aplicável à correção ou afetar uma spec cuja árvore nunca foi aprovada.
 
 Invoque um skill com `$nome` no Codex ou `/nome` no Claude Code, por exemplo `$myspec-configurar` ou `/myspec-configurar`.
 

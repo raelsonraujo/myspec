@@ -44,8 +44,8 @@ Base opportunities on measured evidence. Prioritize:
 
 For each opportunity, name the affected code, the related spec when one exists, the expected metric effect without promising exact values before remeasurement, and the suggested next skill:
 
-- `{{skill:myspec-prescribe}}` to open a new improvement spec, the default for any opportunity that needs more than three files or has no implemented spec covering it;
-- `{{skill:myspec-patch}}` for a change of at most three files within the scope of an implemented spec or outside any spec.
+- `{{skill:myspec-prescribe}}` to open a new improvement spec, the default for any opportunity that exceeds the applicable patch file limit or has no implemented spec covering it;
+- `{{skill:myspec-patch}}` for a change within the applicable patch file limit (five files by default, overridable by an applicable approved project general guideline) in the scope of an implemented spec or outside any spec. Apply the patch skill's remaining scope gates as well.
 
 Do not create specs or edit code; the developer decides which opportunities to pursue.
 
