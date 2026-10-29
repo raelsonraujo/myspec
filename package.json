@@ -1,6 +1,6 @@
 {
   "name": "myspec",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Spec-driven development skills for AI coding agents (Codex, Claude Code).",
   "type": "module",
   "bin": {

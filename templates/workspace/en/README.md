@@ -21,7 +21,7 @@ Approved coding practices, general guidelines, and quality metric gates are enfo
 
 Resolve missing, ambiguous, or changed behaviors in the spec's criteria before affected implementation work. Inspection reports contract gaps and cannot declare completion while a criterion is unmet or lacks evidence. Existing specs are not rewritten automatically on install. BDD scenarios may stay in Markdown and use the repository's existing test tooling and naming conventions.
 
-Patching is the exception: an eligible change of at most three files needs no new spec or BDD criteria. Its existing scope gates still apply, and it must preserve the criteria of any implemented spec it touches.
+Patching is the exception: an eligible change needs no new spec or BDD criteria. Its default limit is five files, including tests; an applicable project general guideline with `Status: Approved` under `general-guidelines/` may override that file-count limit. Its other scope gates still apply, and it must preserve the criteria of any implemented spec it touches.
 
 | Skill | Role |
 | --- | --- |
@@ -29,7 +29,7 @@ Patching is the exception: an eligible change of at most three files needs no ne
 | `myspec-prescribe` | Turn a change request into a testable spec. |
 | `myspec-implement` | Propose and approve a file tree, then implement the spec. |
 | `myspec-inspect` | Review the implementation against the spec and approved rules, measure the approved metrics, and record an inspection with a verdict. |
-| `myspec-patch` | Make a small fix of at most three files, including within an implemented spec. |
+| `myspec-patch` | Make a small fix of at most five files by default, overridable by an approved project general guideline, including within an implemented spec. |
 | `myspec-quantify` | Judge the whole project's approved metrics and suggest improvements that can start new specs. |
 
 A typical cycle after setup:
@@ -38,7 +38,7 @@ A typical cycle after setup:
 prescribe > implement (file tree) > implement > inspect > implement > inspect > patch > inspect
 ```
 
-Repeat implement or patch followed by inspect as often as needed. A spec is complete, and work can advance to the next one, when its latest inspection is `Ready` or `Ready with observations`; the verdict never prevents running any skill. Prefer implement over patch when a change needs more than three files or affects a spec whose file tree has never been approved.
+Repeat implement or patch followed by inspect as often as needed. A spec is complete, and work can advance to the next one, when its latest inspection is `Ready` or `Ready with observations`; the verdict never prevents running any skill. Prefer implement over patch when a change exceeds the applicable patch file limit or affects a spec whose file tree has never been approved.
 
 Invoke a skill with `$name` in Codex or `/name` in Claude Code, e.g. `$myspec-setup` or `/myspec-setup`.
 

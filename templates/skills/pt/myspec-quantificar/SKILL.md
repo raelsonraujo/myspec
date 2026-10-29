@@ -36,8 +36,8 @@ Baseie-se em evidência medida e priorize: código que descumpre portão `Bloque
 
 Para cada oportunidade, cite o código afetado, a spec relacionada quando houver, o efeito esperado nas métricas sem prometer valores antes de medir novamente e o próximo skill sugerido:
 
-- `{{skill:myspec-prescrever}}` para abrir uma nova spec de melhoria, o padrão para oportunidades que exijam mais de três arquivos ou não tenham spec implementada que as cubra;
-- `{{skill:myspec-corrigir}}` para mudança de no máximo três arquivos no escopo de uma spec implementada ou fora de qualquer spec.
+- `{{skill:myspec-prescrever}}` para abrir uma nova spec de melhoria, o padrão para oportunidades que excedam o limite de arquivos aplicável à correção ou não tenham spec implementada que as cubra;
+- `{{skill:myspec-corrigir}}` para mudança dentro do limite de arquivos aplicável à correção (cinco arquivos por padrão, substituível por orientação geral aprovada aplicável do projeto) no escopo de uma spec implementada ou fora de qualquer spec. Aplique também os demais portões de escopo do skill de correção.
 
 Oportunidades não acrescentam nem redefinem comportamentos mensuráveis de uma spec existente. Se forem seguidas por meio de spec, expresse o comportamento ou meta exigida nos critérios BDD por `{{skill:myspec-prescrever}}`; eles continuam como fonte da verdade comportamental. Ajustes elegíveis mantêm a exceção sem spec e seus portões de escopo.
 

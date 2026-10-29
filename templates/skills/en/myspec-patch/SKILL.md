@@ -1,6 +1,6 @@
 ---
 name: myspec-patch
-description: Make a small, bounded code adjustment of at most three files without requiring a new Myspec specification or file tree, while preserving the contract of any implemented spec it touches, following repository Myspec guidance and established patterns, and using proportionate automated verification. Use when a developer requests a minor fix, correction, cleanup, targeted behavior adjustment, or a fix for inspection findings on an already implemented spec.
+description: Make a small, bounded code adjustment of at most five files by default, with the file limit overridable by an approved project general guideline, without requiring a new Myspec specification or file tree. Preserve the contract of any implemented spec it touches, follow repository Myspec guidance and established patterns, and use proportionate automated verification. Use for a minor fix, correction, cleanup, targeted behavior adjustment, or inspection findings on an already implemented spec.
 ---
 
 # Myspec Patch
@@ -17,8 +17,8 @@ Before moving beyond initial read-only repository and request discovery, read ev
 
 1. Read the request, repository instructions, and affected code before editing.
 2. Identify the specs under `my-specs/specs` whose scope the change affects: a spec named by the developer, or one whose `spec.md` or `file-tree.md` covers the affected behavior or files. For each, read `spec.md`, `file-tree.md` when present, and the highest-numbered inspection under its `inspections/` folder when present.
-3. Count the files the change must add, modify, or delete, including test files.
-4. Recommend `{{skill:myspec-implement}}` instead of patching when the change needs more than three files, or when it affects a spec whose `file-tree.md` is absent or has no `Approved` entry in its `Revision History`, meaning that spec has not been implemented yet. When the change needs more than three files and no spec covers it, recommend `{{skill:myspec-prescribe}}` to create one first.
+3. Count the files the change must add, modify, or delete, including test files. The default limit is five files. An applicable project general guideline with `Status: Approved` under `my-specs/general-guidelines/` may override this file-count limit; use its rule when present and otherwise use five. State the applicable limit and cite the guideline when using an override. This override changes only the file-count limit; the other scope gates still apply.
+4. Recommend `{{skill:myspec-implement}}` instead of patching when the change exceeds the applicable file limit, or when it affects a spec whose `file-tree.md` is absent or has no `Approved` entry in its `Revision History`, meaning that spec has not been implemented yet. When the change exceeds the applicable file limit and no spec covers it, recommend `{{skill:myspec-prescribe}}` to create one first.
 5. If the change is not covered by an existing spec and changes public behavior, architecture, persistence, security, compatibility, or needs a product or cross-cutting design decision the request does not settle, pause and recommend `{{skill:myspec-prescribe}}` instead.
 6. Otherwise patch. A patch may change code within the scope of an implemented spec, for example to address findings from its latest inspection. Preserve that spec's acceptance criteria and approved file-tree responsibilities, and report every file the patch touches outside its approved file tree. Do not silently expand the patch; if the file count or affected specs change while working, re-apply this gate.
 
