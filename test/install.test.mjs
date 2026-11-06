@@ -189,6 +189,9 @@ describe('myspec install', () => {
       writeFileSync(join(dir, `my-specs/specs/${id}/spec.md`), '# Unfinished\n');
       writeFileSync(join(dir, `my-specs/specs/${id}/file-tree.md`), 'Status: Approved\n');
     }
+    // A passing inspection does not finalize a spec without the developer's confirmation.
+    mkdirSync(join(dir, 'my-specs/specs/002-in-progress/inspections'));
+    writeFileSync(join(dir, 'my-specs/specs/002-in-progress/inspections/inspection-001.md'), finalInspection);
     const lifecycle = `${JSON.stringify({
       version: 1,
       specs: [

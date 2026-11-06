@@ -1,11 +1,11 @@
 ---
 name: myspec-inspecionar
-description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada e orientações Myspec aprovadas, mede as métricas definidas pelos arquivos de métrica aprovados em minhas-specs/metricas, julga-as frente a seus portões e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec e marcar finalizada no manifesto, preservando specs já finalizadas. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
+description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada e orientações Myspec aprovadas, mede as métricas definidas pelos arquivos de métrica aprovados em minhas-specs/metricas, julga-as frente a seus portões e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e recomenda se a spec pode ser finalizada e só marca finalizada no manifesto após confirmação explícita do desenvolvedor sobre a inspeção apresentada, preservando specs já finalizadas. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
 ---
 
 # Myspec Inspecionar
 
-Revise e meça uma implementação sem ampliar seu contrato e registre cada execução sobre spec ativa como uma nova inspeção, de modo que a mais recente sirva de critério de conclusão para avançar à próxima spec. Um ciclo típico repete implementar ou corrigir seguido de inspecionar até obter os resultados desejados. Relate apenas lacunas rastreáveis a requisito explícito, responsabilidade da árvore aprovada ou regra Myspec aprovada.
+Revise e meça uma implementação sem ampliar seu contrato e registre cada execução sobre spec ativa como uma nova inspeção, de modo que a mais recente fundamente a decisão de finalização pelo desenvolvedor. Um ciclo típico repete implementar ou corrigir seguido de inspecionar até obter os resultados desejados. Relate apenas lacunas rastreáveis a requisito explícito, responsabilidade da árvore aprovada ou regra Myspec aprovada.
 
 ## Portão obrigatório de orientações
 
@@ -17,7 +17,13 @@ Leia `minhas-specs/specs/manifesto.json` antes da inspeção. Se ele ou a entrad
 
 Para spec já `finalizada`, retorne inspeção de conclusão e status registrados, sem criar outra inspeção nem alterar artefato histórico. Defeito, regressão ou mudança posteriores devem ser delimitados em nova spec por `{{skill:myspec-prescrever}}`; nunca reabra nem rebaixe a finalizada. O veredito de conclusão descreve sua base histórica, não todo código futuro.
 
-Para spec ativa, salve primeiro a nova inspeção. Se o veredito for `Apta` ou `Apta com ressalvas`, releia o manifesto e altere somente essa entrada para `finalizada`, registrando a sequência de três dígitos da nova inspeção em `inspecaoDeConclusao` (por exemplo, `"003"` para `inspecoes/inspecao-003.md`). Nunca registre conclusão antes de existir a inspeção nem contra base obsoleta. `Bloqueada` mantém `ativa` e `inspecaoDeConclusao: null`; falhas ou ausência de evidência nunca revertem status. Preserve entradas e campos não relacionados. Se falhar a gravação da inspeção ou do manifesto, informe a operação incompleta e reconcilie a evidência salva ao tentar novamente; nunca alegue sucesso de transição não registrada. Retorne caminho do manifesto e status resultante junto do resultado da inspeção.
+Para spec ativa, salve e apresente primeiro a inspeção. Todo veredito mantém `ativa` com `inspecaoDeConclusao: null` até o desenvolvedor confirmar explicitamente a finalização conforme [Finalização pelo desenvolvedor](#finalização-pelo-desenvolvedor). `Apta` e `Apta com ressalvas` permitem propor finalização; nunca a autorizam. `Bloqueada` não pode ser finalizada. Falhas ou ausência de evidência nunca revertem status. Retorne caminho do manifesto e situação real junto do resultado da inspeção.
+
+## Finalização pelo desenvolvedor
+
+1. Após salvar inspeção `Apta` ou `Apta com ressalvas`, apresente caminho, veredito e ressalvas. Pergunte explicitamente se o desenvolvedor deseja finalizar essa spec nomeada com base nessa inspeção, explicando que ela se tornará uma base histórica imutável. Aguarde a resposta. Silêncio, verificações passando, aprovação da árvore, aprovação da implementação, pedido de inspeção e permissão condicional dada antes de conhecer a inspeção não são confirmação. Proposta recusada ou sem resposta mantém a spec ativa e a referência de conclusão nula.
+2. Em continuação somente para confirmar, leia a inspeção de maior número e verifique que é a revisada pelo desenvolvedor, ainda permite finalização e ainda representa a base relevante de spec, árvore, implementação, testes, orientações e métricas. Se houve mudança relevante ou inspeção posterior a superou, inspecione a nova base e peça confirmação após apresentar esse resultado. Não crie outra inspeção apenas para registrar confirmação quando a base revisada estiver inalterada.
+3. Somente após confirmação explícita, releia o manifesto e altere somente essa entrada ativa para `finalizada`, com a sequência de três dígitos da inspeção revisada em `inspecaoDeConclusao` (por exemplo, `"003"`). Preserve entradas e campos não relacionados. A mudança de situação registra a confirmação do desenvolvedor; não crie artefato separado de confirmação nem altere a inspeção. Nunca finalize contra inspeção obsoleta ou bloqueada. Se falhar a gravação do manifesto, informe a operação incompleta sem alegar conclusão; ao tentar novamente, reutilize a confirmação explícita já recebida nesta conversa somente enquanto a mesma base inspecionada ainda valer. Retorne caminhos da inspeção e do manifesto com a situação resultante. Artefatos finalizados passam então a ser imutáveis.
 
 ## Fluxo de trabalho
 
@@ -74,11 +80,11 @@ Um item antes `Atendido` que agora falha é achado novo marcado `(regressão)`. 
 - `Apta com ressalvas`: nada bloqueia, mas há item que não é critério de aceitação com `Evidência insuficiente`, métrica `Não medida` ou outra limitação relevante.
 - `Apta`: todo item avaliado está `Atendido` ou `Não aplicável`, todas as métricas foram medidas e não resta limitação relevante.
 
-`Apta` e `Apta com ressalvas` indicam que a spec ativa está concluída frente à base inspecionada e o trabalho pode avançar à próxima spec. Registrar essa inspeção final e a entrada `finalizada` no manifesto congela a spec. Trabalho posterior usa nova spec. O veredito declara conformidade com a base inspecionada, não que a implementação esteja completa ou sem defeitos em geral.
+`Apta` e `Apta com ressalvas` estabelecem conformidade com a base inspecionada e recomendam finalização. Não finalizam a spec nem substituem a decisão do desenvolvedor. A spec só se torna `finalizada` após confirmação explícita do desenvolvedor sobre a inspeção apresentada e atualização da situação no manifesto. Trabalho posterior usa nova spec. O veredito não declara que a implementação esteja completa ou sem defeitos em geral.
 
 ## Registro da inspeção
 
-Crie `minhas-specs/specs/<nome-da-spec>/inspecoes/inspecao-<NNN>.md` a partir de `assets/modelo-de-inspecao.md`, onde `<NNN>` é o próximo número de três dígitos após a inspeção anterior, começando em `001`. Crie a pasta `inspecoes` se não existir. Nunca edite nem apague inspeções anteriores; cada execução sobre spec ativa acrescenta um arquivo, mesmo sem mudanças. Para spec finalizada, retorne a inspeção de conclusão existente.
+Crie `minhas-specs/specs/<nome-da-spec>/inspecoes/inspecao-<NNN>.md` a partir de `assets/modelo-de-inspecao.md`, onde `<NNN>` é o próximo número de três dígitos após a inspeção anterior, começando em `001`. Crie a pasta `inspecoes` se não existir. Nunca edite nem apague inspeções anteriores; cada execução de inspeção sobre spec ativa acrescenta um arquivo, mesmo sem mudanças. Continuação somente para confirmar altera apenas o manifesto, sem criar nem editar inspeção ou acrescentar outro artefato. Para spec finalizada, retorne a inspeção de conclusão existente.
 
 Mantenha o registro curto. Ele relata resultados, não o processo que os produziu:
 
