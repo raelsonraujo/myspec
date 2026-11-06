@@ -1,6 +1,6 @@
 ---
 name: myspec-setup
-description: Set up or revise the repository-wide Myspec contract by asking the developer to define the quality metrics with their tooling and gates, repository coding practices, and cross-skill guidelines. Use before Myspec quality measurement, when my-specs/metrics is missing or still a single tooling.md, or when metrics, metric tools, gates, coding practices, or shared Myspec guidance need to change.
+description: Initialize or reconcile the spec lifecycle manifest, or set up or revise the repository-wide Myspec contract by asking the developer to define the quality metrics with their tooling and gates, repository coding practices, and cross-skill guidelines. Use when the spec manifest is missing or needs reconciliation, before Myspec quality measurement, when my-specs/metrics is missing or still a single tooling.md, or when metrics, metric tools, gates, coding practices, or shared Myspec guidance need to change.
 ---
 
 # Myspec Setup
@@ -12,6 +12,8 @@ Establish a reproducible, developer-approved contract for the Myspec skills.
 Before moving beyond initial repository discovery, read every Markdown file that exists under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat each applicable document with `Status: Approved` as mandatory for this skill, comply with its rule before taking the action it governs, and surface any conflict with higher-priority instructions before proceeding. A missing folder, missing file, unapproved document, or section explicitly marked `None` creates no mandatory constraint; state the limitation when material.
 
 ## Workflow
+
+Before configuring the repository contract, initialize or reconcile the spec manifest as described below. A request only to build the manifest does not require redefining metrics, guidance, or approvals.
 
 1. Inspect repository manifests, test projects, local tool files, build scripts, and CI configuration. Do not install or modify tooling.
 2. After completing the Mandatory Guidance Gate, read every Markdown file under `my-specs/metrics/`. When the legacy single-file `my-specs/tooling.md` exists, read it too and propose splitting it as described under [Legacy Tooling Contract](#legacy-tooling-contract).
@@ -39,6 +41,22 @@ Before moving beyond initial repository discovery, read every Markdown file that
 10. On a later invocation, incorporate requested revisions or, after explicit developer approval, set the document status to `Approved`. Unless the developer specifies a different identity, read the current repository's `git config user.name` and `git config user.email`. Append an approval entry; never replace earlier entries or change `Created by` or `Created on` after creation. Each entry must include `Approved by`, `Approved on`, and a concise `Approval context` that identifies what revision or decision was approved.
 
 Do not treat silence, a pre-existing tool, or a successful command as approval. Do not install dependencies or alter project configuration unless the developer separately authorizes that work.
+
+## Spec Manifest
+
+Maintain repository-root `my-specs/specs/manifest.json`, separate from the CLI's `my-specs/myspec.json`. Use [assets/spec-manifest-template.json](assets/spec-manifest-template.json) when it is absent. The schema is `{"version":1,"specs":[{"id":"001-example","status":"proposed","completionInspection":null}]}`. Each ID is the exact immediate spec folder name, unique in the manifest; include every folder containing `spec.md`. The Portuguese workspace uses `specs/manifesto.json` with Brazilian Portuguese keys and the lifecycle `proposta → ativa → finalizada`. Language migration translates the manifest representation while retaining IDs, status meaning, completion sequences, and custom fields. Language migration may rename artifact paths but must preserve finished spec contents. `completionInspection` is the inspection's three-digit sequence, not a path, so language changes preserve the reference; resolve it as `<id>/inspections/inspection-<NNN>.md`.
+
+The only lifecycle is `proposed → active → finished`:
+
+- `proposed`: implementation has not started. Creating or approving a file tree alone is planning, not implementation.
+- `active`: implementation has started, even if incomplete or blocked. Implement records this before its first implementation edit.
+- `finished`: the final inspection establishes that work can advance to the next spec. Only a recorded `Ready` or `Ready with observations` inspection supports completion (`Apta` or `Apta com ressalvas` in Portuguese). Recognize either language in historical records after workspace migration. Retain its sequence in `completionInspection`; use `null` for other statuses.
+
+When building a missing manifest or adding untracked existing specs, read each spec, file tree, inspections, relevant code/tests, and version-control evidence. Use the highest-numbered inspection, not an earlier passing one: infer `finished` only when it permits advancement and the evidence still matches its inspected baseline; infer `active` when implementation has begun or later work invalidates that completion evidence; otherwise use `proposed` only when evidence establishes that implementation has not begun. Never infer implementation from a tree's approval alone or completion from source presence or passing tests alone. If evidence is ambiguous, ask the developer for the missing status/baseline evidence before assigning that entry; do not fabricate completion. An empty spec collection produces `{"version":1,"specs":[]}`.
+
+Preserve existing entries and completion references; append missing specs without duplicates. Never downgrade a status, reset the manifest, remove historical entries, or reopen a finished spec. For an existing `proposed` entry with evidence of implementation, advance it to `active`; an existing `active` entry can become `finished` only with the final inspection evidence above. Report malformed data, duplicate IDs, missing folders, or inconsistent completion references for resolution rather than overwriting them. Re-read before writing and preserve unrelated entries and fields so concurrent updates are not lost. Report inferred statuses with their evidence and the manifest path. Lifecycle bookkeeping needs no Git identity or contract approval.
+
+Finished specs, their file trees, inspection records, and completion entries are immutable historical baselines. Any later modification that can impact their behavior or implementation must be scoped to a new spec through `{{skill:myspec-prescribe}}`, including fixes, refactors, and patches that preserve the old criteria. A new spec may change the same source files and explicitly describe the later behavior; leave the finished spec and its status/evidence intact. New code or guidance never reopens it.
 
 ## Contract Rules
 

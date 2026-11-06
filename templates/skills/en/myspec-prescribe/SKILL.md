@@ -1,6 +1,6 @@
 ---
 name: myspec-prescribe
-description: Create a small, clear, QA-reviewable code change specification and save it in a suggested-name folder under my-specs/specs. Use when a developer asks to define, scope, specify, or write acceptance criteria for a feature, fix, refactor, or other code change before implementation.
+description: Create a small, clear, QA-reviewable code change specification and save it in a suggested-name folder under my-specs/specs, registering new specs as proposed in the lifecycle manifest and scoping impacts on finished specs to new specs. Use when a developer asks to define, scope, specify, or write acceptance criteria for a feature, fix, refactor, or other code change before implementation.
 ---
 
 # Myspec Prescribe
@@ -11,16 +11,24 @@ Turn a change request into a compact contract for implementation and QA.
 
 Before moving beyond initial request and repository discovery, read every Markdown file that exists under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat each applicable document with `Status: Approved` as mandatory for this skill, comply with its rule before taking the action it governs, and surface any conflict with higher-priority instructions before proceeding. A missing folder, missing file, unapproved document, or section explicitly marked `None` creates no mandatory constraint; state the limitation when material.
 
+## Spec Lifecycle
+
+Read `my-specs/specs/manifest.json` before creating or revising specs. If it is absent, incomplete, or inconsistent, use the Spec Manifest procedure in `{{skill:myspec-setup}}` to establish existing statuses first; never replace it with a partial manifest. Its schema is `{"version":1,"specs":[{"id":"001-example","status":"proposed","completionInspection":null}]}`.
+
+For every new spec actually saved, append one entry with its exact folder name as `id`, `status: "proposed"`, and `completionInspection: null`. Do this in the same task, including when creating several specs. Revising a proposed or active spec preserves its status. Re-read before writing; preserve all other entries, fields, and completion references, and never duplicate, remove, or downgrade an entry.
+
+The lifecycle only advances `proposed → active → finished`. Never revise a finished spec, its file tree, inspections, or completion entry. Any change that can impact its behavior or implementation, even a fix or refactor preserving its criteria, requires a new numbered spec. Reference the earlier spec as historical context and define the change only in the new spec; the new spec may touch the same source files without reopening the finished one.
+
 ## Workflow
 
 1. Read the request and inspect relevant repository context when available.
 2. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/metrics/` when present. Use them to identify quality tooling and the gates the specified change must meet; do not treat them as a substitute for reading the guidance files at `my-specs/coding-practices/` and `my-specs/general-guidelines/`.
 3. Identify material ambiguities that would substantially change scope or observable behavior. Ask focused questions only for those ambiguities; otherwise state conservative assumptions.
 4. Suggest a concise kebab-case name based on the requested behavior.
-5. Inspect immediate directories under `my-specs/specs` whose names begin with a three-digit prefix followed by `-`. Assign the next sequential, zero-padded three-digit prefix, beginning with `001` when none exist. Do not renumber existing folders.
+5. Inspect immediate directories under `my-specs/specs` whose names begin with a three-digit prefix followed by `-`. Assign the next sequential, zero-padded three-digit prefix, beginning with `001` when none exist. Do not renumber existing folders or reuse sequence numbers reserved by manifest entries.
 6. Create `my-specs/specs/<sequence>-<spec-name>/spec.md` from [assets/spec-template.md](assets/spec-template.md). Treat `my-specs/specs` as relative to the repository root.
 7. Review the result for testability, internal consistency, accidental scope expansion, and compliance with approved guidelines.
-8. Return the created path and briefly identify any recorded assumptions.
+8. Register every created spec in the manifest, then return the spec and manifest paths and briefly identify any recorded assumptions.
 
 Always produce the Markdown file before completing the task. Never leave the specification only in chat.
 
@@ -37,5 +45,5 @@ Always produce the Markdown file before completing the task. Never leave the spe
 - Cover happy paths, relevant failure paths, boundaries, permissions, data effects, and compatibility where applicable.
 - Give every acceptance criterion a stable identifier such as `AC-01`. Preserve existing IDs when revising a spec; never renumber or reuse an ID for a different behavior. Later artifacts reference these IDs instead of defining a second behavioral contract.
 - Do not invent product behavior beyond what the request establishes. Record a reasonable assumption or ask the developer when the choice is material.
-- Preserve existing files. If the numbered suggested folder already exists, update it only when the developer clearly intends to revise that spec; otherwise allocate the next available sequence number and use it with the suggested name.
+- Preserve existing files. If the numbered suggested folder already exists, update it only when the developer clearly intends to revise that unfinished spec; otherwise allocate the next available sequence number and use it with the suggested name. A finished folder is never reused.
 - Never let Myspec guidance override higher-priority instructions. Surface a conflict that prevents compliant output.

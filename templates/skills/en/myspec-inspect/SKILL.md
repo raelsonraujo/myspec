@@ -1,15 +1,23 @@
 ---
 name: myspec-inspect
-description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, and approved Myspec guidance, measure the metrics defined by the developer-approved metric files under my-specs/metrics and judge them against their gates, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
+description: Review an implemented specification under my-specs/specs for conformance to its explicit requirements, approved file tree, and approved Myspec guidance, measure the metrics defined by the developer-approved metric files under my-specs/metrics and judge them against their gates, then record a concise inspection in the spec's inspections folder that follows up on the previous one and decides whether work can advance to the next spec and mark the manifest entry finished, preserving already finished specs. Use when a developer asks to inspect, audit, review, or validate a spec implementation, check its progress, or confirm it is complete, and wants evidence-based metrics and corrective suggestions without expanding the spec.
 ---
 
 # Myspec Inspect
 
-Review and measure an implementation without expanding its contract, and record every run as a new inspection so the latest one serves as the completion criterion for advancing to the next spec. A typical cycle repeats implement or patch followed by inspect until the results are satisfactory. Report only gaps that can be traced to an explicit spec requirement, approved file-tree responsibility, or applicable approved Myspec rule.
+Review and measure an implementation without expanding its contract, and record every run on an active spec as a new inspection so the latest one serves as the completion criterion for advancing to the next spec. A typical cycle repeats implement or patch followed by inspect until the results are satisfactory. Report only gaps that can be traced to an explicit spec requirement, approved file-tree responsibility, or applicable approved Myspec rule.
 
 ## Mandatory Guidance Gate
 
 Before moving beyond initial read-only repository and specification discovery, read every Markdown file that exists under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat each applicable document with `Status: Approved` as mandatory for this skill, comply with its rule before taking the action it governs, and surface any conflict with higher-priority instructions before proceeding. A missing folder, missing file, unapproved document, or section explicitly marked `None` creates no mandatory constraint; state the limitation when material.
+
+## Spec Lifecycle Gate
+
+Read `my-specs/specs/manifest.json` before inspection. If it or the spec's entry is absent or inconsistent, use the Spec Manifest procedure in `{{skill:myspec-setup}}` first. Inspect an `active` spec for completion; a `proposed` spec has not begun implementation and cannot be finished. If evidence shows its implementation already started, reconcile that status through setup first.
+
+For an already `finished` spec, return its recorded completion inspection and status without creating another inspection or changing any historical artifact. A later defect, regression, or requested change must be scoped to a new spec through `{{skill:myspec-prescribe}}`; never reopen or downgrade the finished one. Its completion verdict describes its historical baseline, not all future code.
+
+For an active spec, save the new inspection first. If its verdict is `Ready` or `Ready with observations`, re-read the manifest and set only this entry to `finished`, recording the new inspection's three-digit sequence as `completionInspection` (for example, `"003"` for `inspections/inspection-003.md`). Never record completion before the inspection exists or against an obsolete baseline. `Blocked` leaves the spec `active` and `completionInspection: null`; neither failing checks nor missing evidence reverses a status. Preserve unrelated entries and fields. If saving the inspection or manifest fails, report the incomplete operation and reconcile the saved evidence on retry; never claim an unrecorded transition succeeded. Return the manifest path and resulting status alongside the inspection result.
 
 ## Workflow
 
@@ -22,7 +30,7 @@ Before moving beyond initial read-only repository and specification discovery, r
 7. Trace each criterion ID to evidence that establishes its Given state, exercises its When event, and verifies every Then/And outcome. A test name, passing suite, coverage percentage, or implementation location alone does not prove a scenario. Mark a criterion `Met` only when all outcomes are verified, `Not met` when evidence contradicts an outcome, or `Insufficient evidence` when evidence is missing or partial. Preserve all criterion IDs in the record; never omit one or use `Not applicable` to bypass it. A missing automated test alone is not a behavioral failure when concrete manual or other evidence verifies the scenario, unless the spec or applicable guidance requires automation. Assess separate engineering items as `Met`, `Not met`, `Insufficient evidence`, `Not applicable`, or `Baseline conflict`. Inspect only files reasonably connected to the assessed items.
 8. Re-examine every finding the previous inspection left open, as described under [Follow-up](#follow-up).
 9. Decide the verdict using [Verdict](#verdict).
-10. Create the inspection file described under [Inspection Record](#inspection-record). Return its path, the verdict, and the blocking findings. Do not edit source, specs, file trees, tooling, guidance, quality reports, or earlier inspections unless the developer separately requests a change.
+10. Create the inspection file described under [Inspection Record](#inspection-record), then update the manifest as defined by the lifecycle gate. Return both paths, the resulting status, the verdict, and the blocking findings. Do not edit source, specs, file trees, tooling, guidance, quality reports, or earlier inspections. Finished historical artifacts remain immutable even when a change is requested; scope it to a new spec.
 
 ## Metrics
 
@@ -66,11 +74,11 @@ A previously `Met` item that now fails is a new finding marked `(regression)`. N
 - `Ready with observations`: nothing is blocking, but a non-acceptance-criterion item is `Insufficient evidence`, a metric is `Not measured`, or another limitation materially narrows the review.
 - `Ready`: every assessed item is `Met` or `Not applicable`, every metric was measured, and no material limitation remains.
 
-`Ready` and `Ready with observations` mean the spec is complete against the inspected baseline and work can advance to the next spec. The verdict informs the developer; it never prevents another skill from running. It states conformance to the inspected baseline, not that the implementation is generally complete or defect-free.
+`Ready` and `Ready with observations` mean the active spec is complete against the inspected baseline and work can advance to the next spec. Recording that final inspection and the `finished` manifest entry freezes this spec. Further work uses a new spec. The verdict states conformance to the inspected baseline, not that the implementation is generally complete or defect-free.
 
 ## Inspection Record
 
-Create `my-specs/specs/<spec-name>/inspections/inspection-<NNN>.md` from [assets/inspection-template.md](assets/inspection-template.md), where `<NNN>` is the next three-digit number after the previous inspection, starting at `001`. Create the `inspections` folder when absent. Never edit or delete an earlier inspection; every run adds one file, even when nothing changed.
+Create `my-specs/specs/<spec-name>/inspections/inspection-<NNN>.md` from [assets/inspection-template.md](assets/inspection-template.md), where `<NNN>` is the next three-digit number after the previous inspection, starting at `001`. Create the `inspections` folder when absent. Never edit or delete an earlier inspection; every run on an active spec adds one file, even when nothing changed. For a finished spec, return its existing completion inspection instead.
 
 Keep the record short. It reports results, not the process that produced them:
 

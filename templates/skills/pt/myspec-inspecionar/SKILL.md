@@ -1,15 +1,23 @@
 ---
 name: myspec-inspecionar
-description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada e orientações Myspec aprovadas, mede as métricas definidas pelos arquivos de métrica aprovados em minhas-specs/metricas, julga-as frente a seus portões e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
+description: Revisa a implementação de uma especificação em minhas-specs/specs quanto aos requisitos explícitos, árvore aprovada e orientações Myspec aprovadas, mede as métricas definidas pelos arquivos de métrica aprovados em minhas-specs/metricas, julga-as frente a seus portões e registra uma inspeção enxuta na pasta inspecoes da spec que acompanha a anterior e decide se o trabalho pode avançar para a próxima spec e marcar finalizada no manifesto, preservando specs já finalizadas. Use para auditar, validar ou verificar o progresso e a conclusão de uma spec sem ampliar seu escopo.
 ---
 
 # Myspec Inspecionar
 
-Revise e meça uma implementação sem ampliar seu contrato e registre cada execução como uma nova inspeção, de modo que a mais recente sirva de critério de conclusão para avançar à próxima spec. Um ciclo típico repete implementar ou corrigir seguido de inspecionar até obter os resultados desejados. Relate apenas lacunas rastreáveis a requisito explícito, responsabilidade da árvore aprovada ou regra Myspec aprovada.
+Revise e meça uma implementação sem ampliar seu contrato e registre cada execução sobre spec ativa como uma nova inspeção, de modo que a mais recente sirva de critério de conclusão para avançar à próxima spec. Um ciclo típico repete implementar ou corrigir seguido de inspecionar até obter os resultados desejados. Relate apenas lacunas rastreáveis a requisito explícito, responsabilidade da árvore aprovada ou regra Myspec aprovada.
 
 ## Portão obrigatório de orientações
 
 Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Documentos aplicáveis com `Status: Aprovado` são obrigatórios; cumpra-os e exponha conflitos superiores. Ausências, documentos não aprovados ou `Nenhum` não criam critério e devem ser relatados quando relevantes.
+
+## Portão do ciclo de vida
+
+Leia `minhas-specs/specs/manifesto.json` antes da inspeção. Se ele ou a entrada da spec estiver ausente ou inconsistente, use primeiro o procedimento Manifesto de specs de `{{skill:myspec-configurar}}`. Inspecione spec `ativa` para conclusão; spec `proposta` ainda não começou a implementação e não pode ser finalizada. Se houver evidência de implementação iniciada, reconcilie primeiro o status pela configuração.
+
+Para spec já `finalizada`, retorne inspeção de conclusão e status registrados, sem criar outra inspeção nem alterar artefato histórico. Defeito, regressão ou mudança posteriores devem ser delimitados em nova spec por `{{skill:myspec-prescrever}}`; nunca reabra nem rebaixe a finalizada. O veredito de conclusão descreve sua base histórica, não todo código futuro.
+
+Para spec ativa, salve primeiro a nova inspeção. Se o veredito for `Apta` ou `Apta com ressalvas`, releia o manifesto e altere somente essa entrada para `finalizada`, registrando a sequência de três dígitos da nova inspeção em `inspecaoDeConclusao` (por exemplo, `"003"` para `inspecoes/inspecao-003.md`). Nunca registre conclusão antes de existir a inspeção nem contra base obsoleta. `Bloqueada` mantém `ativa` e `inspecaoDeConclusao: null`; falhas ou ausência de evidência nunca revertem status. Preserve entradas e campos não relacionados. Se falhar a gravação da inspeção ou do manifesto, informe a operação incompleta e reconcilie a evidência salva ao tentar novamente; nunca alegue sucesso de transição não registrada. Retorne caminho do manifesto e status resultante junto do resultado da inspeção.
 
 ## Fluxo de trabalho
 
@@ -22,7 +30,7 @@ Antes de avançar da descoberta somente-leitura, leia todos os Markdown em `minh
 7. Rastreie cada ID à evidência que estabeleça o estado Dado, exercite o evento Quando e verifique todos os resultados Então/E. Nome de teste, suíte aprovada, percentual de cobertura ou local da implementação isolado não comprova cenário. Use `Atendido` somente se todos os resultados forem verificados, `Não atendido` quando a evidência contrariar um resultado, ou `Evidência insuficiente` quando faltar evidência ou ela for parcial. Preserve todos os IDs no registro; nunca omita um critério nem use `Não aplicável` para dispensá-lo. Ausência de teste automatizado isolada não prova falha comportamental quando evidência manual ou alternativa concreta verifica o cenário, salvo exigência de automação pela spec ou orientação. Avalie itens de engenharia separadamente como `Atendido`, `Não atendido`, `Evidência insuficiente`, `Não aplicável` ou `Conflito de base`. Inspecione somente arquivos razoavelmente ligados aos itens avaliados.
 8. Reavalie cada achado deixado aberto pela inspeção anterior, conforme [Acompanhamento](#acompanhamento).
 9. Decida o veredito conforme [Veredito](#veredito).
-10. Crie o arquivo descrito em [Registro da inspeção](#registro-da-inspeção) e retorne seu caminho, o veredito e os achados bloqueantes. Não edite código, specs, árvores, ferramentas, orientações, relatórios de qualidade ou inspeções anteriores sem solicitação separada.
+10. Crie o arquivo descrito em [Registro da inspeção](#registro-da-inspeção) e atualize o manifesto conforme o portão do ciclo de vida. Retorne ambos os caminhos, status resultante, veredito e achados bloqueantes. Não edite código, specs, árvores, ferramentas, orientações, relatórios de qualidade ou inspeções anteriores. Artefatos históricos finalizados permanecem imutáveis mesmo com solicitação de mudança; delimite-a em nova spec.
 
 ## Métricas
 
@@ -66,11 +74,11 @@ Um item antes `Atendido` que agora falha é achado novo marcado `(regressão)`. 
 - `Apta com ressalvas`: nada bloqueia, mas há item que não é critério de aceitação com `Evidência insuficiente`, métrica `Não medida` ou outra limitação relevante.
 - `Apta`: todo item avaliado está `Atendido` ou `Não aplicável`, todas as métricas foram medidas e não resta limitação relevante.
 
-`Apta` e `Apta com ressalvas` indicam que a spec está concluída frente à base inspecionada e o trabalho pode avançar para a próxima spec. O veredito informa o desenvolvedor; nunca impede outro skill de rodar. Ele declara conformidade com a base inspecionada, não que a implementação esteja completa ou sem defeitos em geral.
+`Apta` e `Apta com ressalvas` indicam que a spec ativa está concluída frente à base inspecionada e o trabalho pode avançar à próxima spec. Registrar essa inspeção final e a entrada `finalizada` no manifesto congela a spec. Trabalho posterior usa nova spec. O veredito declara conformidade com a base inspecionada, não que a implementação esteja completa ou sem defeitos em geral.
 
 ## Registro da inspeção
 
-Crie `minhas-specs/specs/<nome-da-spec>/inspecoes/inspecao-<NNN>.md` a partir de `assets/modelo-de-inspecao.md`, onde `<NNN>` é o próximo número de três dígitos após a inspeção anterior, começando em `001`. Crie a pasta `inspecoes` se não existir. Nunca edite nem apague inspeções anteriores; cada execução acrescenta um arquivo, mesmo sem mudanças.
+Crie `minhas-specs/specs/<nome-da-spec>/inspecoes/inspecao-<NNN>.md` a partir de `assets/modelo-de-inspecao.md`, onde `<NNN>` é o próximo número de três dígitos após a inspeção anterior, começando em `001`. Crie a pasta `inspecoes` se não existir. Nunca edite nem apague inspeções anteriores; cada execução sobre spec ativa acrescenta um arquivo, mesmo sem mudanças. Para spec finalizada, retorne a inspeção de conclusão existente.
 
 Mantenha o registro curto. Ele relata resultados, não o processo que os produziu:
 

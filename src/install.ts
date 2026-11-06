@@ -18,6 +18,7 @@ import { listSkills, renderTemplate } from './templates.js';
 import { planTooling, type ToolingVariables } from './tooling.js';
 import {
   migrateWorkspace,
+  localizeSpecManifest,
   relocateLegacyMeasurement,
   renameLegacyMetrics,
   retireProductDirectives,
@@ -119,6 +120,7 @@ export function install(options: InstallOptions): InstallResult {
   if (installed && installed.layout !== options.language) {
     addMigration(result, migrateWorkspace(root, installed.layout, options.language));
   }
+  addMigration(result, localizeSpecManifest(root, options.language));
 
   let variables: ToolingVariables | undefined;
   const getVariables = () => (variables ??= toolingVariables(root, result.warnings));

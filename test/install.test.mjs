@@ -168,6 +168,147 @@ describe('myspec install', () => {
     assert.deepEqual(skillDirs(dir, '.claude/skills'), PT_SKILLS);
   });
 
+  it('preserves spec lifecycle data and its completion reference across reinstalls and language changes', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'codex/claude', '-l', 'en');
+    // Setup owns initialization: installation must not infer statuses or create an empty replacement.
+    assert.ok(!existsSync(join(dir, 'my-specs/specs/manifest.json')));
+    for (const provider of ['codex', 'claude']) {
+      assert.deepEqual(JSON.parse(read(dir, `.${provider}/skills/myspec-setup/assets/spec-manifest-template.json`)), {
+        version: 1, specs: [],
+      });
+    }
+    mkdirSync(join(dir, 'my-specs/specs/001-completed/inspections'), { recursive: true });
+    writeFileSync(join(dir, 'my-specs/specs/001-completed/spec.md'), '# Completed\n');
+    const finalTree = 'Status: Approved\n\n## Revision History\n\n- Approved: final tree\n';
+    const finalInspection = '# Inspection\n\n## Verdict\n\n**Ready**\n';
+    writeFileSync(join(dir, 'my-specs/specs/001-completed/file-tree.md'), finalTree);
+    writeFileSync(join(dir, 'my-specs/specs/001-completed/inspections/inspection-002.md'), finalInspection);
+    for (const id of ['002-in-progress', '003-next']) {
+      mkdirSync(join(dir, `my-specs/specs/${id}`));
+      writeFileSync(join(dir, `my-specs/specs/${id}/spec.md`), '# Unfinished\n');
+      writeFileSync(join(dir, `my-specs/specs/${id}/file-tree.md`), 'Status: Approved\n');
+    }
+    const lifecycle = `${JSON.stringify({
+      version: 1,
+      specs: [
+        { id: '001-completed', status: 'finished', completionInspection: '002' },
+        { id: '002-in-progress', status: 'active', completionInspection: null },
+        { id: '003-next', status: 'proposed', completionInspection: null },
+      ],
+      repositoryNote: 'Keep custom metadata',
+    }, null, 2)}\n`;
+    writeFileSync(join(dir, 'my-specs/specs/manifest.json'), lifecycle);
+
+    installOk(dir);
+    assert.equal(read(dir, 'my-specs/specs/manifest.json'), lifecycle);
+    installOk(dir, '-l', 'pt');
+    const localized = {
+      versao: 1,
+      especificacoes: [
+        { identificador: '001-completed', situacao: 'finalizada', inspecaoDeConclusao: '002' },
+        { identificador: '002-in-progress', situacao: 'ativa', inspecaoDeConclusao: null },
+        { identificador: '003-next', situacao: 'proposta', inspecaoDeConclusao: null },
+      ],
+      repositoryNote: 'Keep custom metadata',
+    };
+    assert.deepEqual(JSON.parse(read(dir, 'minhas-specs/specs/manifesto.json')), localized);
+    assert.ok(!existsSync(join(dir, 'minhas-specs/specs/manifest.json')));
+    const finished = JSON.parse(lifecycle).specs[0];
+    const finalizada = localized.especificacoes[0];
+    assert.ok(existsSync(join(dir, `minhas-specs/specs/${finalizada.identificador}/inspecoes/inspecao-${finalizada.inspecaoDeConclusao}.md`)));
+    assert.equal(read(dir, 'minhas-specs/specs/001-completed/spec.md'), '# Completed\n');
+    assert.equal(read(dir, 'minhas-specs/specs/001-completed/arvore-de-arquivos.md'), finalTree);
+    assert.equal(read(dir, 'minhas-specs/specs/001-completed/inspecoes/inspecao-002.md'), finalInspection);
+    assert.equal(read(dir, 'minhas-specs/specs/002-in-progress/arvore-de-arquivos.md'), 'Status: Aprovado\n');
+    for (const provider of ['codex', 'claude']) {
+      assert.deepEqual(JSON.parse(read(dir, `.${provider}/skills/myspec-configurar/assets/modelo-de-manifesto-de-specs.json`)), {
+        versao: 1, especificacoes: [],
+      });
+    }
+    const localizedContent = read(dir, 'minhas-specs/specs/manifesto.json');
+    installOk(dir);
+    assert.equal(read(dir, 'minhas-specs/specs/manifesto.json'), localizedContent);
+    installOk(dir, '-l', 'en');
+    assert.equal(read(dir, 'my-specs/specs/manifest.json'), lifecycle);
+    assert.ok(!existsSync(join(dir, 'my-specs/specs/manifesto.json')));
+    assert.ok(existsSync(join(dir, `my-specs/specs/${finished.id}/inspections/inspection-${finished.completionInspection}.md`)));
+    assert.equal(read(dir, 'my-specs/specs/001-completed/file-tree.md'), finalTree);
+    assert.equal(read(dir, 'my-specs/specs/001-completed/inspections/inspection-002.md'), finalInspection);
+  });
+
+  it('preserves spec contents and warns when a language migration cannot read lifecycle states', () => {
+    const invalidManifests = [
+      '{broken',
+      JSON.stringify({ version: 1, specs: [{ id: '001-existing', status: 'unknown' }] }),
+      JSON.stringify({ version: 1, specs: [], versao: 1, especificacoes: [] }),
+      JSON.stringify({ version: 1, specs: [
+        { id: '001-existing', status: 'finished', completionInspection: '001', identificador: 'conflicting' },
+      ] }),
+    ];
+    for (const invalid of invalidManifests) {
+      const dir = repo();
+      installOk(dir, '-p', 'codex', '-l', 'en');
+      mkdirSync(join(dir, 'my-specs/specs/001-existing'));
+      writeFileSync(join(dir, 'my-specs/specs/001-existing/spec.md'), '# Existing\n');
+      writeFileSync(join(dir, 'my-specs/specs/001-existing/file-tree.md'), 'Status: Approved\n');
+      writeFileSync(join(dir, 'my-specs/specs/manifest.json'), invalid);
+      writeFileSync(join(dir, 'my-specs/general-guidelines/rule.md'), 'Status: Approved\n');
+
+      const result = installOk(dir, '-l', 'pt');
+
+      assert.match(result.stdout, /manifest.json is invalid or conflicting; spec contents were kept unchanged/);
+      assert.equal(read(dir, 'minhas-specs/specs/001-existing/arvore-de-arquivos.md'), 'Status: Approved\n');
+      assert.equal(read(dir, 'minhas-specs/specs/manifest.json'), invalid);
+      assert.equal(read(dir, 'minhas-specs/orientacoes-gerais/rule.md'), 'Status: Aprovado\n');
+    }
+  });
+
+  it('converts a legacy English spec manifest during a Portuguese reinstall without changing completion', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'codex', '-l', 'pt');
+    mkdirSync(join(dir, 'minhas-specs/specs/001-pronta/inspecoes'), { recursive: true });
+    writeFileSync(join(dir, 'minhas-specs/specs/001-pronta/spec.md'), '# Pronta\n');
+    const inspection = '# Inspeção\n\n## Veredito\n\n**Apta**\n';
+    writeFileSync(join(dir, 'minhas-specs/specs/001-pronta/inspecoes/inspecao-001.md'), inspection);
+    writeFileSync(join(dir, 'minhas-specs/specs/manifest.json'), JSON.stringify({
+      version: 1,
+      specs: [{ id: '001-pronta', status: 'finished', completionInspection: '001', observacao: 'Preservar' }],
+      notas: 'Histórico',
+    }));
+
+    installOk(dir);
+
+    assert.deepEqual(JSON.parse(read(dir, 'minhas-specs/specs/manifesto.json')), {
+      versao: 1,
+      especificacoes: [{ identificador: '001-pronta', situacao: 'finalizada', inspecaoDeConclusao: '001', observacao: 'Preservar' }],
+      notas: 'Histórico',
+    });
+    assert.ok(!existsSync(join(dir, 'minhas-specs/specs/manifest.json')));
+    assert.equal(read(dir, 'minhas-specs/specs/001-pronta/inspecoes/inspecao-001.md'), inspection);
+  });
+
+  it('keeps both spec manifests and historical contents when localized and legacy files conflict', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'codex', '-l', 'pt');
+    mkdirSync(join(dir, 'minhas-specs/specs/001-pronta'));
+    writeFileSync(join(dir, 'minhas-specs/specs/001-pronta/spec.md'), '# Pronta\n');
+    writeFileSync(join(dir, 'minhas-specs/specs/001-pronta/arvore-de-arquivos.md'), 'Status: Aprovado\n');
+    const legacy = JSON.stringify({ version: 1, specs: [] });
+    const localized = JSON.stringify({ versao: 1, especificacoes: [
+      { identificador: '001-pronta', situacao: 'finalizada', inspecaoDeConclusao: '001' },
+    ] });
+    writeFileSync(join(dir, 'minhas-specs/specs/manifest.json'), legacy);
+    writeFileSync(join(dir, 'minhas-specs/specs/manifesto.json'), localized);
+
+    const result = installOk(dir, '-l', 'en');
+
+    assert.match(result.stdout, /Neither was overwritten/);
+    assert.equal(read(dir, 'my-specs/specs/manifest.json'), legacy);
+    assert.equal(read(dir, 'my-specs/specs/manifesto.json'), localized);
+    assert.equal(read(dir, 'my-specs/specs/001-pronta/file-tree.md'), 'Status: Aprovado\n');
+  });
+
   it('never overwrites repository contract documents and leaves unrelated skills alone', () => {
     const dir = repo();
     installOk(dir, '-p', 'codex', '-l', 'en');
@@ -193,7 +334,7 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/README.md'), read(join(TEMPLATES, 'workspace/pt'), 'README.md'));
   });
 
-  for (const version of ['0.4.5', '0.5.0', '0.5.1']) {
+  for (const version of ['0.4.5', '0.5.0', '0.5.1', '0.5.2']) {
     for (const [language, workspace] of [['en', 'my-specs'], ['pt', 'minhas-specs']]) {
       it(`refreshes the ${version} ${language} workflow guidance without rewriting existing specs`, () => {
         const dir = repo();

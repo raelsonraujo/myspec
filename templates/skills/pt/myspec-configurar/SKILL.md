@@ -1,6 +1,6 @@
 ---
 name: myspec-configurar
-description: Configura ou revisa o contrato Myspec de todo o repositório, pedindo ao desenvolvedor que defina as métricas de qualidade com suas ferramentas e portões, práticas de código e orientações compartilhadas. Use antes de medir qualidade, quando minhas-specs/metricas estiver ausente ou ainda for um único ferramentas.md, ou quando esses contratos precisarem mudar.
+description: Inicializa ou reconcilia o manifesto do ciclo de vida das specs, ou configura ou revisa o contrato Myspec de todo o repositório, pedindo ao desenvolvedor que defina as métricas de qualidade com suas ferramentas e portões, práticas de código e orientações compartilhadas. Use quando o manifesto estiver ausente ou precisar de reconciliação, antes de medir qualidade, quando minhas-specs/metricas estiver ausente ou ainda for um único ferramentas.md, ou quando esses contratos precisarem mudar.
 ---
 
 # Myspec Configurar
@@ -13,6 +13,8 @@ Antes de avançar além da descoberta inicial do repositório, leia todos os arq
 
 ## Fluxo de trabalho
 
+Antes de configurar o contrato do repositório, inicialize ou reconcilie o manifesto de specs conforme abaixo. Solicitação somente para construir o manifesto não exige redefinir métricas, orientações ou aprovações.
+
 1. Inspecione manifestos, projetos de teste, arquivos de ferramentas locais, scripts de build e CI. Não instale nem modifique ferramentas.
 2. Após o portão obrigatório, leia todos os arquivos Markdown em `minhas-specs/metricas/`. Se existir o arquivo único legado `minhas-specs/ferramentas.md`, leia-o também e proponha dividi-lo conforme [Contrato de ferramentas legado](#contrato-de-ferramentas-legado).
 3. Peça os comandos exatos de build e teste que verificam o repositório e registre-os na orientação geral `minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md`, que `{{skill:myspec-inspecionar}}` e `{{skill:myspec-quantificar}}` executam antes de qualquer métrica. Depois pergunte quais métricas de qualidade o Myspec deve medir. O conjunto de métricas é exatamente o que o desenvolvedor definir: nunca suponha, infira nem adote por padrão métrica alguma a partir da stack, de ferramentas existentes ou de práticas comuns. Ofereça candidatas somente se o desenvolvedor pedir. Não definir métrica alguma é válido; deixe `minhas-specs/metricas/` ausente ou vazia e declare que nenhuma métrica foi estabelecida.
@@ -22,6 +24,24 @@ Antes de avançar além da descoberta inicial do repositório, leia todos os arq
 7. Crie ou atualize os documentos do contrato como `Proposto`, com criador e data obtidos de `git config user.name` e `git config user.email`. Use `Histórico de aprovação`. Cada métrica fica em seu próprio arquivo em `minhas-specs/metricas/`, a partir de [assets/modelo-de-metrica.md](assets/modelo-de-metrica.md); os comandos de build e teste, uma prática por arquivo e uma orientação por arquivo usam os respectivos modelos.
 8. Apresente a proposta completa e peça aprovação ou revisões explícitas. Encerre sem marcá-la como aprovada.
 9. Em invocação posterior, incorpore revisões ou, após aprovação explícita, altere o status para `Aprovado`. Acrescente uma entrada com aprovador, data e contexto; nunca substitua entradas antigas nem os metadados de criação.
+
+## Manifesto de specs
+
+Mantenha `minhas-specs/specs/manifesto.json` relativo à raiz, separado do `minhas-specs/myspec.json` da CLI. Use [assets/modelo-de-manifesto-de-specs.json](assets/modelo-de-manifesto-de-specs.json) somente quando nenhum manifesto existir. O esquema é `{"versao":1,"especificacoes":[{"identificador":"001-exemplo","situacao":"proposta","inspecaoDeConclusao":null}]}`. Cada ID é o nome exato da pasta imediata da spec, único no manifesto; inclua toda pasta com `spec.md`. Chaves e valores de situação são escritos em português brasileiro. A migração de idioma pode renomear caminhos de artefatos, mas deve preservar o conteúdo de specs finalizadas. `inspecaoDeConclusao` é a sequência de três dígitos da inspeção, não um caminho, preservando a referência na troca de idioma; resolva-a como `<id>/inspecoes/inspecao-<NNN>.md`.
+
+Antes de criar o manifesto, procure também `specs/manifest.json` legado. A reinstalação da CLI converte seu nome, campos e situações ao idioma instalado, sem mudar identificadores, significado das situações, sequências de inspeção ou campos personalizados. Configurar deve preservar esses mesmos valores ao reconciliar um manifesto legado; não inicie outro manifesto vazio. Se houver os dois arquivos ou campos conflitantes, relate o conflito sem sobrescrever nem mesclar automaticamente. A tradução de representação não reabre specs nem altera seus registros históricos.
+
+O único ciclo é `proposta → ativa → finalizada`:
+
+- `proposta`: a implementação não começou. Criar ou aprovar a árvore é planejamento, não implementação.
+- `ativa`: a implementação começou, mesmo incompleta ou bloqueada. Implementar registra isso antes da primeira edição da implementação.
+- `finalizada`: a inspeção final comprova que o trabalho pode avançar à próxima spec. Somente inspeção registrada como `Apta` ou `Apta com ressalvas` sustenta a conclusão (`Ready` ou `Ready with observations` em inglês). Reconheça ambos os idiomas em registros históricos após migração do workspace. Mantenha sua sequência em `inspecaoDeConclusao`; use `null` nos outros estados.
+
+Ao construir manifesto ausente ou adicionar specs existentes não rastreadas, leia cada spec, árvore, inspeções, código/testes relevantes e evidências do controle de versão. Use a inspeção de maior número, nunca uma aprovação anterior: infira `finalizada` somente quando ela permitir avançar e a evidência ainda corresponder à base inspecionada; infira `ativa` quando a implementação começou ou trabalho posterior invalidou essa evidência de conclusão; use `proposta` somente quando a evidência estabelecer que a implementação não começou. Aprovar árvore não comprova implementação; código existente ou testes passando não comprovam conclusão. Se houver ambiguidade, peça a evidência de status/base que falta antes de atribuir a entrada; nunca fabrique conclusão. Sem specs, produza `{"versao":1,"especificacoes":[]}`.
+
+Preserve entradas e referências de conclusão existentes; acrescente specs ausentes sem duplicar. Nunca rebaixe status, reinicie o manifesto, remova entradas históricas ou reabra spec finalizada. Entrada `proposta` com evidência de implementação avança para `ativa`; entrada `ativa` só avança para `finalizada` com a evidência da inspeção final acima. Relate dados malformados, IDs duplicados, pastas ausentes ou referências de conclusão inconsistentes para resolução, sem sobrescrevê-los. Releia antes de gravar e preserve entradas e campos não relacionados para não perder atualizações concorrentes. Informe caminho do manifesto, status inferidos e suas evidências. Esse registro não exige identidade Git nem aprovação do contrato.
+
+Specs finalizadas, árvores, inspeções e entradas de conclusão são bases históricas imutáveis. Toda modificação posterior que possa afetar seu comportamento ou implementação deve ser delimitada em nova spec por `{{skill:myspec-prescrever}}`, inclusive correções, refatorações e ajustes que preservem os critérios antigos. A nova spec pode alterar os mesmos arquivos de código e descrever explicitamente o comportamento posterior; preserve a spec finalizada e seu status/evidência. Código ou orientação novos nunca a reabrem.
 
 ## Regras do contrato
 
