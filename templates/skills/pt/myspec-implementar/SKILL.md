@@ -1,6 +1,6 @@
 ---
 name: myspec-implementar
-description: Implementa uma especificação existente em uma pasta nomeada sob minhas-specs/specs, preservando estrutura de arquivos aprovada, código limpo e testes dos caminhos críticos. Use para implementar, continuar ou concluir uma especificação de código.
+description: Implementa uma especificação ainda não finalizada, ativando sua entrada no manifesto ao iniciar implementação, em uma pasta nomeada sob minhas-specs/specs, preservando estrutura de arquivos aprovada, código limpo e testes dos caminhos críticos. Use para implementar, continuar ou concluir uma especificação de código.
 ---
 
 # Myspec Implementar
@@ -10,6 +10,12 @@ Implemente uma especificação sem decidir silenciosamente sua arquitetura ou co
 ## Portão obrigatório de orientações
 
 Antes de avançar além da descoberta inicial e somente-leitura do repositório e da especificação, leia todos os Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Todo documento aplicável com `Status: Aprovado` é obrigatório; cumpra-o antes da ação correspondente e exponha conflitos com instruções de maior prioridade. Ausências, documentos não aprovados ou `Nenhum` não impõem restrição; informe limitações relevantes.
+
+## Portão do ciclo de vida
+
+Antes de propor ou editar árvore ou implementação, leia `minhas-specs/specs/manifesto.json` e a entrada da spec solicitada. Se estiver ausente, incompleto ou inconsistente, use primeiro o procedimento Manifesto de specs de `{{skill:myspec-configurar}}`; não adivinhe status nem crie manifesto parcial. Spec `finalizada` é imutável: não implemente, revise contrato/árvore, altere evidência de conclusão nem reabra. Recomende `{{skill:myspec-prescrever}}` para delimitar qualquer impacto posterior em nova spec, inclusive correções e refatorações. A nova spec pode alterar deliberadamente os mesmos arquivos de código, mantendo a finalizada como histórico.
+
+Mantenha `proposta` durante descoberta, proposta, revisão e aprovação da árvore. Após passar pelos portões de contrato e árvore, imediatamente antes da primeira edição da implementação de produção ou testes, altere somente essa entrada de `proposta` para `ativa`, com `inspecaoDeConclusao: null`. Releia antes de gravar e preserve entradas e campos não relacionados. Continuação de implementação ativa mantém `ativa`, mesmo com testes passando, interrupção da invocação ou bloqueio. Nunca rebaixe status. Somente `{{skill:myspec-inspecionar}}` finaliza esta implementação com inspeção final registrada.
 
 ## Portão rígido: árvore de arquivos
 
@@ -27,7 +33,7 @@ Mapeie todo ID de critério para locais de produção e de teste ou verificaçã
 
 ## Implementação interativa
 
-1. Leia árvore aprovada, especificação, instruções do repositório e código afetado. Se a pasta da spec tiver `inspecoes/`, leia a inspeção de maior número e use seus achados abertos como entrada; o veredito de uma inspeção nunca impede a implementação. Após o portão, leia os arquivos de métrica em `minhas-specs/metricas/` quando existirem, para conhecer as ferramentas e os portões que o código alterado deve cumprir, sem que eles substituam as orientações.
+1. Leia árvore aprovada, especificação, instruções do repositório e código afetado. Se a pasta da spec ainda não finalizada tiver `inspecoes/`, leia a inspeção de maior número e use seus achados abertos como entrada. Inspeção bloqueada permite continuar implementação ativa; spec finalizada exige nova spec. Após o portão, leia os arquivos de métrica em `minhas-specs/metricas/` quando existirem, para conhecer as ferramentas e os portões que o código alterado deve cumprir, sem que eles substituam as orientações.
 2. Mapeie cada ID de critério para implementação e testes que estabeleçam o estado Dado, exercitem o evento Quando e verifiquem todos os resultados Então/E. Preserve os IDs nos registros de cobertura e no relatório de implementação; os nomes dos testes podem seguir as convenções do repositório.
 3. Antes de editar, informe a primeira fatia pretendida e levante escolhas materiais não resolvidas. Pergunte, em vez de supor, quando a escolha alterar comportamento público, arquitetura, persistência, segurança, compatibilidade ou a árvore aprovada.
 4. Implemente em fatias revisáveis; se evidência invalidar a árvore, pause e proponha atualização.

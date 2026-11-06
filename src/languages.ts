@@ -2,12 +2,23 @@ import { UsageError } from './providers.js';
 
 export type LanguageId = 'en' | 'pt';
 
+export interface SpecManifestLayout {
+  fileName: string;
+  version: string;
+  specs: string;
+  id: string;
+  status: string;
+  completionInspection: string;
+  statuses: readonly [string, string, string];
+}
+
 /** Names the skills of a language use inside the workspace. Every language shares the same keys so paths can be migrated. */
 export interface WorkspaceLayout {
   dir: string;
   codingPractices: string;
   generalGuidelines: string;
   specs: string;
+  specManifest: SpecManifestLayout;
   /** Folder with one approved metric definition per file. */
   metrics: string;
   /** Name the metrics folder had in 0.4.0, renamed to `metrics` on install. */
@@ -56,6 +67,10 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       codingPractices: 'coding-practices',
       generalGuidelines: 'general-guidelines',
       specs: 'specs',
+      specManifest: {
+        fileName: 'manifest.json', version: 'version', specs: 'specs', id: 'id', status: 'status',
+        completionInspection: 'completionInspection', statuses: ['proposed', 'active', 'finished'],
+      },
       metrics: 'metrics',
       legacyMetrics: 'tooling',
       legacyTooling: 'tooling.md',
@@ -88,6 +103,10 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       codingPractices: 'praticas-de-codigo',
       generalGuidelines: 'orientacoes-gerais',
       specs: 'specs',
+      specManifest: {
+        fileName: 'manifesto.json', version: 'versao', specs: 'especificacoes', id: 'identificador', status: 'situacao',
+        completionInspection: 'inspecaoDeConclusao', statuses: ['proposta', 'ativa', 'finalizada'],
+      },
       metrics: 'metricas',
       legacyMetrics: 'ferramentas',
       legacyTooling: 'ferramentas.md',

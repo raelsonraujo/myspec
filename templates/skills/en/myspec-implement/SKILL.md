@@ -1,6 +1,6 @@
 ---
 name: myspec-implement
-description: Implement an existing specification from a named folder under my-specs/specs using a developer-approved file structure, focused interaction, clean code, and tests for critical paths and acceptance criteria. Use when a developer asks to implement, continue, or complete one of the repository's code specs.
+description: Implement an unfinished specification, activating its manifest entry when implementation starts, from a named folder under my-specs/specs using a developer-approved file structure, focused interaction, clean code, and tests for critical paths and acceptance criteria. Use when a developer asks to implement, continue, or complete one of the repository's code specs.
 ---
 
 # Myspec Implement
@@ -10,6 +10,12 @@ Implement a spec without silently deciding its architecture or product behavior.
 ## Mandatory Guidance Gate
 
 Before moving beyond initial read-only repository and spec discovery, read every Markdown file that exists under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat each applicable document with `Status: Approved` as mandatory for this skill, comply with its rule before taking the action it governs, and surface any conflict with higher-priority instructions before proceeding. A missing folder, missing file, unapproved document, or section explicitly marked `None` creates no mandatory constraint; state the limitation when material.
+
+## Spec Lifecycle Gate
+
+Before proposing or editing a file tree or implementation, read `my-specs/specs/manifest.json` and the requested spec's entry. If absent, incomplete, or inconsistent, use the Spec Manifest procedure in `{{skill:myspec-setup}}` first; do not guess statuses or create a partial manifest. A `finished` spec is immutable: do not implement it, revise its contract/tree, change its completion evidence, or reopen it. Recommend `{{skill:myspec-prescribe}}` to scope any later impact in a new spec, including fixes and refactors. A new spec may deliberately change the same source files while retaining the finished spec as history.
+
+Keep `proposed` while discovering, proposing, revising, or approving the file tree. After the contract and tree gates pass, immediately before the first production or test implementation edit, change only this entry from `proposed` to `active`, with `completionInspection: null`. Re-read before writing and preserve unrelated entries and fields. Continuing an active implementation leaves it `active`, even when tests pass, the invocation is interrupted, or work is blocked. Never downgrade a status. Only `{{skill:myspec-inspect}}` can finish this implementation with a recorded final inspection.
 
 ## Hard Gate: File Tree
 
@@ -40,7 +46,7 @@ The file tree, like everything under the spec folder, is the developer's local w
 
 ## Interactive Implementation
 
-1. Read the approved file tree, spec, repository instructions, and affected code. When the spec folder has an `inspections/` folder, read its highest-numbered inspection and treat its open findings as input for this implementation; an inspection verdict never prevents implementing.
+1. Read the approved file tree, spec, repository instructions, and affected code. When the unfinished spec folder has an `inspections/` folder, read its highest-numbered inspection and treat its open findings as input for this implementation. A blocked inspection permits continued implementation of an active spec; a finished spec requires a new spec.
 2. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/metrics/` when present. Use them to identify quality tooling and the gates the changed code must meet; do not treat them as a substitute for reading the guidance files under `my-specs/coding-practices/` and `my-specs/general-guidelines/`.
 3. Map each acceptance-criterion ID to implementation work and tests that establish its Given state, exercise its When event, and verify every Then/And outcome. Preserve these IDs in coverage records and the implementation report; test names may follow repository conventions.
 4. Before source edits, tell the developer the intended first slice and raise material choices not settled by the spec or approved tree.

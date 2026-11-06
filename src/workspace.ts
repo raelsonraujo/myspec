@@ -13,6 +13,7 @@ import {
 import { join } from 'node:path';
 import { LANGUAGES, type LanguageId, type WorkspaceLayout } from './languages.js';
 import { manifestPath } from './manifest.js';
+import { parseSpecManifest, translateSpecManifest } from './spec-manifest.js';
 import { isPristineWorkspaceReadme, listFiles, readWorkspaceReadme } from './templates.js';
 import {
   legacyHash,
@@ -34,10 +35,49 @@ export interface WorkspaceMigration {
 
 const emptyMigration = (): WorkspaceMigration => ({ moved: [], relabeled: [], rewritten: [], warnings: [] });
 
+function specManifestPaths(root: string, language: LanguageId): string[] {
+  const layout = LANGUAGES[language].workspace;
+  return Object.values(LANGUAGES)
+    .map(({ workspace }) => `${layout.dir}/${layout.specs}/${workspace.specManifest.fileName}`)
+    .filter((path) => existsSync(join(root, path)));
+}
+
+/** Localizes existing lifecycle data without creating, merging, or inferring spec states. */
+export function localizeSpecManifest(root: string, language: LanguageId): WorkspaceMigration {
+  const result = emptyMigration();
+  const paths = specManifestPaths(root, language);
+  if (paths.length === 0) return result;
+  const layout = LANGUAGES[language].workspace;
+  if (paths.length > 1) {
+    result.warnings.push(`Both ${paths.join(' and ')} exist; reconcile the spec manifests with ${LANGUAGES[language].setupSkill}. Neither was overwritten.`);
+    return result;
+  }
+  const source = paths[0];
+  const target = `${layout.dir}/${layout.specs}/${layout.specManifest.fileName}`;
+  const content = readFileSync(join(root, source), 'utf8');
+  let translated: string;
+  try {
+    translated = translateSpecManifest(content, language);
+  } catch {
+    result.warnings.push(`${source} is invalid; it was kept unchanged. Run ${LANGUAGES[language].setupSkill} to reconcile it.`);
+    return result;
+  }
+  if (source !== target) {
+    writeFileSync(join(root, target), translated, { flag: 'wx' });
+    unlinkSync(join(root, source));
+    result.moved.push(`${source} -> ${target}`);
+  } else if (translated !== content) {
+    writeFileSync(join(root, target), translated);
+  }
+  if (translated !== content) result.rewritten.push(target);
+  return result;
+}
+
 /**
  * Moves a workspace written with another language's layout to the names the installed skills expect and translates
- * the metadata labels (status, creation, approval history) of its documents so existing approvals stay valid.
- * Document bodies keep their original language. Nothing is overwritten: a path whose target already exists stays put.
+ * the metadata labels (status, creation, approval history) of unfinished documents so existing approvals stay valid.
+ * Finished spec contents and document bodies keep their original language. Nothing is overwritten: a path whose target
+ * already exists stays put.
  */
 export function migrateWorkspace(root: string, from: LanguageId, to: LanguageId): WorkspaceMigration {
   const source = LANGUAGES[from].workspace;
@@ -92,14 +132,29 @@ export function migrateWorkspace(root: string, from: LanguageId, to: LanguageId)
     }
   }
 
-  result.relabeled = relabelDocuments(root, target.dir, source, target);
+  result.relabeled = relabelDocuments(root, to, source, result.warnings);
   result.rewritten = repointDocuments(root, target, `${source.dir}/${source.measurement}`, inWorkspace(target.measurement));
   return result;
 }
 
-function relabelDocuments(root: string, dir: string, source: WorkspaceLayout, target: WorkspaceLayout): string[] {
+function relabelDocuments(root: string, language: LanguageId, source: WorkspaceLayout, warnings: string[]): string[] {
+  const target = LANGUAGES[language].workspace;
+  const dir = target.dir;
   const workspace = join(root, dir);
   if (!existsSync(workspace)) return [];
+  const lifecyclePaths = specManifestPaths(root, language);
+  let finishedSpecs = new Set<string>();
+  let preserveAllSpecs = false;
+  if (lifecyclePaths.length > 0) {
+    try {
+      if (lifecyclePaths.length !== 1) throw new Error('Conflicting spec manifests');
+      finishedSpecs = parseSpecManifest(readFileSync(join(root, lifecyclePaths[0]), 'utf8')).finished;
+    } catch {
+      // Unknown completion states must not allow migration to rewrite a historical baseline.
+      preserveAllSpecs = true;
+      warnings.push(`${lifecyclePaths.join(' and ')} is invalid or conflicting; spec contents were kept unchanged. Run ${LANGUAGES[language].setupSkill} to reconcile it.`);
+    }
+  }
   const labels = (Object.keys(source.labels) as (keyof WorkspaceLayout['labels'])[]).map((key) => ({
     pattern: new RegExp(`^${escapeRegExp(source.labels[key])}`, 'gm'),
     replacement: target.labels[key],
@@ -108,7 +163,8 @@ function relabelDocuments(root: string, dir: string, source: WorkspaceLayout, ta
   const relabeled: string[] = [];
   // The measurement folder holds tooling artifacts and generated reports, not contract documents.
   const documents = listFiles(workspace).filter(
-    (path) => path.endsWith('.md') && path !== 'README.md' && !path.startsWith(`${target.measurement}/`),
+    (path) => path.endsWith('.md') && path !== 'README.md' && !path.startsWith(`${target.measurement}/`) &&
+      !(path.startsWith(`${target.specs}/`) && (preserveAllSpecs || finishedSpecs.has(path.split('/')[1]))),
   );
   for (const file of documents) {
     const absolute = join(workspace, file);

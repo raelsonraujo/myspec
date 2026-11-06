@@ -92,6 +92,7 @@ A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.e
     ├── coding-practices/       # praticas-de-codigo/
     ├── general-guidelines/     # orientacoes-gerais/
     └── specs/
+        └── manifest.json      # manifesto.json em pt; ciclo de vida criado pelo setup
 ```
 
 Métricas, práticas de código e orientações gerais são compartilhadas com o time e registram criador e aprovadores com `git config user.name`/`user.email`. As specs (`spec.md`, árvore de arquivos e inspeções) são um auxílio local do desenvolvedor: não registram identidade Git, apenas status e um histórico de revisões datado.
@@ -100,14 +101,30 @@ Na versão `pt`, todo o workspace fica em português: pastas (`metricas/`, `orie
 
 | Inglês (`en`) | Português (`pt`) | Função |
 | --- | --- | --- |
-| `myspec-setup` | `myspec-configurar` | Define as métricas de qualidade escolhidas pelo desenvolvedor e suas ferramentas, práticas e orientações |
-| `myspec-prescribe` | `myspec-prescrever` | Cria uma spec testável em `specs/NNN-<nome>/` |
-| `myspec-implement` | `myspec-implementar` | Propõe/aprova a árvore de arquivos e implementa a spec |
-| `myspec-inspect` | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas definidas em `metrics/` (`metricas/`), julga seus portões e registra em `specs/NNN-<nome>/inspections/` (`inspecoes/`) uma inspeção com veredito |
+| `myspec-setup` | `myspec-configurar` | Constrói o manifesto de specs e define as métricas de qualidade escolhidas pelo desenvolvedor e suas ferramentas, práticas e orientações |
+| `myspec-prescribe` | `myspec-prescrever` | Cria uma spec testável em `specs/NNN-<nome>/` e registra como `proposed`/`proposta` |
+| `myspec-implement` | `myspec-implementar` | Propõe/aprova a árvore de arquivos, marca `active`/`ativa` e implementa a spec |
+| `myspec-inspect` | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas definidas em `metrics/` (`metricas/`), julga seus portões e registra em `specs/NNN-<nome>/inspections/` (`inspecoes/`) uma inspeção com veredito que pode marcar `finished`/`finalizada` |
 | `myspec-quantify` | `myspec-quantificar` | Julga as métricas de `metrics/` (`metricas/`) no projeto inteiro em `quality-report.md` (`relatorio-de-qualidade.md`) e sugere melhorias que podem virar novas specs |
-| `myspec-patch` | `myspec-corrigir` | Ajuste pequeno (até 5 arquivos por padrão, com limite substituível por orientação geral aprovada do projeto) sem nova spec, inclusive dentro de uma spec já implementada |
+| `myspec-patch` | `myspec-corrigir` | Ajuste pequeno (até 5 arquivos por padrão, com limite substituível por orientação geral aprovada do projeto) sem nova spec, inclusive dentro de uma spec ativa; impactos em finalizadas exigem nova spec |
 
-Um ciclo típico é `prescribe > implement (árvore) > implement > inspect > implement > inspect > patch > inspect`: repita implement ou patch seguido de inspect até obter os resultados desejados. A spec está concluída quando a inspeção mais recente estiver `Ready`/`Apta` ou `Ready with observations`/`Apta com ressalvas`; o veredito não bloqueia nenhum skill. Use implement em vez de patch quando a mudança exceder o limite de arquivos aplicável ao patch ou afetar uma spec cuja árvore nunca foi aprovada.
+`minhas-specs/specs/manifesto.json` rastreia cada spec pelo nome exato da pasta. A configuração o constrói a partir de evidências de implementação e inspeção existentes quando ausente. O ciclo só avança `proposta → ativa → finalizada`: prescrever acrescenta novas specs como `proposta`; implementar muda para `ativa` imediatamente antes de editar a implementação, após aprovação da árvore; inspecionar registra a inspeção final `Apta` ou `Apta com ressalvas` e marca `finalizada`. Planejar ou aprovar árvore não inicia implementação. Inspeção bloqueada mantém a spec ativa. Chaves JSON e valores de situação são escritos em português brasileiro.
+
+```json
+{
+  "versao": 1,
+  "especificacoes": [
+    { "identificador": "001-exemplo", "situacao": "finalizada", "inspecaoDeConclusao": "002" },
+    { "identificador": "002-continuacao", "situacao": "proposta", "inspecaoDeConclusao": null }
+  ]
+}
+```
+
+`inspecaoDeConclusao` identifica a sequência de três dígitos da inspeção final na pasta `inspecoes/` dessa spec; entradas ainda não finalizadas usam `null`. Specs finalizadas, árvores, inspeções e entradas de conclusão permanecem imutáveis. Toda mudança posterior que possa afetar seu comportamento ou implementação, inclusive correções e refatorações que preservem critérios, exige nova spec. A nova spec pode alterar os mesmos arquivos de código e descrever o comportamento posterior, mantendo a finalizada como histórico. Status nunca retrocede.
+
+Em inglês, o arquivo é `my-specs/specs/manifest.json`, com `version`, `specs`, `id`, `status`, `completionInspection` e situações `proposed → active → finished`. A troca de idioma traduz somente essa representação, preservando identificadores, significado das situações, sequências de inspeção e campos personalizados. A reinstalação também converte o antigo manifesto em inglês de um workspace português.
+
+Um ciclo típico é `prescribe > implement (árvore) > implement > inspect (blocked) > implement/patch > inspect (ready, finished) > prescribe (próxima spec)`: repita implement ou patch seguido de inspect até obter os resultados desejados. A spec está concluída quando a inspeção mais recente estiver `Ready`/`Apta` ou `Ready with observations`/`Apta com ressalvas`; a inspeção registra então `finished` no manifesto. Depois disso, qualquer mudança que possa impactar essa spec exige uma nova spec, sem reabrir a finalizada. Use implement em vez de patch quando a mudança exceder o limite de arquivos aplicável ao patch ou afetar uma spec cuja árvore nunca foi aprovada.
 
 Os critérios de aceitação de `spec.md` seguem obrigatoriamente BDD: cada cenário tem ID estável (`AC-01`/`CA-01`), precondições `Given`/`Dado`, ação `When`/`Quando` e resultados observáveis `Then`/`Então`, com `And`/`E` quando necessário. Eles são a fonte única da verdade dos comportamentos mensuráveis específicos da mudança em todo o fluxo. Todo resultado obrigatório ou meta específica da mudança ainda não estabelecido por prática ou orientação aprovada aplicável deve constar nesses critérios; resumo, escopo e suposições dão contexto e limites.
 
@@ -115,7 +132,7 @@ Práticas de código, orientações gerais e portões de métricas aprovados sã
 
 A árvore de arquivos referencia cada ID e seus locais de produção e verificação. A implementação verifica todos os resultados do cenário e relata evidências por ID; a inspeção avalia esses mesmos cenários e só conta um critério como atendido quando todos os seus resultados tiverem evidência nas condições especificadas. Lacunas ou mudanças de comportamento voltam à prescrição antes da implementação afetada; a inspeção registra lacunas de contrato como bloqueantes. Não é necessário adotar executor Gherkin nem mudar convenções de nomes de teste. A instalação preserva specs existentes; sua adequação ocorre ao revisar o contrato pelo fluxo de prescrição.
 
-Patching (`myspec-patch`/`myspec-corrigir`) é a exceção: um ajuste elegível não precisa de nova spec nem critérios BDD. O limite padrão é de cinco arquivos, incluindo testes; uma orientação geral aplicável do projeto com `Status: Approved`/`Status: Aprovado` em `my-specs/general-guidelines/`/`minhas-specs/orientacoes-gerais/` pode substituir esse limite de arquivos. Mantêm-se os demais portões de escopo e a obrigação de preservar o contrato de qualquer spec já implementada que tocar; mudar esse contrato exige revisar a spec.
+Patching (`myspec-patch`/`myspec-corrigir`) é a exceção para trabalho ainda não finalizado ou mudanças que não possam afetar specs finalizadas: um ajuste elegível não precisa de nova spec nem critérios BDD. O limite padrão é de cinco arquivos, incluindo testes; uma orientação geral aplicável do projeto com `Status: Approved`/`Status: Aprovado` em `my-specs/general-guidelines/`/`minhas-specs/orientacoes-gerais/` pode substituir esse limite de arquivos. Mantêm-se os demais portões de escopo e a obrigação de preservar o contrato de qualquer spec já implementada que tocar; mudar esse contrato exige revisar a spec ainda não finalizada ou criar outra quando já finalizada.
 
 As referências entre skills são geradas na sintaxe de cada agente: `$myspec-setup` no Codex e `/myspec-setup` no Claude Code.
 
@@ -124,7 +141,7 @@ As referências entre skills são geradas na sintaxe de cada agente: `$myspec-se
 - Rodar `install` de novo atualiza os skills gerenciados e é idempotente.
 - Providers se acumulam: `install -p claude` depois de `install -p codex` mantém os dois.
 - O idioma vale para todos os providers: trocar de `-l en` para `-l pt` remove os skills em inglês (somente os arquivos listados em `myspec.json`).
-- Trocar de idioma renomeia o workspace para o novo idioma (`my-specs/coding-practices/` → `minhas-specs/praticas-de-codigo/`, `file-tree.md` → `arvore-de-arquivos.md` etc.) e traduz apenas as linhas de status e aprovação dos documentos, para que aprovações existentes continuem valendo; o corpo dos documentos não é traduzido. Um caminho cujo destino já existe não é movido. Workspaces `pt` criados em versões anteriores, ainda em `my-specs/`, são migrados da mesma forma na próxima instalação.
+- Trocar de idioma renomeia o workspace para o novo idioma (`my-specs/coding-practices/` → `minhas-specs/praticas-de-codigo/`, `file-tree.md` → `arvore-de-arquivos.md` etc.) e traduz apenas as linhas de status e aprovação dos documentos ainda não finalizados, para que aprovações existentes continuem valendo; o corpo dos documentos não é traduzido e o conteúdo de specs `finished` permanece intacto. O manifesto de specs é traduzido para os campos e situações do idioma instalado, preservando seu significado e referências de conclusão. Um caminho cujo destino já existe não é movido. Workspaces `pt` criados em versões anteriores, ainda em `my-specs/`, são migrados da mesma forma na próxima instalação.
 - A pasta `tooling/` (`ferramentas/`) criada na 0.4.0 é renomeada para `metrics/` (`metricas/`), sem alterar seu conteúdo.
 - A pasta `quality/` que um template de tooling gerou na raiz do repositório até a 0.4.1 é movida para `my-specs/measurement/` (`minhas-specs/medicao/`). Scripts e configurações idênticos a uma versão publicada são substituídos pela atual, com os nomes do idioma instalado (`run-coverage-report.sh` vira `gerar-relatorio-de-cobertura.sh` em `pt`), e as pastas de resultados são renomeadas; os customizados são mantidos com o nome antigo e geram um aviso para ajustar caminhos e nome. Os caminhos `quality/` dos arquivos de métrica e das orientações gerais passam a apontar para os novos caminhos. Se as duas pastas existirem, nada é movido e a CLI avisa.
 - Um `tooling.md` (`ferramentas.md`) de versões anteriores é mantido e gera um aviso: rode o skill de setup para dividi-lo em um arquivo por métrica.
