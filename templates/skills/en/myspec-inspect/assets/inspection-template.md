@@ -4,7 +4,7 @@
 
 ## Verdict
 
-**<Ready / Ready with observations / Blocked>** — <one sentence on whether work can advance to the next spec.>
+**<Ready / Ready with observations / Blocked>** — <one sentence on whether finalization can be proposed; a passing verdict still requires the developer's explicit confirmation.>
 
 ## Acceptance Criteria
 

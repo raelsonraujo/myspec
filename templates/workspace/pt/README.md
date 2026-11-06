@@ -16,7 +16,7 @@ Os documentos do contrato são compartilhados com o time e registram criador e a
 
 ## Fluxo de trabalho
 
-`specs/manifesto.json` rastreia cada spec pelo nome exato da pasta. A configuração o constrói a partir de evidências de implementação e inspeção existentes quando ausente. O ciclo só avança `proposta → ativa → finalizada`: prescrever acrescenta novas specs como `proposta`; implementar muda para `ativa` imediatamente antes de editar a implementação, após aprovação da árvore; inspecionar registra a inspeção final `Apta` ou `Apta com ressalvas` e marca `finalizada`. Planejar ou aprovar árvore não inicia implementação. Inspeção bloqueada mantém a spec ativa. Chaves JSON e valores de situação são escritos em português brasileiro.
+`specs/manifesto.json` rastreia cada spec pelo nome exato da pasta. A configuração o constrói a partir de evidências de implementação e inspeção existentes quando ausente. O ciclo só avança `proposta → ativa → finalizada`: prescrever acrescenta novas specs como `proposta`; implementar muda para `ativa` imediatamente antes de editar a implementação, após aprovação da árvore; inspecionar registra inspeção `Apta` ou `Apta com ressalvas`, apresenta os achados e pergunta se o desenvolvedor deseja finalizar. A spec permanece `ativa` até confirmação explícita; só então inspecionar altera a entrada no manifesto para `finalizada` e registra a inspeção de conclusão. A mudança de situação registra a confirmação, sem criar artefato separado. Planejar ou aprovar árvore não inicia implementação. Inspeção bloqueada mantém a spec ativa. Chaves JSON e valores de situação são escritos em português brasileiro.
 
 ```json
 {
@@ -43,17 +43,17 @@ Corrigir é a exceção para trabalho ainda não finalizado ou mudanças que nã
 | `myspec-configurar` | Constrói o manifesto de specs e define métricas e seus portões, práticas de código e orientações. |
 | `myspec-prescrever` | Transforma uma solicitação de mudança em uma spec testável e registra como proposta. |
 | `myspec-implementar` | Propõe e aprova a árvore de arquivos e então ativa e implementa a spec. |
-| `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas aprovadas e registra uma inspeção com veredito que pode finalizar a spec. |
+| `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas aprovadas e registra uma inspeção com veredito e finaliza somente após confirmação explícita do desenvolvedor. |
 | `myspec-corrigir` | Faz um ajuste pequeno de no máximo cinco arquivos por padrão, com limite substituível por orientação geral aprovada do projeto, inclusive dentro de uma spec ativa; impactos em specs finalizadas exigem nova spec. |
 | `myspec-quantificar` | Julga as métricas aprovadas do projeto inteiro e sugere melhorias que podem originar novas specs. |
 
 Um ciclo típico após a configuração:
 
 ```text
-prescrever > implementar (árvore) > implementar > inspecionar (bloqueada) > implementar/corrigir > inspecionar (apta, finalizada) > prescrever (próxima spec)
+prescrever > implementar (árvore) > implementar > inspecionar (bloqueada) > implementar/corrigir > inspecionar (apta) > desenvolvedor confirma > finalizada > prescrever (próxima spec)
 ```
 
-Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Uma spec está concluída, e o trabalho pode avançar para a próxima, quando sua inspeção mais recente estiver `Apta` ou `Apta com ressalvas`; a inspeção registra então `finalizada` no manifesto, e trabalho posterior segue por nova spec. Prefira implementar a corrigir quando a mudança exceder o limite de arquivos aplicável à correção ou afetar uma spec cuja árvore nunca foi aprovada.
+Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Uma spec está concluída, e o trabalho pode avançar para a próxima, quando sua inspeção mais recente estiver `Apta` ou `Apta com ressalvas` e o desenvolvedor confirmar explicitamente a finalização após revisá-la; somente então inspecionar registra `finalizada` no manifesto, e trabalho posterior segue por nova spec. Prefira implementar a corrigir quando a mudança exceder o limite de arquivos aplicável à correção ou afetar uma spec cuja árvore nunca foi aprovada.
 
 Invoque um skill com `$nome` no Codex ou `/nome` no Claude Code, por exemplo `$myspec-configurar` ou `/myspec-configurar`.
 

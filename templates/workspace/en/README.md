@@ -16,7 +16,7 @@ Contract documents are shared with the team and record their creator and approve
 
 ## Workflow
 
-`specs/manifest.json` tracks every spec by its exact folder name. Setup builds it from existing implementation and inspection evidence when missing. The only lifecycle is `proposed → active → finished`: prescribe adds new specs as `proposed`; implement changes them to `active` immediately before implementation edits, after file-tree approval; inspect records the final `Ready` or `Ready with observations` inspection and marks them `finished`. Planning or approving a tree does not start implementation. A blocked inspection leaves the spec active. The Portuguese workspace uses `specs/manifesto.json` with Brazilian Portuguese keys and the lifecycle `proposta → ativa → finalizada`. Language migration translates the manifest representation while retaining IDs, status meaning, completion sequences, and custom fields.
+`specs/manifest.json` tracks every spec by its exact folder name. Setup builds it from existing implementation and inspection evidence when missing. The only lifecycle is `proposed → active → finished`: prescribe adds new specs as `proposed`; implement changes them to `active` immediately before implementation edits, after file-tree approval; inspect records a `Ready` or `Ready with observations` inspection, presents its findings, and asks the developer whether to finalize. The spec remains `active` until explicit confirmation, when inspect changes only the manifest entry to `finished` and records its completion inspection. The status change itself records confirmation; no separate artifact is created. Planning or approving a tree does not start implementation. A blocked inspection leaves the spec active. The Portuguese workspace uses `specs/manifesto.json` with Brazilian Portuguese keys and the lifecycle `proposta → ativa → finalizada`. Language migration translates the manifest representation while retaining IDs, status meaning, completion sequences, and custom fields.
 
 ```json
 {
@@ -43,17 +43,17 @@ Patching is the exception for unfinished work or changes that cannot impact a fi
 | `myspec-setup` | Build the spec manifest and define metrics and their gates, coding practices, and guidelines. |
 | `myspec-prescribe` | Turn a change request into a testable spec and register it as proposed. |
 | `myspec-implement` | Propose and approve a file tree, then activate and implement the spec. |
-| `myspec-inspect` | Review the implementation against the spec and approved rules, measure the approved metrics, and record an inspection with a verdict that can finish the spec. |
+| `myspec-inspect` | Review the implementation against the spec and approved rules, measure the approved metrics, and record an inspection with a verdict and finalize only after explicit developer confirmation. |
 | `myspec-patch` | Make a small fix of at most five files by default, overridable by an approved project general guideline, including within an active spec; impacts on finished specs require a new spec. |
 | `myspec-quantify` | Judge the whole project's approved metrics and suggest improvements that can start new specs. |
 
 A typical cycle after setup:
 
 ```text
-prescribe > implement (file tree) > implement > inspect (blocked) > implement/patch > inspect (ready, finished) > prescribe (next spec)
+prescribe > implement (file tree) > implement > inspect (blocked) > implement/patch > inspect (ready) > developer confirms > finished > prescribe (next spec)
 ```
 
-Repeat implement or patch followed by inspect as often as needed. A spec is complete, and work can advance to the next one, when its latest inspection is `Ready` or `Ready with observations`; inspection then records `finished` in the manifest, and later work proceeds through a new spec. Prefer implement over patch when a change exceeds the applicable patch file limit or affects a spec whose file tree has never been approved.
+Repeat implement or patch followed by inspect as often as needed. A spec is complete, and work can advance to the next one, when its latest inspection is `Ready` or `Ready with observations` and the developer explicitly confirms finalization after reviewing that inspection; only then does inspect record `finished` in the manifest, and later work proceeds through a new spec. Prefer implement over patch when a change exceeds the applicable patch file limit or affects a spec whose file tree has never been approved.
 
 Invoke a skill with `$name` in Codex or `/name` in Claude Code, e.g. `$myspec-setup` or `/myspec-setup`.
 

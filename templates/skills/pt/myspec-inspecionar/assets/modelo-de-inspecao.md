@@ -4,7 +4,7 @@
 
 ## Veredito
 
-**<Apta / Apta com ressalvas / Bloqueada>** — <uma frase dizendo se o trabalho pode avançar para a próxima spec.>
+**<Apta / Apta com ressalvas / Bloqueada>** — <uma frase dizendo se a finalização pode ser proposta; veredito apto ainda exige confirmação explícita do desenvolvedor.>
 
 ## Critérios de aceitação
 
