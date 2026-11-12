@@ -11,6 +11,7 @@ Os documentos do contrato são compartilhados com o time e registram criador e a
 | `praticas-de-codigo/` | Uma prática de código do repositório por arquivo | `myspec-configurar` |
 | `orientacoes-gerais/` | Uma orientação compartilhada por todos os skills Myspec por arquivo, inclusive os comandos de build e teste | `myspec-configurar` |
 | `relatorio-de-qualidade.md` | Valores das métricas aprovadas no projeto inteiro com oportunidades de melhoria | `myspec-quantificar` |
+| `relatorio-de-conformidade.md` | Avaliação geral de práticas e orientações aprovadas, com evidências, violações e lacunas de revisão | `myspec-auditar` |
 | `specs/manifesto.json` | Ciclo de vida das specs e referências às inspeções finais | `myspec-configurar`, `myspec-prescrever`, `myspec-implementar`, `myspec-inspecionar` |
 | `specs/NNN-<nome>/` | `spec.md`, `arvore-de-arquivos.md` e `inspecoes/inspecao-NNN.md` de cada mudança | `myspec-prescrever`, `myspec-implementar`, `myspec-inspecionar` |
 
@@ -46,6 +47,9 @@ Corrigir é a exceção para trabalho ainda não finalizado ou mudanças que nã
 | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas aprovadas e registra uma inspeção com veredito e finaliza somente após confirmação explícita do desenvolvedor. |
 | `myspec-corrigir` | Faz um ajuste pequeno de no máximo cinco arquivos por padrão, com limite substituível por orientação geral aprovada do projeto, inclusive dentro de uma spec ativa; impactos em specs finalizadas exigem nova spec. |
 | `myspec-quantificar` | Julga as métricas aprovadas do projeto inteiro e sugere melhorias que podem originar novas specs. |
+| `myspec-auditar` | Varre a conformidade do projeto inteiro com práticas e orientações aprovadas, registra evidências e lacunas e prioriza próximos passos. |
+
+Use auditar para aderência geral às regras, quantificar para medição de métricas e inspecionar para aceitação de uma spec. Auditar não exige métricas nem specs e escreve somente `relatorio-de-conformidade.md`. Respeita escopo e exceções de cada regra, distingue violações de evidência ausente, explicita revisão parcial e reexamina achados anteriores. Não corrige código nem altera situações do ciclo de vida das specs.
 
 Um ciclo típico após a configuração:
 

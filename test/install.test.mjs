@@ -12,8 +12,8 @@ const CLI = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
 const TEMPLATES = fileURLToPath(new URL('../templates', import.meta.url));
 const LEGACY_QUALITY = fileURLToPath(new URL('./fixtures/quality-0.4.1', import.meta.url));
 const LEGACY_README = fileURLToPath(new URL('./fixtures/workspace-readme-0.4.2-pt.md', import.meta.url));
-const EN_SKILLS = ['myspec-implement', 'myspec-inspect', 'myspec-patch', 'myspec-prescribe', 'myspec-quantify', 'myspec-setup'];
-const PT_SKILLS = ['myspec-configurar', 'myspec-corrigir', 'myspec-implementar', 'myspec-inspecionar', 'myspec-prescrever', 'myspec-quantificar'];
+const EN_SKILLS = ['myspec-audit', 'myspec-implement', 'myspec-inspect', 'myspec-patch', 'myspec-prescribe', 'myspec-quantify', 'myspec-setup'];
+const PT_SKILLS = ['myspec-auditar', 'myspec-configurar', 'myspec-corrigir', 'myspec-implementar', 'myspec-inspecionar', 'myspec-prescrever', 'myspec-quantificar'];
 
 const dirs = [];
 function repo() {
@@ -81,6 +81,61 @@ describe('myspec install', () => {
     assert.deepEqual(skillDirs(dir, '.claude/skills'), EN_SKILLS);
   });
 
+  for (const [language, workspace, skillName, reportTemplate, report] of [
+    ['en', 'my-specs', 'myspec-audit', 'compliance-report-template.md', 'compliance-report.md'],
+    ['pt', 'minhas-specs', 'myspec-auditar', 'modelo-de-relatorio-de-conformidade.md', 'relatorio-de-conformidade.md'],
+  ]) {
+    it(`adds the ${language} audit skill on reinstall with provider-specific references and report assets`, () => {
+      const dir = repo();
+      installOk(dir, '-p', 'codex/claude', '-l', language);
+      // Model an installed release that did not ship the audit skill.
+      const manifestPath = `${workspace}/myspec.json`;
+      const manifest = JSON.parse(read(dir, manifestPath));
+      for (const provider of ['codex', 'claude']) {
+        rmSync(join(dir, `.${provider}/skills/${skillName}`), { recursive: true });
+      }
+      manifest.files = manifest.files.filter((path) => !path.includes(`/skills/${skillName}/`));
+      writeFileSync(join(dir, manifestPath), JSON.stringify(manifest));
+
+      installOk(dir);
+
+      const updated = JSON.parse(read(dir, manifestPath));
+      const templateDir = join(TEMPLATES, 'skills', language, skillName);
+      for (const provider of ['codex', 'claude']) {
+        const skillPath = `.${provider}/skills/${skillName}`;
+        const prefix = provider === 'codex' ? '$' : '/';
+        for (const file of ['SKILL.md', `assets/${reportTemplate}`]) {
+          const expected = read(templateDir, file).replace(/\{\{skill:([a-z0-9-]+)\}\}/g, (_, name) => `${prefix}${name}`);
+          assert.equal(read(dir, `${skillPath}/${file}`), expected);
+          assert.ok(updated.files.includes(`${skillPath}/${file}`));
+        }
+        if (provider === 'codex') {
+          const expected = read(templateDir, 'agents/openai.yaml').replaceAll(`{{skill:${skillName}}}`, `$${skillName}`);
+          assert.equal(read(dir, `${skillPath}/agents/openai.yaml`), expected);
+        } else {
+          assert.ok(!existsSync(join(dir, skillPath, 'agents')));
+        }
+      }
+      // Installation exposes the skill; only an audit creates the report.
+      assert.ok(!existsSync(join(dir, workspace, report)));
+      const again = installOk(dir);
+      assert.match(again.stdout, /0 created, 0 updated/);
+    });
+  }
+
+  it('preserves both compliance reports when a localized target already exists', () => {
+    const dir = repo();
+    installOk(dir, '-p', 'codex', '-l', 'en');
+    writeFileSync(join(dir, 'my-specs/compliance-report.md'), '# English findings\n');
+    writeFileSync(join(dir, 'my-specs/relatorio-de-conformidade.md'), '# Achados em português\n');
+
+    const result = installOk(dir, '-l', 'pt');
+
+    assert.equal(read(dir, 'minhas-specs/compliance-report.md'), '# English findings\n');
+    assert.equal(read(dir, 'minhas-specs/relatorio-de-conformidade.md'), '# Achados em português\n');
+    assert.match(result.stdout, /Both minhas-specs\/compliance-report.md and minhas-specs\/relatorio-de-conformidade.md exist/);
+  });
+
   it('scaffolds the my-specs workspace and manifest', () => {
     const dir = repo();
     installOk(dir, '-p', 'codex', '-l', 'en');
@@ -130,6 +185,7 @@ describe('myspec install', () => {
     writeFileSync(join(dir, 'my-specs/specs/001-cancel/file-tree.md'), 'Status: Proposed\n');
     writeFileSync(join(dir, 'my-specs/specs/001-cancel/inspections/inspection-001.md'), '# Inspection 001\n');
     writeFileSync(join(dir, 'my-specs/quality-report.md'), '# Report\n');
+    writeFileSync(join(dir, 'my-specs/compliance-report.md'), '# Compliance evidence\n');
     writeFileSync(join(dir, 'my-specs/metrics/coverage.md'), approved);
 
     const result = installOk(dir, '-l', 'pt');
@@ -143,6 +199,8 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/specs/001-cancel/arvore-de-arquivos.md'), 'Status: Proposto\n');
     assert.ok(existsSync(join(dir, 'minhas-specs/specs/001-cancel/inspecoes/inspecao-001.md')));
     assert.ok(existsSync(join(dir, 'minhas-specs/relatorio-de-qualidade.md')));
+    assert.equal(read(dir, 'minhas-specs/relatorio-de-conformidade.md'), '# Compliance evidence\n');
+    assert.ok(!existsSync(join(dir, 'minhas-specs/compliance-report.md')));
     assert.match(read(dir, 'minhas-specs/metricas/coverage.md'), /^Status: Aprovado$/m);
     assert.equal(JSON.parse(read(dir, 'minhas-specs/myspec.json')).language, 'pt');
     assert.match(result.stdout, /> my-specs -> minhas-specs/);
@@ -151,6 +209,8 @@ describe('myspec install', () => {
     assert.ok(!existsSync(join(dir, 'minhas-specs')));
     assert.equal(read(dir, 'my-specs/coding-practices/rule.md'), approved);
     assert.equal(read(dir, 'my-specs/metrics/coverage.md'), approved);
+    assert.equal(read(dir, 'my-specs/compliance-report.md'), '# Compliance evidence\n');
+    assert.ok(!existsSync(join(dir, 'my-specs/relatorio-de-conformidade.md')));
     assert.ok(existsSync(join(dir, 'my-specs/specs/001-cancel/inspections/inspection-001.md')));
   });
 
@@ -337,7 +397,7 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/README.md'), read(join(TEMPLATES, 'workspace/pt'), 'README.md'));
   });
 
-  for (const version of ['0.4.5', '0.5.0', '0.5.1', '0.5.2']) {
+  for (const version of ['0.4.5', '0.5.0', '0.5.1', '0.5.2', '0.5.3']) {
     for (const [language, workspace] of [['en', 'my-specs'], ['pt', 'minhas-specs']]) {
       it(`refreshes the ${version} ${language} workflow guidance without rewriting existing specs`, () => {
         const dir = repo();

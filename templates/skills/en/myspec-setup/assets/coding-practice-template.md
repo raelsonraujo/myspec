@@ -6,7 +6,7 @@ Created by: `<git user.name> <git user.email>`
 
 Created on: `<date>`
 
-Applies to: implementation work with `{{skill:myspec-implement}}` and `{{skill:myspec-patch}}`, review with `{{skill:myspec-inspect}}`, and implementation-focused findings from `{{skill:myspec-quantify}}`
+Applies to: implementation work with `{{skill:myspec-implement}}` and `{{skill:myspec-patch}}`, review with `{{skill:myspec-inspect}}` and `{{skill:myspec-audit}}`, and implementation-focused findings from `{{skill:myspec-quantify}}`
 
 ## Rule
 

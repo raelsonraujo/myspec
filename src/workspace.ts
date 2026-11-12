@@ -114,6 +114,7 @@ export function migrateWorkspace(root: string, from: LanguageId, to: LanguageId)
     'legacyMetrics',
     'legacyTooling',
     'qualityReport',
+    'complianceReport',
     'measurement',
   ];
   for (const key of entries) move(inWorkspace(source[key] as string), inWorkspace(target[key] as string));

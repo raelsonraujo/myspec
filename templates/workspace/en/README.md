@@ -11,6 +11,7 @@ Contract documents are shared with the team and record their creator and approve
 | `coding-practices/` | One repository coding practice per file | `myspec-setup` |
 | `general-guidelines/` | One guideline shared by all Myspec skills per file, including the build and test commands | `myspec-setup` |
 | `quality-report.md` | Project-wide values of the approved metrics with improvement opportunities | `myspec-quantify` |
+| `compliance-report.md` | Project-wide assessment of approved coding practices and guidelines, with evidence, violations, and review gaps | `myspec-audit` |
 | `specs/manifest.json` | Spec lifecycle and final inspection references | `myspec-setup`, `myspec-prescribe`, `myspec-implement`, `myspec-inspect` |
 | `specs/NNN-<name>/` | `spec.md`, `file-tree.md`, and `inspections/inspection-NNN.md` for each change | `myspec-prescribe`, `myspec-implement`, `myspec-inspect` |
 
@@ -46,6 +47,9 @@ Patching is the exception for unfinished work or changes that cannot impact a fi
 | `myspec-inspect` | Review the implementation against the spec and approved rules, measure the approved metrics, and record an inspection with a verdict and finalize only after explicit developer confirmation. |
 | `myspec-patch` | Make a small fix of at most five files by default, overridable by an approved project general guideline, including within an active spec; impacts on finished specs require a new spec. |
 | `myspec-quantify` | Judge the whole project's approved metrics and suggest improvements that can start new specs. |
+| `myspec-audit` | Sweep the whole project for compliance with approved practices and guidelines, record evidence and review gaps, and prioritize follow-up. |
+
+Use audit for project-wide adherence to rules, quantify for metric measurement, and inspect for one spec's acceptance review. Audit needs no metrics or specs and writes only `compliance-report.md`. It follows each rule's scope and exceptions, distinguishes violations from missing evidence, makes partial review explicit, and revisits previous findings. It does not fix code or change spec lifecycle states.
 
 A typical cycle after setup:
 

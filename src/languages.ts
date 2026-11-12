@@ -30,6 +30,7 @@ export interface WorkspaceLayout {
   /** Folder with the scripts and settings a tooling template generates to measure its metrics. */
   measurement: string;
   qualityReport: string;
+  complianceReport: string;
   /** Inside each spec folder. */
   fileTree: string;
   inspections: string;
@@ -77,6 +78,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       legacyProductDirectives: 'product-directives',
       measurement: 'measurement',
       qualityReport: 'quality-report.md',
+      complianceReport: 'compliance-report.md',
       fileTree: 'file-tree.md',
       inspections: 'inspections',
       inspection: 'inspection-',
@@ -113,6 +115,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       legacyProductDirectives: 'diretrizes-de-produto',
       measurement: 'medicao',
       qualityReport: 'relatorio-de-qualidade.md',
+      complianceReport: 'relatorio-de-conformidade.md',
       fileTree: 'arvore-de-arquivos.md',
       inspections: 'inspecoes',
       inspection: 'inspecao-',
