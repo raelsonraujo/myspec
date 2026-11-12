@@ -6,7 +6,7 @@ Criado por: `<git user.name> <git user.email>`
 
 Criado em: `<data>`
 
-Aplica-se a: implementação com `{{skill:myspec-implementar}}` e `{{skill:myspec-corrigir}}`, revisão com `{{skill:myspec-inspecionar}}` e achados de implementação de `{{skill:myspec-quantificar}}`
+Aplica-se a: implementação com `{{skill:myspec-implementar}}` e `{{skill:myspec-corrigir}}`, revisão com `{{skill:myspec-inspecionar}}` e `{{skill:myspec-auditar}}` e achados de implementação de `{{skill:myspec-quantificar}}`
 
 ## Regra
 

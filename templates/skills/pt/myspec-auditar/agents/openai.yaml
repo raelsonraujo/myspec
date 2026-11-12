@@ -1,0 +1,4 @@
+interface:
+  display_name: "Myspec Auditar"
+  short_description: "Auditar conformidade com orientações aprovadas"
+  default_prompt: "Use {{skill:myspec-auditar}} para revisar a conformidade do projeto inteiro com práticas de código e orientações gerais aprovadas e salvar um relatório de conformidade."

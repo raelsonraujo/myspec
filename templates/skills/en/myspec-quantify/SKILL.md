@@ -1,11 +1,13 @@
 ---
 name: myspec-quantify
-description: Measure the quality metrics defined by the developer-approved metric files under my-specs/metrics across the whole project, judge the results against their gates, and turn the weakest areas into prioritized improvement opportunities that can start new specs. Use when a developer asks for project-wide quality control, metric analysis, or where to invest improvement effort next.
+description: Measure the quality metrics defined by the developer-approved metric files under my-specs/metrics across the whole project, judge the results against their gates, and turn the weakest areas into prioritized improvement opportunities that can start new specs. Use for project-wide quality measurement, metric analysis, or metric-based improvement priorities; use myspec-audit for compliance with coding practices and general guidelines.
 ---
 
 # Myspec Quantify
 
 Produce evidence-based quality metrics for the project as a whole and point to where improvement effort would pay off. `{{skill:myspec-inspect}}` judges metrics for the code of one spec; this skill judges the whole project, so its findings can become the entry point for new specs.
+
+For a project-wide sweep of adherence to approved coding practices and general guidelines, use `{{skill:myspec-audit}}`, which maintains a separate compliance report.
 
 ## Mandatory Guidance Gate
 

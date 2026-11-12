@@ -1,11 +1,13 @@
 ---
 name: myspec-quantificar
-description: Mede as métricas de qualidade definidas pelos arquivos de métrica aprovados pelo desenvolvedor em minhas-specs/metricas no projeto como um todo, julga os resultados frente a seus portões e transforma as áreas mais fracas em oportunidades de melhoria priorizadas que podem originar novas specs. Use para controle de qualidade do projeto, análise de métricas ou para decidir onde investir esforço de melhoria.
+description: Mede as métricas de qualidade definidas pelos arquivos de métrica aprovados pelo desenvolvedor em minhas-specs/metricas no projeto como um todo, julga os resultados frente a seus portões e transforma as áreas mais fracas em oportunidades de melhoria priorizadas que podem originar novas specs. Use para medição geral de qualidade, análise de métricas ou prioridades baseadas nelas; use myspec-auditar para conformidade com práticas e orientações.
 ---
 
 # Myspec Quantificar
 
 Produza métricas de qualidade baseadas em evidências para o projeto como um todo e indique onde o esforço de melhoria compensa. `{{skill:myspec-inspecionar}}` julga as métricas do código de uma spec; este skill julga o projeto inteiro, e seus achados podem ser o ponto de entrada para novas specs.
+
+Para uma varredura geral de aderência a práticas de código e orientações gerais aprovadas, use `{{skill:myspec-auditar}}`, que mantém um relatório de conformidade separado.
 
 ## Portão obrigatório de orientações
 

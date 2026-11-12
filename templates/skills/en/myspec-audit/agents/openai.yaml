@@ -1,0 +1,4 @@
+interface:
+  display_name: "Myspec Audit"
+  short_description: "Audit project compliance with approved guidance"
+  default_prompt: "Use {{skill:myspec-audit}} to review the whole project's compliance with approved coding practices and general guidelines and save a compliance report."
