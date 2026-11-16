@@ -397,7 +397,7 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/README.md'), read(join(TEMPLATES, 'workspace/pt'), 'README.md'));
   });
 
-  for (const version of ['0.4.5', '0.5.0', '0.5.1', '0.5.2', '0.5.3']) {
+  for (const version of ['0.4.5', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.6.0']) {
     for (const [language, workspace] of [['en', 'my-specs'], ['pt', 'minhas-specs']]) {
       it(`refreshes the ${version} ${language} workflow guidance without rewriting existing specs`, () => {
         const dir = repo();
@@ -856,6 +856,20 @@ describe('skill templates', () => {
     }
     assert.match(read(join(TEMPLATES, 'skills/pt/myspec-implementar/assets'), 'modelo-de-arvore-de-arquivos.md'), /^## Histórico de revisões$/m);
     assert.match(read(join(TEMPLATES, 'skills/en/myspec-implement/assets'), 'file-tree-template.md'), /^## Revision History$/m);
+  });
+
+  it('keeps specs as-is with history only in an optional closing section', () => {
+    const prescribe = {
+      en: { skill: 'myspec-prescribe', template: 'spec-template.md', heading: '## Revision History', rule: '## As-Is Specs' },
+      pt: { skill: 'myspec-prescrever', template: 'modelo-de-spec.md', heading: '## Histórico de revisões', rule: '## Specs no estado atual' },
+    };
+    for (const [language, { skill, template, heading, rule }] of Object.entries(prescribe)) {
+      const dir = join(TEMPLATES, 'skills', language, skill);
+      const spec = read(join(dir, 'assets'), template);
+      const headings = spec.match(/^## .+$/gm);
+      assert.equal(headings.at(-1), heading, `${language}: revision history closes the spec template`);
+      assert.match(read(dir, 'SKILL.md'), new RegExp(`^${rule}$`, 'm'), `${language}: as-is rule`);
+    }
   });
 
   it('leaves the choice of metrics to the tooling contract', () => {

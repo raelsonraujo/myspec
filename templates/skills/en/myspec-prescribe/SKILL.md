@@ -17,7 +17,17 @@ Read `my-specs/specs/manifest.json` before creating or revising specs. If it is 
 
 For every new spec actually saved, append one entry with its exact folder name as `id`, `status: "proposed"`, and `completionInspection: null`. Do this in the same task, including when creating several specs. Revising a proposed or active spec preserves its status. Re-read before writing; preserve all other entries, fields, and completion references, and never duplicate, remove, or downgrade an entry.
 
-The lifecycle only advances `proposed → active → finished`. Never revise a finished spec, its file tree, inspections, or completion entry. Any change that can impact its behavior or implementation, even a fix or refactor preserving its criteria, requires a new numbered spec. Reference the earlier spec as historical context and define the change only in the new spec; the new spec may touch the same source files without reopening the finished one.
+The lifecycle only advances `proposed → active → finished`. Never revise a finished spec, its file tree, inspections, or completion entry. Any change that can impact its behavior or implementation, even a fix or refactor preserving its criteria, requires a new numbered spec. Define the change only in the new spec and, when readers need the earlier context, reference the earlier spec only in the new spec's revision history as described under [As-Is Specs](#as-is-specs); the new spec may touch the same source files without reopening the finished one.
+
+## As-Is Specs
+
+Write every `proposed` or `active` spec as a standalone, as-is description of the unit of work it currently requires and nothing else. A reader must be able to implement and verify the change from the current text alone, without knowing earlier revisions, superseded wording, or how the request evolved in conversation.
+
+- When creating a spec, describe only the required behavior. Do not narrate the discussion that produced it, earlier ideas, or rejected alternatives in the body.
+- When revising a spec, remove obsolete context, prose, scope items, assumptions, and acceptance criteria. Rewrite every affected statement that still belongs in the spec as a direct statement of the current requirement, and apply the change consistently across all sections, including any project-specific sections such as examples or smoke tests. Never leave comparisons such as "previously", "now", "instead of", "no longer", or "changed from" in the body.
+- Revising does not renumber acceptance criteria: an AC whose behavior still exists keeps its ID and is rewritten as-is; an AC whose behavior was dropped is removed and its ID is not reused.
+- Put context about earlier revisions, or about behavior delivered by another spec that this one changes, only in an optional `## Revision History` section at the end of the spec, or in the equivalent section the project's existing specs already use. Add it only when you judge that a reader needs that context. Keep each entry brief: date, what changed, and the concrete reason when known (prefer the actual reason over a generic note such as "developer asked"). Reference another spec by its folder ID. The body must remain complete and correct when this section is ignored.
+- Finished specs are frozen and exempt; never rewrite them to comply.
 
 ## Workflow
 
@@ -27,7 +37,7 @@ The lifecycle only advances `proposed → active → finished`. Never revise a f
 4. Suggest a concise kebab-case name based on the requested behavior.
 5. Inspect immediate directories under `my-specs/specs` whose names begin with a three-digit prefix followed by `-`. Assign the next sequential, zero-padded three-digit prefix, beginning with `001` when none exist. Do not renumber existing folders or reuse sequence numbers reserved by manifest entries.
 6. Create `my-specs/specs/<sequence>-<spec-name>/spec.md` from [assets/spec-template.md](assets/spec-template.md). Treat `my-specs/specs` as relative to the repository root.
-7. Review the result for testability, internal consistency, accidental scope expansion, and compliance with approved guidelines.
+7. Review the result for testability, internal consistency, accidental scope expansion, and compliance with approved guidelines. Read the body independently of any revision history and confirm that every section agrees with the current request and describes it as-is. When revising, check the diff for obsolete content left behind and confirm that historical references appear only in the revision history.
 8. Register every created spec in the manifest, then return the spec and manifest paths and briefly identify any recorded assumptions.
 
 Always produce the Markdown file before completing the task. Never leave the specification only in chat.

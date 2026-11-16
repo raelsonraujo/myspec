@@ -17,7 +17,17 @@ Leia `minhas-specs/specs/manifesto.json` antes de criar ou revisar specs. Se est
 
 Para cada spec nova efetivamente salva, acrescente uma entrada com o nome exato da pasta em `identificador`, `situacao: "proposta"` e `inspecaoDeConclusao: null`. Faça isso na mesma tarefa, inclusive ao criar várias specs. Revisar spec proposta ou ativa preserva seu status. Releia antes de gravar; preserve todas as outras entradas, campos e referências de conclusão, sem duplicar, remover ou rebaixar entradas.
 
-O ciclo só avança `proposta → ativa → finalizada`. Nunca revise spec finalizada, árvore, inspeções ou entrada de conclusão. Toda mudança que possa afetar seu comportamento ou implementação, mesmo correção ou refatoração que preserve os critérios, exige nova spec numerada. Referencie a anterior como contexto histórico e defina a mudança somente na nova spec; a nova spec pode tocar os mesmos arquivos de código sem reabrir a finalizada.
+O ciclo só avança `proposta → ativa → finalizada`. Nunca revise spec finalizada, árvore, inspeções ou entrada de conclusão. Toda mudança que possa afetar seu comportamento ou implementação, mesmo correção ou refatoração que preserve os critérios, exige nova spec numerada. Defina a mudança somente na nova spec e, quando o leitor precisar do contexto anterior, referencie a spec anterior apenas no histórico de revisões da nova, conforme [Specs no estado atual](#specs-no-estado-atual); a nova spec pode tocar os mesmos arquivos de código sem reabrir a finalizada.
+
+## Specs no estado atual
+
+Escreva toda spec `proposta` ou `ativa` como descrição autônoma, no estado atual, da unidade de trabalho que ela exige agora, e nada além disso. O leitor deve conseguir implementar e verificar a mudança apenas pelo texto atual, sem conhecer revisões anteriores, redações substituídas ou como a solicitação evoluiu na conversa.
+
+- Ao criar uma spec, descreva somente o comportamento exigido. Não narre no corpo a discussão que a originou, ideias anteriores nem alternativas descartadas.
+- Ao revisar uma spec, remova contexto, texto, itens de escopo, suposições e critérios de aceitação obsoletos. Reescreva cada afirmação afetada que ainda pertença à spec como enunciado direto do requisito atual e aplique a mudança de forma consistente em todas as seções, inclusive seções próprias do projeto, como exemplos ou testes de fumaça. Nunca deixe no corpo comparações como "antes", "agora", "em vez de", "não mais" ou "alterado de".
+- Revisar não renumera critérios: um CA cujo comportamento continua existindo mantém seu ID e é reescrito no estado atual; um CA cujo comportamento foi abandonado é removido e seu ID não é reutilizado.
+- Coloque contexto sobre revisões anteriores, ou sobre comportamento entregue por outra spec que esta altera, apenas em uma seção opcional `## Histórico de revisões` no fim da spec, ou na seção equivalente que as specs existentes do projeto já usem. Acrescente-a somente quando julgar que o leitor precisa desse contexto. Mantenha cada entrada breve: data, o que mudou e o motivo concreto quando conhecido (prefira o motivo real a uma nota genérica como "pedido do desenvolvedor"). Referencie outra spec pelo nome da pasta. O corpo deve continuar completo e correto quando essa seção for ignorada.
+- Specs finalizadas estão congeladas e isentas; nunca as reescreva para cumprir esta regra.
 
 ## Fluxo de trabalho
 
@@ -25,7 +35,7 @@ O ciclo só avança `proposta → ativa → finalizada`. Nunca revise spec final
 2. Identifique ambiguidades materiais que alterariam substancialmente escopo ou comportamento observável. Faça perguntas objetivas só para elas; caso contrário, declare suposições conservadoras.
 3. Sugira um nome conciso em kebab-case baseado no comportamento solicitado.
 4. Inspecione diretórios imediatos de `minhas-specs/specs` cujo nome comece com três dígitos e `-`. Atribua o próximo prefixo sequencial de três dígitos com zeros, começando em `001`; nunca renumere pastas existentes nem reutilize sequências reservadas no manifesto.
-5. Crie `minhas-specs/specs/<sequência>-<nome-da-spec>/spec.md` a partir de `assets/modelo-de-spec.md` e revise testabilidade, consistência, expansão acidental de escopo e conformidade com orientações aprovadas.
+5. Crie `minhas-specs/specs/<sequência>-<nome-da-spec>/spec.md` a partir de `assets/modelo-de-spec.md` e revise testabilidade, consistência, expansão acidental de escopo e conformidade com orientações aprovadas. Leia o corpo independentemente de qualquer histórico de revisões e confirme que todas as seções concordam com a solicitação atual e a descrevem no estado atual. Ao revisar, verifique no diff se restou conteúdo obsoleto e confirme que referências históricas aparecem somente no histórico de revisões.
 6. Registre cada spec criada no manifesto e retorne os caminhos da spec e do manifesto e as suposições registradas. Sempre crie o Markdown antes de concluir; nunca deixe a especificação apenas no chat.
 
 ## Regras de conteúdo
