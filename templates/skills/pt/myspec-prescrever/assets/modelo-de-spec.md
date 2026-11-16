@@ -32,3 +32,9 @@ Não repita práticas de código ou orientações gerais como critérios; regras
 ## Questões em aberto
 
 - <Somente questões que ainda impedem implementação ou decisão confiável de QA.>
+
+## Histórico de revisões
+
+Opcional: omita esta seção, a menos que o leitor precise de contexto sobre uma revisão anterior desta spec ou sobre comportamento entregue por outra spec que esta altera. As seções acima descrevem os requisitos atuais no estado atual e devem se sustentar sem ela.
+
+- `<AAAA-MM-DD>`: <O que mudou e o motivo concreto, referenciando outra spec pelo nome da pasta, como `001-exemplo`, quando relevante.>

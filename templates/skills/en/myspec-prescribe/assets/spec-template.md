@@ -32,3 +32,9 @@ Do not repeat coding practices or general guidelines as criteria; applicable app
 ## Open Questions
 
 - <Only questions that still block a reliable implementation or QA decision.>
+
+## Revision History
+
+Optional: omit this section unless readers need context about an earlier revision of this spec or about behavior delivered by another spec that this one changes. The sections above describe the current requirements as-is and must stand on their own without it.
+
+- `<YYYY-MM-DD>`: <What changed and the concrete reason, referencing another spec by its folder ID, such as `001-example`, when relevant.>
