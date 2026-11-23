@@ -2,8 +2,10 @@
 
 ## Tree
 
+Use `./` as the repository root. List project folders beneath it.
+
 ```text
-<project>/
+./
 ├── <file-to-add>                    # add
 ├── <file-to-modify>                 # modify
 ├── <file-to-delete>                 # delete

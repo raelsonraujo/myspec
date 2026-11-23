@@ -2,8 +2,10 @@
 
 ## Árvore
 
+Use `./` como raiz do repositório. Liste as pastas do projeto abaixo dela.
+
 ```text
-<projeto>/
+./
 ├── <arquivo-a-adicionar>            # adicionar
 ├── <arquivo-a-modificar>            # modificar
 ├── <arquivo-a-excluir>              # excluir

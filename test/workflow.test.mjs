@@ -826,4 +826,56 @@ describe('structured metric parsers and myspec gate', () => {
     assert.equal(summary.passing, true);
     assert.equal(summary.baselineCommit, '654d5b3');
   });
+
+  it('parses explicit repository-relative trees the same way in renamed checkouts', () => {
+    const original = gitRepo();
+    const renamed = gitRepo();
+    const folder = original.split(/[\\/]/).at(-1);
+    const tree = [
+      '```text',
+      './',
+      `├── ${folder}/`,
+      '│   └── nested.txt # add',
+      '└── src.txt # modify',
+      '```',
+    ].join('\n');
+
+    const paths = [`${folder}/nested.txt`, 'src.txt'];
+    assert.deepEqual(parseFileTreePaths(tree, original), paths);
+    assert.deepEqual(parseFileTreePaths(tree, renamed), paths);
+    mkdirSync(join(original, folder));
+    const ambiguous = [];
+    const legacyTree = ['```text', `${folder}/`, '└── nested.txt # add', '```'].join('\n');
+    assert.deepEqual(parseFileTreePaths(legacyTree, original, (label) => ambiguous.push(label)), [`${folder}/nested.txt`]);
+    assert.deepEqual(ambiguous, [folder]);
+  });
+
+  it('reports an ambiguous legacy root and compares explicit root paths in the gate', () => {
+    const dir = gitRepo();
+    const previousCheckout = gitRepo().split(/[\\/]/).at(-1);
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'en');
+    const specDir = join(dir, 'my-specs/specs/001-order');
+    mkdirSync(specDir, { recursive: true });
+    writeFileSync(join(specDir, 'spec.md'), '# Order\n');
+    writeFileSync(
+      join(dir, 'my-specs/specs/manifest.json'),
+      JSON.stringify({ version: 1, specs: [{ id: '001-order', status: 'proposed', completionInspection: null }] }),
+    );
+    runOk('activate', '-d', dir, '001-order');
+    writeFileSync(join(dir, 'src.txt'), 'updated\n');
+
+    const fileTree = join(specDir, 'file-tree.md');
+    const tree = (root) => ['```text', root, '└── src.txt # modify', '```'].join('\n');
+    writeFileSync(fileTree, tree(`${previousCheckout}/`));
+    const legacy = JSON.parse(runOk('gate', '-d', dir, '001-order', '--json').stdout);
+    assert.ok(legacy.attentionItems.some((item) =>
+      item.includes(`Ambiguous file-tree root "${previousCheckout}/"`) && item.includes('Use "./"')));
+
+    writeFileSync(fileTree, tree('./'));
+    const explicit = JSON.parse(runOk('gate', '-d', dir, '001-order', '--json').stdout);
+    assert.deepEqual(explicit.attentionItems, []);
+    assert.deepEqual(explicit.fileTreeDrift.planned, ['src.txt']);
+    assert.deepEqual(explicit.fileTreeDrift.unplanned, []);
+    assert.deepEqual(explicit.fileTreeDrift.untouched, []);
+  });
 });

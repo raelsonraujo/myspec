@@ -90,6 +90,8 @@ const en = {
   metricKeyNoValue: (key: string) => `Metric key "${key}" produced no numeric value.`,
   treeDrift: (count: number, path: string, files: string[]) =>
     `File-tree drift: ${count} changed file(s) not listed in ${path} (${files.join(', ')}).`,
+  ambiguousFileTreeRoot: (path: string, label: string) =>
+    `Ambiguous file-tree root "${label}/" in ${path}. Use "./" as the root and list repository paths beneath it.`,
   verifyCommandFailed: (path: string, command: string, log: string) => `Verification command failed (${path}): ${command}. Log: ${log}`,
   metricNotApprovedNote: (path: string) => `Not measured: ${path} is not approved.`,
   metricNotApproved: (path: string) => `${path} is not approved and was not measured.`,
@@ -226,6 +228,8 @@ const pt: Messages = {
   changedGateFromProject: () => 'O portão do código alterado não se comprova só com a medição do projeto inteiro.',
   metricKeyNoValue: (key) => `A chave de métrica "${key}" não produziu valor numérico.`,
   treeDrift: (count, path, files) => `Arquivos fora da árvore: ${count} arquivo(s) alterado(s) sem estar em ${path} (${files.join(', ')}).`,
+  ambiguousFileTreeRoot: (path, label) =>
+    `Raiz ambígua "${label}/" em ${path}. Use "./" como raiz e liste os caminhos do repositório abaixo dela.`,
   verifyCommandFailed: (path, command, log) => `Comando de verificação falhou (${path}): ${command}. Log: ${log}`,
   metricNotApprovedNote: (path) => `Não medida: ${path} não está aprovado.`,
   metricNotApproved: (path) => `${path} não está aprovado e não foi medido.`,
