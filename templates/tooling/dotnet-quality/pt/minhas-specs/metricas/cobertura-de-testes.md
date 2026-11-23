@@ -55,6 +55,29 @@ Nenhum.
 - Excluir migrations e arquivos gerados: seu volume gerado distorceria a cobertura do código controlado pelo desenvolvedor.
 - Não definir portão de cobertura: o risco de cobertura é julgado por método pelo portão do CRAP score, em vez de um percentual do projeto.
 
+## Contrato estruturado
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File minhas-specs/medicao/gerar-relatorio-de-cobertura.ps1 -NoOpen",
+    "posix": "bash minhas-specs/medicao/gerar-relatorio-de-cobertura.sh --no-open"
+  },
+  "format": "cobertura",
+  "resultPaths": [
+    "minhas-specs/medicao/cobertura/relatorio/Cobertura.xml",
+    "minhas-specs/medicao/cobertura/relatorio/Summary.json"
+  ],
+  "report": [
+    "coverage.line",
+    "coverage.branch"
+  ],
+  "gates": []
+}
+```
+
 ## Histórico de aprovação
 
 - Nenhuma aprovação registrada.

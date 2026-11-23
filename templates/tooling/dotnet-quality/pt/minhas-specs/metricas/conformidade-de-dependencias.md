@@ -53,6 +53,26 @@ Cada regra é uma decisão de arquitetura aprovada pelo time, então violá-la b
 - Registrar o ID da regra no nome do teste: o TRX não guarda traits, e o nome é o que liga cada resultado à sua regra.
 - Usar portão `Bloqueante`: diferente da complexidade e do acoplamento, cada regra é um limite explícito e aprovado, não um sinal de melhoria.
 
+## Contrato estruturado
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File minhas-specs/medicao/executar-testes-de-arquitetura.ps1",
+    "posix": "bash minhas-specs/medicao/executar-testes-de-arquitetura.sh"
+  },
+  "format": "trx",
+  "resultPaths": [
+    "minhas-specs/medicao/arquitetura/arquitetura_*.trx"
+  ],
+  "gates": [
+    { "metric": "trx.failed", "label": "Regras de dependência violadas", "op": "=", "threshold": 0, "scope": "both", "enforcement": "blocking" }
+  ]
+}
+```
+
 ## Histórico de aprovação
 
 - Nenhuma aprovação registrada.

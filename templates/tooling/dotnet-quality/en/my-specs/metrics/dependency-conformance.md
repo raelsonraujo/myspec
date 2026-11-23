@@ -54,6 +54,26 @@ Each rule is an architecture decision the team approved, so violating it blocks 
 - Record the rule ID in the test name: TRX does not keep traits, and the name is what ties each result to its rule.
 - Use a `Blocking` gate: unlike complexity and coupling, each rule is an explicit, approved boundary rather than an improvement signal.
 
+## Machine Contract
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File my-specs/measurement/run-architecture-tests.ps1",
+    "posix": "bash my-specs/measurement/run-architecture-tests.sh"
+  },
+  "format": "trx",
+  "resultPaths": [
+    "my-specs/measurement/architecture/architecture_*.trx"
+  ],
+  "gates": [
+    { "metric": "trx.failed", "label": "Violated dependency rules", "op": "=", "threshold": 0, "scope": "both", "enforcement": "blocking" }
+  ]
+}
+```
+
 ## Approval History
 
 - None yet.

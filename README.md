@@ -63,6 +63,18 @@ myspec install -p codex -l pt
 
 Sem `-p`/`-l` em um terminal interativo, a CLI pergunta os valores. Se o repositório já tiver um workspace Myspec, eles assumem os valores instalados; assim, `myspec install -t dotnet-quality` adiciona o tooling a uma instalação existente.
 
+### Comandos determinísticos do fluxo
+
+Além de `install`, a CLI oferece comandos determinísticos para tirar burocracia e avaliação numérica do LLM (e permitir reuso direto em CI):
+
+| Comando | Função |
+| --- | --- |
+| `myspec approve <caminho> [-c "<contexto>"]` | Aprova um documento em `metrics/`, `coding-practices/` ou `general-guidelines/` usando `git config user.name`/`user.email`, mudando o status para `Approved`/`Aprovado` e acrescentando a entrada no histórico. |
+| `myspec activate <id-spec>` | Transiciona uma spec `proposed`/`proposta` para `active`/`ativa` no manifesto e registra o `HEAD` Git atual em `baseCommit`/`commitBase`. |
+| `myspec gate [<id-spec> \| --project] [--skip-run] [--json]` | Executa os comandos aprovados de build/teste e métricas (deduplicando execuções compartilhadas), interpreta relatórios estruturados (Cobertura XML, SARIF, TRX, Stryker JSON e JSON genérico), verifica desvio da árvore de arquivos (`file-tree.md`) e retorna código de saída não-zero em falhas bloqueantes. |
+| `myspec finish <id-spec> [--inspection <NNN>] [--force]` | Finaliza uma spec ativa no manifesto após confirmar que a inspeção mais recente está `Ready`/`Apta` (ou com ressalvas) e que a base Git não mudou desde a inspeção. |
+| `myspec check-patch [--limit <N>] [--base <ref>] [--json]` | Valida se o conjunto de arquivos alterados no Git respeita o limite de arquivos do patch e não toca nenhuma spec `finished`/`finalizada` ou `proposed`/`proposta`. |
+
 ## Templates de tooling
 
 Um template de tooling gera, junto com os skills, os artefatos para medir qualidade em `my-specs/measurement/` (`minhas-specs/medicao/`) e uma proposta já preenchida de um arquivo por métrica em `my-specs/metrics/` (`Status: Proposed`; em português, `minhas-specs/metricas/` com `Status: Proposto`). **A CLI não instala dependências**: cada template traz um README com os comandos para o desenvolvedor executar.
@@ -107,7 +119,8 @@ minhas-specs/                                      # -l pt (my-specs/ em -l en)
 │   └── performance.md                             # portões: orçamentos de alocação/tempo de cada caminho crítico
 ├── orientacoes-gerais/comandos-de-build-e-teste.md  # restore, build e testes com a solução detectada na raiz
 ├── orientacoes-gerais/regras-de-dependencia.md      # orientação proposta: regras de dependência entre camadas e módulos
-└── orientacoes-gerais/<caminhos críticos>.md      # orientação proposta: caminhos críticos e seus orçamentos
+├── orientacoes-gerais/<caminhos críticos>.md      # orientação proposta: caminhos críticos e seus orçamentos
+└── praticas-de-codigo/um-tipo-de-nivel-superior-por-arquivo.md  # prática proposta para C#
 ```
 
 A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.email` são preenchidas automaticamente; se não forem encontradas, a CLI avisa e deixa um marcador. Arquivos que já existem nunca são sobrescritos. Depois de instalar as dependências, rode o skill de setup (`myspec-setup`/`myspec-configurar`) para revisar e aprovar cada métrica.

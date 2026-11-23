@@ -56,6 +56,26 @@ Every surviving mutant in a changed file is a candidate for a new test or a stro
 - Pin Stryker as a repository-local tool: developers and CI use the same version without a global installation.
 - Use an `Attention` gate: a surviving mutant signals a weak test rather than a blocked inspection until the team explicitly adopts a `Blocking` gate.
 
+## Machine Contract
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File my-specs/measurement/run-mutation.ps1",
+    "posix": "bash my-specs/measurement/run-mutation.sh"
+  },
+  "format": "stryker",
+  "resultPaths": [
+    "my-specs/measurement/mutation/reports/mutation-report.json"
+  ],
+  "gates": [
+    { "metric": "mutation.score", "label": "Mutation score of the changed files", "op": ">=", "threshold": 60, "unit": "%", "scope": "changed", "enforcement": "attention" }
+  ]
+}
+```
+
 ## Approval History
 
 - None yet.

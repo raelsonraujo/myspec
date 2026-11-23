@@ -17,13 +17,13 @@ Contract documents are shared with the team and record their creator and approve
 
 ## Workflow
 
-`specs/manifest.json` tracks every spec by its exact folder name. Setup builds it from existing implementation and inspection evidence when missing. The only lifecycle is `proposed → active → finished`: prescribe adds new specs as `proposed`; implement changes them to `active` immediately before implementation edits, after file-tree approval; inspect records a `Ready` or `Ready with observations` inspection, presents its findings, and asks the developer whether to finalize. The spec remains `active` until explicit confirmation, when inspect changes only the manifest entry to `finished` and records its completion inspection. The status change itself records confirmation; no separate artifact is created. Planning or approving a tree does not start implementation. A blocked inspection leaves the spec active. The Portuguese workspace uses `specs/manifesto.json` with Brazilian Portuguese keys and the lifecycle `proposta → ativa → finalizada`. Language migration translates the manifest representation while retaining IDs, status meaning, completion sequences, and custom fields.
+`specs/manifest.json` tracks every spec by its exact folder name. Setup builds it from existing implementation and inspection evidence when missing. The only lifecycle is `proposed → active → finished`: prescribe adds new specs as `proposed`; implement creates an as-is `file-tree.md` blueprint (pausing by default for the developer to check it, or proceeding automatically when explicitly requested by the developer or authorized by an approved general guideline) and activates the spec (`myspec activate <id>`, recording `baseCommit`) immediately before editing source/test code; inspect runs deterministic gates via `myspec gate <id>` (preferably in a fresh context), records a `Ready` or `Ready with observations` inspection with the inspected commit, and presents findings so the developer can finalize via `myspec finish <id>` or explicit confirmation. Only then does the manifest entry become `finished` with its `completionInspection`. A blocked inspection leaves the spec active. The Portuguese workspace uses `specs/manifesto.json` with Brazilian Portuguese keys (`commitBase`) and the lifecycle `proposta → ativa → finalizada`. Language migration translates the manifest representation while retaining IDs, status meaning, completion sequences, and custom fields.
 
 ```json
 {
   "version": 1,
   "specs": [
-    { "id": "001-example", "status": "finished", "completionInspection": "002" },
+    { "id": "001-example", "status": "finished", "completionInspection": "002", "baseCommit": "a1b2c3d" },
     { "id": "002-follow-up", "status": "proposed", "completionInspection": null }
   ]
 }
@@ -45,10 +45,10 @@ Patching is the exception for unfinished work or changes that cannot impact a fi
 | --- | --- |
 | `myspec-setup` | Build the spec manifest and define metrics and their gates, coding practices, and guidelines. |
 | `myspec-prescribe` | Turn a change request into a testable spec and register it as proposed. |
-| `myspec-implement` | Propose and approve a file tree, then activate and implement the spec. |
-| `myspec-inspect` | Review the implementation against the spec and approved rules, measure the approved metrics, and record an inspection with a verdict and finalize only after explicit developer confirmation. |
-| `myspec-patch` | Make a small fix of at most five files by default, overridable by an approved project general guideline, including within an active spec; impacts on finished specs require a new spec. |
-| `myspec-quantify` | Judge the whole project's approved metrics and suggest improvements that can start new specs. |
+| `myspec-implement` | Create the as-is file-tree blueprint (check-first by default, opt-in auto-implement), activate the spec, and implement it. |
+| `myspec-inspect` | Review the implementation (preferably in a fresh context) against the spec, approved rules, and `myspec gate`, then record an inspection for finalization via `myspec finish`. |
+| `myspec-patch` | Make a small fix of at most five files by default (verified with `myspec check-patch`), overridable by an approved project general guideline; impacts on finished specs require a new spec. |
+| `myspec-quantify` | Run `myspec gate --project` to judge project-wide approved metrics and suggest improvements that can start new specs. |
 | `myspec-audit` | Sweep the whole project for compliance with approved practices and guidelines, record evidence and review gaps, and prioritize follow-up. |
 
 Use audit for project-wide adherence to rules, quantify for metric measurement, and inspect for one spec's acceptance review. Audit needs no metrics or specs and writes only `compliance-report.md`. It follows each rule's scope and exceptions, distinguishes violations from missing evidence, makes partial review explicit, and revisits previous findings. It does not fix code or change spec lifecycle states.
@@ -56,10 +56,10 @@ Use audit for project-wide adherence to rules, quantify for metric measurement, 
 A typical cycle after setup:
 
 ```text
-prescribe > implement (file tree) > implement > inspect (blocked) > implement/patch > inspect (ready) > developer confirms > finished > prescribe (next spec)
+prescribe > implement (file tree check, or opt-in auto) > implement > inspect (`myspec gate`) > `myspec finish` > prescribe (next spec)
 ```
 
-Repeat implement or patch followed by inspect as often as needed. A spec is complete, and work can advance to the next one, when its latest inspection is `Ready` or `Ready with observations` and the developer explicitly confirms finalization after reviewing that inspection; only then does inspect record `finished` in the manifest, and later work proceeds through a new spec. Prefer implement over patch when a change exceeds the applicable patch file limit or affects a spec whose file tree has never been approved.
+Repeat implement or patch followed by inspect as often as needed. Deterministic CLI commands support the workflow: `myspec approve <path>` approves contract documents with Git identity, `myspec activate <id>` activates a spec with its `baseCommit`, `myspec gate [<id>|--project]` runs build/tests, structured metric parsers, and file-tree drift checks, `myspec finish <id>` verifies the latest passing inspection and git baseline before finalizing, and `myspec check-patch` validates patch eligibility. Prefer implement over patch when a change exceeds the applicable patch file limit or affects a `proposed` spec or one without a `file-tree.md`.
 
 Invoke a skill with `$name` in Codex or `/name` in Claude Code and Gemini (Antigravity / Gemini CLI), e.g. `$myspec-setup` or `/myspec-setup`.
 

@@ -54,6 +54,28 @@ These targets match the CA1506 defaults, pinned in `CodeMetricsConfig.txt` (`CA1
 - Rebuild without incremental build: an up-to-date project would not run the analyzers again or write its log.
 - Use `Attention` gates: elevated coupling is an improvement signal rather than a blocked inspection until the team explicitly adopts `Blocking` gates.
 
+## Machine Contract
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File my-specs/measurement/run-coupling.ps1",
+    "posix": "bash my-specs/measurement/run-coupling.sh"
+  },
+  "format": "sarif",
+  "ruleId": "CA1506",
+  "resultPaths": [
+    "my-specs/measurement/coupling/*.sarif"
+  ],
+  "gates": [
+    { "metric": "coupling.types", "label": "Types with coupling above 95", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" },
+    { "metric": "coupling.members", "label": "Members with coupling above 40", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" }
+  ]
+}
+```
+
 ## Approval History
 
 - None yet.

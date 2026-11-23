@@ -53,6 +53,28 @@ Esses limites coincidem com os padrões da regra CA1506, fixados em `CodeMetrics
 - Recompilar sem build incremental: um projeto já compilado não executaria os analisadores de novo e não gravaria seu log.
 - Usar portões `Atenção`: acoplamento elevado é sinal de melhoria, não inspeção bloqueada, até que o time adote explicitamente portões `Bloqueante`.
 
+## Contrato estruturado
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File minhas-specs/medicao/medir-acoplamento.ps1",
+    "posix": "bash minhas-specs/medicao/medir-acoplamento.sh"
+  },
+  "format": "sarif",
+  "ruleId": "CA1506",
+  "resultPaths": [
+    "minhas-specs/medicao/acoplamento/*.sarif"
+  ],
+  "gates": [
+    { "metric": "coupling.types", "label": "Tipos com acoplamento acima de 95", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" },
+    { "metric": "coupling.members", "label": "Membros com acoplamento acima de 40", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" }
+  ]
+}
+```
+
 ## Histórico de aprovação
 
 - Nenhuma aprovação registrada.

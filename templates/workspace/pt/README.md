@@ -17,13 +17,13 @@ Os documentos do contrato são compartilhados com o time e registram criador e a
 
 ## Fluxo de trabalho
 
-`specs/manifesto.json` rastreia cada spec pelo nome exato da pasta. A configuração o constrói a partir de evidências de implementação e inspeção existentes quando ausente. O ciclo só avança `proposta → ativa → finalizada`: prescrever acrescenta novas specs como `proposta`; implementar muda para `ativa` imediatamente antes de editar a implementação, após aprovação da árvore; inspecionar registra inspeção `Apta` ou `Apta com ressalvas`, apresenta os achados e pergunta se o desenvolvedor deseja finalizar. A spec permanece `ativa` até confirmação explícita; só então inspecionar altera a entrada no manifesto para `finalizada` e registra a inspeção de conclusão. A mudança de situação registra a confirmação, sem criar artefato separado. Planejar ou aprovar árvore não inicia implementação. Inspeção bloqueada mantém a spec ativa. Chaves JSON e valores de situação são escritos em português brasileiro.
+`specs/manifesto.json` rastreia cada spec pelo nome exato da pasta. A configuração o constrói a partir de evidências de implementação e inspeção existentes quando ausente. O ciclo só avança `proposta → ativa → finalizada`: prescrever acrescenta novas specs como `proposta`; implementar cria o plano `arvore-de-arquivos.md` no estado atual (parando por padrão para conferência do desenvolvedor, ou prosseguindo automaticamente quando pedido explicitamente pelo desenvolvedor ou autorizado por orientação geral aprovada) e ativa a spec (`myspec activate <id>`, registrando `commitBase`) imediatamente antes de editar código/testes; inspecionar executa portões determinísticos via `myspec gate <id>` (preferencialmente em contexto limpo), registra uma inspeção `Apta` ou `Apta com ressalvas` com o commit inspecionado e apresenta os achados para o desenvolvedor finalizar via `myspec finish <id>` ou confirmação explícita. Só então a entrada passa a `finalizada` com sua `inspecaoDeConclusao`. Inspeção bloqueada mantém a spec ativa. Chaves JSON e valores de situação são escritos em português brasileiro.
 
 ```json
 {
   "versao": 1,
   "especificacoes": [
-    { "identificador": "001-exemplo", "situacao": "finalizada", "inspecaoDeConclusao": "002" },
+    { "identificador": "001-exemplo", "situacao": "finalizada", "inspecaoDeConclusao": "002", "commitBase": "a1b2c3d" },
     { "identificador": "002-continuacao", "situacao": "proposta", "inspecaoDeConclusao": null }
   ]
 }
@@ -45,10 +45,10 @@ Corrigir é a exceção para trabalho ainda não finalizado ou mudanças que nã
 | --- | --- |
 | `myspec-configurar` | Constrói o manifesto de specs e define métricas e seus portões, práticas de código e orientações. |
 | `myspec-prescrever` | Transforma uma solicitação de mudança em uma spec testável e registra como proposta. |
-| `myspec-implementar` | Propõe e aprova a árvore de arquivos e então ativa e implementa a spec. |
-| `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas aprovadas e registra uma inspeção com veredito e finaliza somente após confirmação explícita do desenvolvedor. |
-| `myspec-corrigir` | Faz um ajuste pequeno de no máximo cinco arquivos por padrão, com limite substituível por orientação geral aprovada do projeto, inclusive dentro de uma spec ativa; impactos em specs finalizadas exigem nova spec. |
-| `myspec-quantificar` | Julga as métricas aprovadas do projeto inteiro e sugere melhorias que podem originar novas specs. |
+| `myspec-implementar` | Cria o plano `arvore-de-arquivos.md` no estado atual (conferência por padrão; automático sob pedido ou orientação aprovada), ativa e implementa a spec. |
+| `myspec-inspecionar` | Revisa a implementação (preferencialmente em contexto limpo) contra a spec, regras aprovadas e `myspec gate`, registrando a inspeção para finalização via `myspec finish`. |
+| `myspec-corrigir` | Faz um ajuste pequeno de no máximo cinco arquivos por padrão (verificado com `myspec check-patch`), substituível por orientação geral aprovada; impactos em finalizadas exigem nova spec. |
+| `myspec-quantificar` | Executa `myspec gate --project` para julgar métricas aprovadas do projeto inteiro e sugerir melhorias que podem originar novas specs. |
 | `myspec-auditar` | Varre a conformidade do projeto inteiro com práticas e orientações aprovadas, registra evidências e lacunas e prioriza próximos passos. |
 
 Use auditar para aderência geral às regras, quantificar para medição de métricas e inspecionar para aceitação de uma spec. Auditar não exige métricas nem specs e escreve somente `relatorio-de-conformidade.md`. Respeita escopo e exceções de cada regra, distingue violações de evidência ausente, explicita revisão parcial e reexamina achados anteriores. Não corrige código nem altera situações do ciclo de vida das specs.
@@ -56,10 +56,10 @@ Use auditar para aderência geral às regras, quantificar para medição de mét
 Um ciclo típico após a configuração:
 
 ```text
-prescrever > implementar (árvore) > implementar > inspecionar (bloqueada) > implementar/corrigir > inspecionar (apta) > desenvolvedor confirma > finalizada > prescrever (próxima spec)
+prescrever > implementar (conferência da árvore ou automático opcional) > implementar > inspecionar (`myspec gate`) > `myspec finish` > prescrever (próxima spec)
 ```
 
-Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Uma spec está concluída, e o trabalho pode avançar para a próxima, quando sua inspeção mais recente estiver `Apta` ou `Apta com ressalvas` e o desenvolvedor confirmar explicitamente a finalização após revisá-la; somente então inspecionar registra `finalizada` no manifesto, e trabalho posterior segue por nova spec. Prefira implementar a corrigir quando a mudança exceder o limite de arquivos aplicável à correção ou afetar uma spec cuja árvore nunca foi aprovada.
+Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Comandos determinísticos da CLI apoiam o fluxo: `myspec approve <caminho>` aprova documentos do contrato com identidade Git, `myspec activate <id>` ativa a spec registrando `commitBase`, `myspec gate [<id>|--project]` executa build/testes, leitores estruturados de métricas e verificação de desvio da árvore, `myspec finish <id>` valida a última inspeção apta e a base Git antes de finalizar e `myspec check-patch` valida a elegibilidade de correções. Prefira implementar a corrigir quando a mudança exceder o limite de arquivos aplicável ou afetar spec `proposta` ou sem `arvore-de-arquivos.md`.
 
 Invoque um skill com `$nome` no Codex ou `/nome` no Claude Code e no Gemini (Antigravity / Gemini CLI), por exemplo `$myspec-configurar` ou `/myspec-configurar`.
 

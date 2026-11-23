@@ -5,55 +5,36 @@ description: Create a small, clear, QA-reviewable code change specification and 
 
 # Myspec Prescribe
 
-Turn a change request into a compact contract for implementation and QA.
+Turn a change request into a compact, testable contract for implementation and QA.
 
-## Mandatory Guidance Gate
+## Guidance & Lifecycle Gates
 
-Before moving beyond initial request and repository discovery, read every Markdown file that exists under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat each applicable document with `Status: Approved` as mandatory for this skill, comply with its rule before taking the action it governs, and surface any conflict with higher-priority instructions before proceeding. A missing folder, missing file, unapproved document, or section explicitly marked `None` creates no mandatory constraint; state the limitation when material.
-
-## Spec Lifecycle
-
-Read `my-specs/specs/manifest.json` before creating or revising specs. If it is absent, incomplete, or inconsistent, use the Spec Manifest procedure in `{{skill:myspec-setup}}` to establish existing statuses first; never replace it with a partial manifest. Its schema is `{"version":1,"specs":[{"id":"001-example","status":"proposed","completionInspection":null}]}`.
-
-For every new spec actually saved, append one entry with its exact folder name as `id`, `status: "proposed"`, and `completionInspection: null`. Do this in the same task, including when creating several specs. Revising a proposed or active spec preserves its status. Re-read before writing; preserve all other entries, fields, and completion references, and never duplicate, remove, or downgrade an entry.
-
-The lifecycle only advances `proposed → active → finished`. Never revise a finished spec, its file tree, inspections, or completion entry. Any change that can impact its behavior or implementation, even a fix or refactor preserving its criteria, requires a new numbered spec. Define the change only in the new spec and, when readers need the earlier context, reference the earlier spec only in the new spec's revision history as described under [As-Is Specs](#as-is-specs); the new spec may touch the same source files without reopening the finished one.
+1. Read every Markdown file under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat applicable `Status: Approved` documents as mandatory; surface conflicts with higher-priority instructions.
+2. Read `my-specs/specs/manifest.json` before creating or revising specs. If missing or inconsistent, reconcile it via `{{skill:myspec-setup}}` first.
+3. Never revise a `finished` spec, its tree, inspections, or completion entry. Any change that can impact a finished spec—even a bugfix or behavior-preserving refactor—requires a new numbered spec.
+4. For every newly saved spec, append `{"id":"<folder>","status":"proposed","completionInspection":null}` to `manifest.json` in the same task (re-reading before writing and preserving all other entries/fields). Revising a `proposed` or `active` spec preserves its status.
 
 ## As-Is Specs
 
-Write every `proposed` or `active` spec as a standalone, as-is description of the unit of work it currently requires and nothing else. A reader must be able to implement and verify the change from the current text alone, without knowing earlier revisions, superseded wording, or how the request evolved in conversation.
-
-- When creating a spec, describe only the required behavior. Do not narrate the discussion that produced it, earlier ideas, or rejected alternatives in the body.
-- When revising a spec, remove obsolete context, prose, scope items, assumptions, and acceptance criteria. Rewrite every affected statement that still belongs in the spec as a direct statement of the current requirement, and apply the change consistently across all sections, including any project-specific sections such as examples or smoke tests. Never leave comparisons such as "previously", "now", "instead of", "no longer", or "changed from" in the body.
-- Revising does not renumber acceptance criteria: an AC whose behavior still exists keeps its ID and is rewritten as-is; an AC whose behavior was dropped is removed and its ID is not reused.
-- Put context about earlier revisions, or about behavior delivered by another spec that this one changes, only in an optional `## Revision History` section at the end of the spec, or in the equivalent section the project's existing specs already use. Add it only when you judge that a reader needs that context. Keep each entry brief: date, what changed, and the concrete reason when known (prefer the actual reason over a generic note such as "developer asked"). Reference another spec by its folder ID. The body must remain complete and correct when this section is ignored.
-- Finished specs are frozen and exempt; never rewrite them to comply.
+Write every `proposed` or `active` spec as a standalone, as-is description of the work it currently requires:
+- Describe only current required behavior. Remove obsolete context, scope, assumptions, and criteria when revising, and never leave comparisons ("previously", "now", "instead of", "changed from") in the body.
+- Keep stable AC IDs when revising: rewrite surviving ACs as-is, drop obsolete ones without renumbering or reusing their IDs.
+- Put context on earlier revisions or another spec changed by this one only in an optional closing `## Revision History` (date, what changed, concrete reason, folder ID). Omit it unless needed; the body must stand alone without it.
+- Finished specs are frozen and never rewritten.
 
 ## Workflow
 
-1. Read the request and inspect relevant repository context when available.
-2. Complete the Mandatory Guidance Gate, then read the metric files under `my-specs/metrics/` when present. Use them to identify quality tooling and the gates the specified change must meet; do not treat them as a substitute for reading the guidance files at `my-specs/coding-practices/` and `my-specs/general-guidelines/`.
-3. Identify material ambiguities that would substantially change scope or observable behavior. Ask focused questions only for those ambiguities; otherwise state conservative assumptions.
-4. Suggest a concise kebab-case name based on the requested behavior.
-5. Inspect immediate directories under `my-specs/specs` whose names begin with a three-digit prefix followed by `-`. Assign the next sequential, zero-padded three-digit prefix, beginning with `001` when none exist. Do not renumber existing folders or reuse sequence numbers reserved by manifest entries.
-6. Create `my-specs/specs/<sequence>-<spec-name>/spec.md` from [assets/spec-template.md](assets/spec-template.md). Treat `my-specs/specs` as relative to the repository root.
-7. Review the result for testability, internal consistency, accidental scope expansion, and compliance with approved guidelines. Read the body independently of any revision history and confirm that every section agrees with the current request and describes it as-is. When revising, check the diff for obsolete content left behind and confirm that historical references appear only in the revision history.
-8. Register every created spec in the manifest, then return the spec and manifest paths and briefly identify any recorded assumptions.
+1. Read the request, relevant repository context, approved guidance, and `my-specs/metrics/` (when present) to know applicable gates.
+2. Ask focused questions only for material ambiguities that substantially alter scope or observable behavior; otherwise record conservative assumptions.
+3. Choose a concise kebab-case name and assign the next zero-padded three-digit prefix (`001`, `002`, ...) not used by any folder in `my-specs/specs/` or entry in `manifest.json`.
+4. Save `my-specs/specs/<NNN>-<name>/spec.md` using [assets/spec-template.md](assets/spec-template.md). Never leave a spec only in chat.
+5. Verify the body is testable, internally consistent, as-is, and free of duplicated coding practices or guidelines.
+6. Register the spec in `manifest.json` and return both paths plus any recorded assumptions.
 
-Always produce the Markdown file before completing the task. Never leave the specification only in chat.
+## Acceptance Criteria Rules
 
-## Content Rules
-
-- Describe the desired outcome, not an implementation plan.
-- Keep requirements small, concrete, and unambiguous.
-- Define the code areas or responsibilities expected to change without prescribing exact files unless the request or repository evidence supports them.
-- Separate in-scope and out-of-scope behavior explicitly.
-- Make the acceptance criteria in `spec.md` the single source of truth for the change-specific measurable behaviors throughout prescription, file-tree planning, implementation, and inspection. Summary, scope, and assumptions provide context and boundaries; every required change-specific observable behavior or measurable target they mention must be expressed in an acceptance criterion, except rules already established by applicable approved coding practices or general guidelines. Approved guidance and metric gates are enforced directly from their own documents.
-- Do not repeat or paraphrase coding practices or general guidelines as acceptance criteria, including generic criteria such as "follows repository guidelines". Review each proposed criterion against those documents before saving the spec. If a scenario mixes an inherited rule with new behavior, retain only the change-specific behavior and reference the rule's source when context is needed. For example, a test naming convention is enforced from its practice; it needs no AC in each feature spec. Absence of a duplicate AC never waives an applicable approved rule. Surface conflicts for resolution rather than using an AC to override guidance.
-- Write every acceptance criterion as a BDD scenario with explicit `Given / When / Then` steps: concrete preconditions, one action or event, and observable, verifiable outcomes. Use `And` for additional preconditions or outcomes. Include relevant inputs, expected values, state changes or preservation, and units or thresholds when required; avoid vague results such as "works correctly". Markdown scenarios are sufficient; do not require a Gherkin runner or a test naming convention.
-- Give distinct success, rejection, and boundary behaviors separate criteria rather than combining alternatives with different expected outcomes into one scenario.
-- Cover happy paths, relevant failure paths, boundaries, permissions, data effects, and compatibility where applicable.
-- Give every acceptance criterion a stable identifier such as `AC-01`. Preserve existing IDs when revising a spec; never renumber or reuse an ID for a different behavior. Later artifacts reference these IDs instead of defining a second behavioral contract.
-- Do not invent product behavior beyond what the request establishes. Record a reasonable assumption or ask the developer when the choice is material.
-- Preserve existing files. If the numbered suggested folder already exists, update it only when the developer clearly intends to revise that unfinished spec; otherwise allocate the next available sequence number and use it with the suggested name. A finished folder is never reused.
-- Never let Myspec guidance override higher-priority instructions. Surface a conflict that prevents compliant output.
+- Acceptance criteria in `spec.md` are the single source of truth for change-specific observable behavior. Every required change-specific outcome or target mentioned in Summary or Scope must have an AC.
+- Write every criterion as a BDD scenario with a stable ID (`AC-01`, `AC-02`, ...), concrete `Given` preconditions, one `When` action/event, and verifiable `Then` (and `And`) outcomes with concrete inputs, values, state effects, or units/thresholds. Avoid vague phrasing ("works correctly"). No Gherkin runner or specific test naming is required.
+- Separate distinct success, rejection, permission, boundary, and data-integrity outcomes into distinct criteria.
+- Do not repeat or paraphrase approved coding practices, general guidelines, or metric gates as ACs (including generic "follows guidelines" criteria); they are enforced directly from their source documents. Reference a rule only when needed for context.
+- Describe outcomes, not implementation plans; do not invent product behavior beyond the request.
