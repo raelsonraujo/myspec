@@ -32,16 +32,17 @@ Initialize or reconcile `my-specs/specs/manifest.json` first when missing or out
 Maintain `my-specs/specs/manifest.json` (separate from CLI `my-specs/myspec.json`) from [assets/spec-manifest-template.json](assets/spec-manifest-template.json). Schema:
 `{"version":1,"specs":[{"id":"001-example","status":"proposed","completionInspection":null,"baseCommit":null}]}` (`baseCommit` is optional; Portuguese uses `specs/manifesto.json` with `proposta → ativa → finalizada`).
 
-Lifecycle only advances `proposed → active → finished`:
+Lifecycle only advances `proposed → active → finished`, and a `proposed` spec may end as `discarded`:
 - `proposed`: implementation has not started (writing `file-tree.md` alone does not activate a spec).
 - `active`: implementation started (`myspec activate <id>` records `baseCommit` before the first source/test edit).
 - `finished`: finalized via `myspec finish <id>` or explicit developer confirmation after a `Ready` / `Ready with observations` (`Apta` / `Apta com ressalvas`) inspection; `completionInspection` stores the three-digit sequence (`"002"`), `null` otherwise.
+- `discarded`: the developer explicitly decided not to implement a `proposed` spec. It is final, with `completionInspection: null`; the folder and `spec.md` stay as a record, and the ID is never reused.
 
 When reconciling a missing manifest or untracked specs:
 - Inspect each spec, `file-tree.md`, highest-numbered inspection, code/tests, and git history.
-- Assign `finished` only with explicit developer confirmation of the latest passing inspection; assign `active` when implementation began without confirmation; assign `proposed` only when implementation has not begun. Ask if evidence is ambiguous.
-- Preserve existing entries, completion references, and custom fields; never downgrade statuses, reset the manifest, or reopen `finished` specs. Report malformed data or conflicts rather than overwriting them.
-- Finished specs, trees, inspections, and completion entries are immutable baselines; any later impact requires a new spec via `{{skill:myspec-prescribe}}`.
+- Assign `finished` only with explicit developer confirmation of the latest passing inspection; assign `active` when implementation began without confirmation; assign `proposed` only when implementation has not begun; assign `discarded` only with an explicit developer decision not to implement. Ask if evidence is ambiguous.
+- Preserve existing entries, completion references, and custom fields; never downgrade statuses, reset the manifest, or reopen `finished` or `discarded` specs. Report malformed data or conflicts rather than overwriting them.
+- Finished and discarded specs, trees, inspections, and completion entries are immutable baselines; any later impact requires a new spec via `{{skill:myspec-prescribe}}`.
 
 ## Contract Rules
 

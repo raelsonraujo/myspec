@@ -16,12 +16,13 @@ Evaluate an active spec implementation against its explicit contract, approved r
 3. Only `active` specs can be inspected for completion:
    - `proposed`: implementation has not started; reconcile via setup if code already exists.
    - `finished`: immutable historical baseline—return its recorded completion inspection without creating a new inspection or modifying artifacts. Any new change requires `{{skill:myspec-prescribe}}`.
+   - `discarded`: there is no implementation to inspect; do not create an inspection.
 4. Every inspection leaves an `active` spec `active` (`completionInspection: null`) until finalized by the developer.
 
 ## Workflow
 
 1. Read `my-specs/specs/<spec-id>/spec.md`, `file-tree.md` (when present), `my-specs/metrics/` (when present), and the highest-numbered file in `inspections/` (if any).
-2. Run **`myspec gate <spec-id>`** (deterministic evaluation):
+2. Run **`myspec gate <spec-id>`** (deterministic evaluation) in full, without `--skip-run` or `--skip-build`, with the code committed: `myspec finish` only accepts the spec's latest gate result when it passed on the inspected commit.
    - Executes any approved `general-guidelines/*.md` verification contract (`"kind": "verify"`) and each approved `metrics/*.md` contract (`"kind": "metric"`) once, deduplicating shared runs.
    - Parses structured reports (`cobertura`, `sarif`, `trx`, `stryker`, `json`), isolates changed code via `baseCommit` / `file-tree.md`, evaluates declared `gates`, and checks **file-tree drift** (unplanned/untouched edits).
    - For any approved metric whose output format `myspec gate` cannot parse automatically (for example, benchmarks with machine-compared budgets), run its exact documented command and read its result path directly. Never invent, estimate, install, or substitute tools; record unavailable/unapproved metrics as `Not measured: <reason>` and suggest `{{skill:myspec-setup}}`.
@@ -40,8 +41,8 @@ Evaluate an active spec implementation against its explicit contract, approved r
 
 ## Finalization
 
-- After saving a `Ready` or `Ready with observations` inspection, present its path, verdict, and key findings. Ask the developer to finalize it by running **`myspec finish <spec-id>`** (which deterministically verifies the passing inspection and unchanged git baseline) or by explicitly confirming finalization in chat.
-- On explicit confirmation in chat (without code changes since the reviewed inspection), run `myspec finish <spec-id>` (or update only that entry in `manifest.json` to `finished` with `completionInspection: "<NNN>"`) without creating a new inspection. If code changed after the inspection, inspect the new baseline first.
+- After saving a `Ready` or `Ready with observations` inspection, present its path, verdict, and key findings. Ask the developer to finalize it by running **`myspec finish <spec-id>`** (which deterministically verifies the passing inspection, the unchanged git baseline, and a passing latest gate on the same commit) or by explicitly confirming finalization in chat.
+- On explicit confirmation in chat (without code changes since the reviewed inspection), run `myspec finish <spec-id>` without creating a new inspection. Never edit the manifest by hand to finish a spec: `myspec finish` is what checks the gate. If code changed after the inspection, inspect the new baseline first.
 
 ## Record Brevity & Boundaries
 

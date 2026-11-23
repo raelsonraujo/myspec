@@ -16,12 +16,13 @@ Avalie a implementação de uma spec ativa contra seu contrato explícito, regra
 3. Apenas specs `ativa` podem ser inspecionadas para conclusão:
    - `proposta`: implementação não começou; reconcilie via configuração se já houver código.
    - `finalizada`: base histórica imutável — retorne a inspeção de conclusão registrada sem criar nova inspeção nem alterar artefatos. Toda mudança posterior exige `{{skill:myspec-prescrever}}`.
+   - `descartada`: não há implementação a inspecionar; não crie inspeção.
 4. Toda inspeção mantém a spec `ativa` (`inspecaoDeConclusao: null`) até finalização pelo desenvolvedor.
 
 ## Fluxo
 
 1. Leia `minhas-specs/specs/<id-spec>/spec.md`, `arvore-de-arquivos.md` (quando existir), `minhas-specs/metricas/` (quando existir) e a inspeção mais recente em `inspecoes/` (se houver).
-2. Execute **`myspec gate <id-spec>`** (avaliação determinística):
+2. Execute **`myspec gate <id-spec>`** (avaliação determinística), completo, sem `--skip-run` nem `--skip-build`, e com o código commitado: o `myspec finish` só aceita o resultado do portão mais recente da spec, aprovado e no mesmo commit da inspeção.
    - Executa qualquer contrato de verificação aprovado em `orientacoes-gerais/*.md` (`"kind": "verify"`) e cada contrato de métrica aprovado em `metricas/*.md` (`"kind": "metric"`) uma única vez, eliminando repetições compartilhadas.
    - Lê relatórios estruturados (`cobertura`, `sarif`, `trx`, `stryker`, `json`), isola código alterado via `commitBase` / `arvore-de-arquivos.md`, julga os `gates` declarados e verifica **desvio da árvore** (edições não planejadas ou arquivos intocados).
    - Para métricas aprovadas cujo formato o `myspec gate` não interprete automaticamente (como benchmarks comparados por máquina), execute o comando documentado e leia o resultado diretamente. Nunca invente, estime, instale ou substitua ferramentas; registre métricas indisponíveis/não aprovadas como `Não medida: <motivo>` e sugira `{{skill:myspec-configurar}}`.
@@ -40,8 +41,8 @@ Avalie a implementação de uma spec ativa contra seu contrato explícito, regra
 
 ## Finalização
 
-- Após salvar uma inspeção `Apta` ou `Apta com ressalvas`, apresente caminho, veredito e achados principais. Peça ao desenvolvedor que finalize executando **`myspec finish <id-spec>`** (que valida de forma determinística a inspeção apta e a base Git inalterada) ou confirmando explicitamente no chat.
-- Em confirmação explícita no chat (sem mudanças no código desde a inspeção revisada), execute `myspec finish <id-spec>` (ou atualize somente essa entrada em `manifesto.json` para `finalizada` com `inspecaoDeConclusao: "<NNN>"`) sem criar nova inspeção. Se o código mudou após a inspeção, inspecione a nova base antes.
+- Após salvar uma inspeção `Apta` ou `Apta com ressalvas`, apresente caminho, veredito e achados principais. Peça ao desenvolvedor que finalize executando **`myspec finish <id-spec>`** (que valida de forma determinística a inspeção apta, a base Git inalterada e o portão mais recente aprovado no mesmo commit) ou confirmando explicitamente no chat.
+- Em confirmação explícita no chat (sem mudanças no código desde a inspeção revisada), execute `myspec finish <id-spec>` sem criar nova inspeção. Não altere o manifesto à mão para finalizar: é o `myspec finish` que confere o portão. Se o código mudou após a inspeção, inspecione a nova base antes.
 
 ## Concisão e limites do registro
 

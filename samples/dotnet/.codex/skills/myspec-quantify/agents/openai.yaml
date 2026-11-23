@@ -1,4 +1,0 @@
-interface:
-  display_name: "Myspec Quantify"
-  short_description: "Judge the approved metrics project-wide"
-  default_prompt: "Use $myspec-quantify to measure the whole project and suggest where to improve next."

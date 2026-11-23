@@ -23,7 +23,3 @@
 ## Structural Decisions
 
 - <Important boundary, dependency, or pattern reflected by this tree.>
-
-## Open Decisions
-
-- <Decision requiring developer input before implementation, or `None`.>

@@ -3,6 +3,8 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from '
 import { basename, isAbsolute, join, relative, resolve } from 'node:path';
 import { LANGUAGES, type LanguageId, type WorkspaceLayout } from './languages.js';
 import { findManifest } from './manifest.js';
+import { readGateResult } from './command-log.js';
+import { messages, type MessageLanguage, type Messages } from './messages.js';
 import { UsageError } from './providers.js';
 import { parseSpecManifest } from './spec-manifest.js';
 
@@ -14,10 +16,10 @@ export interface WorkspaceContext {
   managedFiles: Set<string>;
 }
 
-export function resolveWorkspace(rootDir: string): WorkspaceContext {
+export function resolveWorkspace(rootDir: string, t: Messages = messages()): WorkspaceContext {
   const root = resolve(rootDir);
   if (!existsSync(root) || !statSync(root).isDirectory()) {
-    throw new Error(`Target directory does not exist: ${root}`);
+    throw new Error(t.targetDirMissing(root));
   }
   const installed = findManifest(root);
   if (installed) {
@@ -38,7 +40,16 @@ export function resolveWorkspace(rootDir: string): WorkspaceContext {
       return { root, language, layout, workspaceDir: dir, managedFiles: new Set() };
     }
   }
-  throw new UsageError('No Myspec workspace found (expected my-specs/ or minhas-specs/). Run `myspec install` first.');
+  throw new UsageError(t.noWorkspace());
+}
+
+/** Parses the spec manifest, reporting a malformed file in the language of the command. */
+export function readSpecManifest(path: string, absolute: string, t: Messages = messages()) {
+  try {
+    return parseSpecManifest(readFileSync(absolute, 'utf8'));
+  } catch (error) {
+    throw new Error(t.invalidSpecManifest(path, error instanceof Error ? error.message : String(error)));
+  }
 }
 
 export function isMyspecManagedFile(ws: WorkspaceContext, repoRelPath: string): boolean {
@@ -46,9 +57,11 @@ export function isMyspecManagedFile(ws: WorkspaceContext, repoRelPath: string): 
   return file === ws.layout.dir || file.startsWith(`${ws.layout.dir}/`) || ws.managedFiles.has(file);
 }
 
-export function gitExec(root: string, args: string[]): string | undefined {
+export function gitExec(root: string, args: string[], keepLeadingSpace = false): string | undefined {
   try {
-    return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const output = execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    // `git status --porcelain` lines start with a status column that may be a space; trimming it would cut the path.
+    return keepLeadingSpace ? output.trimEnd() : output.trim();
   } catch {
     return undefined;
   }
@@ -88,7 +101,7 @@ export function gitChangedFiles(root: string, baseCommit?: string | null): strin
 }
 
 export function gitDirtyFilesOutsideWorkspace(ws: WorkspaceContext): string[] {
-  const status = gitExec(ws.root, ['status', '--porcelain', '--untracked-files=all']);
+  const status = gitExec(ws.root, ['status', '--porcelain', '--untracked-files=all'], true);
   if (!status) return [];
   const dirty: string[] = [];
   for (const line of status.split(/\r?\n/)) {
@@ -109,8 +122,9 @@ function localDate(): string {
 }
 
 /**
- * Extracts repository-relative file paths declared in `file-tree.md` / `arvore-de-arquivos.md`,
- * supporting both indented ASCII trees (`├──`, `└──`) and bulleted paths under File Responsibilities.
+ * Extracts repository-relative file paths declared in `file-tree.md` / `arvore-de-arquivos.md`. The fenced tree
+ * (`├──`, `└──`) is the source; bulleted paths under File Responsibilities are read only when the file has no tree,
+ * because they often abbreviate paths and would count the same file twice.
  * When `repoRoot` is supplied, strips a leading `<repo-name>/` wrapper folder if it matches the
  * repository folder name and is not itself a subdirectory inside `repoRoot`.
  */
@@ -167,8 +181,10 @@ export function parseFileTreePaths(content: string, repoRoot?: string): string[]
     }
   }
 
-  // 2. Parse bulleted backtick paths under ## File Responsibilities / ## Responsabilidades dos arquivos.
-  const respMatch = content.match(/^##\s+(?:File Responsibilities|Responsabilidades dos arquivos)\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/m);
+  // 2. Without a tree, fall back to bulleted backtick paths under ## File Responsibilities / ## Responsabilidades dos arquivos.
+  const respMatch = paths.size === 0
+    ? content.match(/^##\s+(?:File Responsibilities|Responsabilidades dos arquivos)\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/m)
+    : null;
   if (respMatch) {
     for (const match of respMatch[1].matchAll(/^-\s+`([^`]+)`/gm)) {
       const candidate = stripRootWrapper(match[1].trim());
@@ -179,6 +195,24 @@ export function parseFileTreePaths(content: string, repoRoot?: string): string[]
   }
 
   return [...paths].sort();
+}
+
+/**
+ * Accepts a full spec folder name or only its number (`39`, `039`) and returns the folder name.
+ * A number must match exactly one folder `NNN-<name>` under the specs directory.
+ */
+export function resolveSpecId(ws: WorkspaceContext, input: string, t: Messages = messages()): string {
+  if (!/^\d{1,3}$/.test(input)) return input;
+  const prefix = `${input.padStart(3, '0')}-`;
+  const specsDir = join(ws.workspaceDir, ws.layout.specs);
+  const matches = existsSync(specsDir)
+    ? readdirSync(specsDir).filter((name) => name.startsWith(prefix) && statSync(join(specsDir, name)).isDirectory()).sort()
+    : [];
+  if (matches.length === 1) return matches[0];
+  if (matches.length === 0) {
+    throw new UsageError(t.specNumberNotFound(prefix.slice(0, -1), `${ws.layout.dir}/${ws.layout.specs}`));
+  }
+  throw new UsageError(t.specNumberAmbiguous(prefix.slice(0, -1), matches));
 }
 
 /** Extracts stable BDD acceptance criterion IDs (`AC-01`, `CA-01`, etc.) from `spec.md`. */
@@ -195,6 +229,7 @@ export interface ApproveOptions {
   targetPath: string;
   context?: string;
   approvedBy?: string;
+  language?: MessageLanguage;
 }
 
 export interface ApproveResult {
@@ -207,7 +242,8 @@ export interface ApproveResult {
 }
 
 export function approveContractDocument(options: ApproveOptions): ApproveResult {
-  const ws = resolveWorkspace(options.root);
+  const t = messages(options.language);
+  const ws = resolveWorkspace(options.root, t);
   const allowedFolders = [ws.layout.metrics, ws.layout.codingPractices, ws.layout.generalGuidelines];
 
   // Accept repo-relative or workspace-relative paths.
@@ -218,19 +254,17 @@ export function approveContractDocument(options: ApproveOptions): ApproveResult 
   ];
   const absolute = candidates.find((p) => existsSync(p) && statSync(p).isFile());
   if (!absolute) {
-    throw new UsageError(`Contract document not found: ${options.targetPath}`);
+    throw new UsageError(t.documentNotFound(options.targetPath));
   }
 
   const relFromRoot = normalizeRepoPath(relative(ws.root, absolute));
   const relFromWorkspace = normalizeRepoPath(relative(ws.workspaceDir, absolute));
   if (relFromWorkspace.startsWith('..') || isAbsolute(relFromWorkspace)) {
-    throw new UsageError(`Document must live inside ${ws.layout.dir}/: ${relFromRoot}`);
+    throw new UsageError(t.documentOutsideWorkspace(ws.layout.dir, relFromRoot));
   }
   const topFolder = relFromWorkspace.split('/')[0];
   if (!allowedFolders.includes(topFolder) || !relFromWorkspace.endsWith('.md')) {
-    throw new UsageError(
-      `Only Markdown documents under ${allowedFolders.map((f) => `${ws.layout.dir}/${f}/`).join(', ')} can be approved.`,
-    );
+    throw new UsageError(t.onlyContractDocuments(allowedFolders.map((f) => `${ws.layout.dir}/${f}/`)));
   }
 
   let approvedBy = options.approvedBy?.trim();
@@ -238,7 +272,7 @@ export function approveContractDocument(options: ApproveOptions): ApproveResult 
     const name = gitExec(ws.root, ['config', 'user.name']);
     const email = gitExec(ws.root, ['config', 'user.email']);
     if (!name || !email) {
-      throw new UsageError('git user.name and user.email are required, or pass --by "Name <email>".');
+      throw new UsageError(t.gitIdentityRequired());
     }
     approvedBy = `${name} <${email}>`;
   }
@@ -255,7 +289,7 @@ export function approveContractDocument(options: ApproveOptions): ApproveResult 
 
   const statusMatch = content.match(new RegExp(`^(${escapeRegExp(labels.proposed)}|${escapeRegExp(labels.approved)})$`, 'm'));
   if (!statusMatch) {
-    throw new Error(`Could not find "${labels.proposed}" or "${labels.approved}" in ${relFromRoot}.`);
+    throw new Error(t.statusLabelMissing(labels.proposed, labels.approved, relFromRoot));
   }
   const previousStatus = statusMatch[1];
   const newStatus = labels.approved;
@@ -291,11 +325,11 @@ export function approveContractDocument(options: ApproveOptions): ApproveResult 
   return { path: relFromRoot, approvedBy, approvedOn, context, previousStatus, newStatus };
 }
 
-function resolveSpecManifestFile(ws: WorkspaceContext): { path: string; absolute: string } {
+function resolveSpecManifestFile(ws: WorkspaceContext, t: Messages): { path: string; absolute: string } {
   const path = `${ws.layout.dir}/${ws.layout.specs}/${ws.layout.specManifest.fileName}`;
   const absolute = join(ws.root, path);
   if (!existsSync(absolute)) {
-    throw new UsageError(`Spec manifest not found at ${path}. Run ${LANGUAGES[ws.language].setupSkill} to initialize it.`);
+    throw new UsageError(t.specManifestNotFound(path, LANGUAGES[ws.language].setupSkill));
   }
   return { path, absolute };
 }
@@ -308,37 +342,39 @@ export interface ActivateResult {
   alreadyActive: boolean;
 }
 
-export function activateSpec(rootDir: string, specId: string): ActivateResult {
-  const ws = resolveWorkspace(rootDir);
+export function activateSpec(rootDir: string, specInput: string, language?: MessageLanguage): ActivateResult {
+  const t = messages(language);
+  const ws = resolveWorkspace(rootDir, t);
+  const specId = resolveSpecId(ws, specInput, t);
   if (!specId || /[/\\]/.test(specId) || specId === '.' || specId === '..') {
-    throw new UsageError(`Invalid spec ID "${specId}".`);
+    throw new UsageError(t.invalidSpecId(specId));
   }
   const specFile = join(ws.workspaceDir, ws.layout.specs, specId, 'spec.md');
   if (!existsSync(specFile)) {
-    throw new UsageError(`Spec not found: ${ws.layout.dir}/${ws.layout.specs}/${specId}/spec.md`);
+    throw new UsageError(t.specNotFound(`${ws.layout.dir}/${ws.layout.specs}/${specId}/spec.md`));
   }
 
-  const manifestFile = resolveSpecManifestFile(ws);
-  const parsed = parseSpecManifest(readFileSync(manifestFile.absolute, 'utf8'));
+  const manifestFile = resolveSpecManifestFile(ws, t);
+  const parsed = readSpecManifest(manifestFile.path, manifestFile.absolute, t);
   const { data, format, entries } = parsed;
   const entry = entries.find((item) => item[format.id] === specId);
   if (!entry) {
     throw new UsageError(
-      `Spec "${specId}" is not registered in ${manifestFile.path}. Register it with ${LANGUAGES[ws.language].setupSkill} or ${LANGUAGES[ws.language].prescribeSkill}.`,
+      `${t.specNotRegistered(specId, manifestFile.path)} ${t.registerWith(LANGUAGES[ws.language].setupSkill, LANGUAGES[ws.language].prescribeSkill)}`,
     );
   }
 
-  const [proposed, active, finished] = format.statuses;
+  const [proposed, active, finished, discarded] = format.statuses;
   const currentStatus = entry[format.status] as string;
-  if (currentStatus === finished) {
-    throw new UsageError(`Spec "${specId}" is already ${finished} and immutable. Create a new spec instead.`);
+  if (currentStatus === finished || currentStatus === discarded) {
+    throw new UsageError(t.specImmutable(specId, currentStatus));
   }
 
   const head = gitHead(ws.root) ?? null;
   const alreadyActive = currentStatus === active;
   if (!alreadyActive) {
     if (currentStatus !== proposed) {
-      throw new Error(`Unexpected status "${currentStatus}" for spec "${specId}".`);
+      throw new Error(t.unexpectedStatus(currentStatus, specId));
     }
     entry[format.status] = active;
     entry[format.completionInspection] = null;
@@ -362,6 +398,7 @@ export interface FinishOptions {
   specId: string;
   inspection?: string;
   force?: boolean;
+  language?: MessageLanguage;
 }
 
 export interface FinishResult {
@@ -372,6 +409,8 @@ export interface FinishResult {
   verdict: string;
   status: string;
   baselineVerified: boolean;
+  /** Gate result the finish relied on. */
+  gateResultPath: string;
 }
 
 export function listSpecInspections(ws: WorkspaceContext, specId: string): { sequence: string; path: string; absolute: string }[] {
@@ -417,50 +456,48 @@ export function parseInspectionSummary(content: string): { verdict?: string; pas
 }
 
 export function finishSpec(options: FinishOptions): FinishResult {
-  const ws = resolveWorkspace(options.root);
-  const { specId } = options;
+  const t = messages(options.language);
+  const ws = resolveWorkspace(options.root, t);
+  const specId = resolveSpecId(ws, options.specId, t);
   if (!specId || /[/\\]/.test(specId) || specId === '.' || specId === '..') {
-    throw new UsageError(`Invalid spec ID "${specId}".`);
+    throw new UsageError(t.invalidSpecId(specId));
   }
 
-  const manifestFile = resolveSpecManifestFile(ws);
-  const parsed = parseSpecManifest(readFileSync(manifestFile.absolute, 'utf8'));
+  const manifestFile = resolveSpecManifestFile(ws, t);
+  const parsed = readSpecManifest(manifestFile.path, manifestFile.absolute, t);
   const { data, format, entries } = parsed;
   const entry = entries.find((item) => item[format.id] === specId);
   if (!entry) {
-    throw new UsageError(`Spec "${specId}" is not registered in ${manifestFile.path}.`);
+    throw new UsageError(t.specNotRegistered(specId, manifestFile.path));
   }
 
-  const [, active, finished] = format.statuses;
+  const [, active, finished, discarded] = format.statuses;
   const currentStatus = entry[format.status] as string;
   if (currentStatus === finished) {
-    throw new UsageError(
-      `Spec "${specId}" is already ${finished} (completion inspection: ${entry[format.completionInspection]}).`,
-    );
+    throw new UsageError(t.alreadyFinished(specId, finished, String(entry[format.completionInspection])));
+  }
+  if (currentStatus === discarded) {
+    throw new UsageError(t.discardedCannotFinish(specId, discarded));
   }
   if (currentStatus !== active) {
-    throw new UsageError(`Spec "${specId}" is "${currentStatus}"; only an "${active}" spec can be finished.`);
+    throw new UsageError(t.onlyActiveCanFinish(specId, currentStatus, active));
   }
 
   const inspections = listSpecInspections(ws, specId);
   if (inspections.length === 0) {
-    throw new UsageError(`No inspections found for spec "${specId}". Run inspect before finishing.`);
+    throw new UsageError(t.noInspections(specId));
   }
   const latest = inspections.at(-1)!;
   if (options.inspection && options.inspection !== latest.sequence) {
-    throw new UsageError(
-      `Inspection ${options.inspection} is not the latest inspection for "${specId}" (latest is ${latest.sequence}).`,
-    );
+    throw new UsageError(t.notLatestInspection(options.inspection, specId, latest.sequence));
   }
 
   const summary = parseInspectionSummary(readFileSync(latest.absolute, 'utf8'));
   if (!summary.verdict) {
-    throw new Error(`Could not determine verdict from ${latest.path}.`);
+    throw new Error(t.verdictUnknown(latest.path));
   }
   if (!summary.passing) {
-    throw new UsageError(
-      `Cannot finish "${specId}": latest inspection ${latest.sequence} has verdict "${summary.verdict}".`,
-    );
+    throw new UsageError(t.verdictNotPassing(specId, latest.sequence, summary.verdict));
   }
 
   let baselineVerified = false;
@@ -472,13 +509,34 @@ export function finishSpec(options: FinishOptions): FinishResult {
     const dirty = gitDirtyFilesOutsideWorkspace(ws);
     if ((!matchesHead || dirty.length > 0) && !options.force) {
       const reasons: string[] = [];
-      if (!matchesHead) reasons.push(`HEAD (${head.slice(0, 10)}) differs from inspected baseline (${summary.baselineCommit})`);
-      if (dirty.length > 0) reasons.push(`uncommitted changes exist outside ${ws.layout.dir}/ (${dirty.join(', ')})`);
-      throw new UsageError(
-        `Cannot finish "${specId}": ${reasons.join('; ')}. Re-run inspect on the current baseline (or pass --force to override).`,
-      );
+      if (!matchesHead) reasons.push(t.headDiffers(head.slice(0, 10), summary.baselineCommit));
+      if (dirty.length > 0) reasons.push(t.dirtyOutsideWorkspace(ws.layout.dir, dirty));
+      throw new UsageError(t.baselineChanged(specId, reasons));
     }
     baselineVerified = matchesHead && dirty.length === 0;
+  }
+
+  // The verdict is written by whoever inspected; the gate result is not. Finishing needs the latest spec gate to be a
+  // full, passing run on the current commit with nothing uncommitted. `--force` waives only the commit conditions.
+  const gate = readGateResult(ws.root, specId);
+  const record = gate.record;
+  if (!record) {
+    throw new UsageError(t.gateResultMissing(specId));
+  }
+  if (record.skipRun || record.skipBuild) {
+    throw new UsageError(t.gateResultPartial(specId, gate.path));
+  }
+  if (!record.passed) {
+    throw new UsageError(t.gateResultBlocked(specId, gate.path, record.blockingFailures ?? []));
+  }
+  if (!options.force) {
+    const sameCommit = (head ?? '').toLowerCase() === (record.headCommit ?? '').toLowerCase();
+    if (!sameCommit) {
+      throw new UsageError(t.gateResultStale(specId, record.headCommit?.slice(0, 10) ?? '—', head?.slice(0, 10) ?? '—'));
+    }
+    if ((record.dirtyFiles ?? []).length > 0) {
+      throw new UsageError(t.gateResultDirty(specId, record.dirtyFiles));
+    }
   }
 
   entry[format.status] = finished;
@@ -493,6 +551,7 @@ export function finishSpec(options: FinishOptions): FinishResult {
     verdict: summary.verdict,
     status: finished,
     baselineVerified,
+    gateResultPath: gate.path,
   };
 }
 

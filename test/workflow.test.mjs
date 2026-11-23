@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, it } from 'node:test';
@@ -129,11 +129,38 @@ describe('deterministic lifecycle CLI commands', () => {
     writeFileSync(join(dir, 'src.txt'), 'edited after inspection\n');
     assert.equal(run('finish', '-d', dir, '001-cancel').status, 2);
 
-    // Restore clean code; now finish succeeds and verifies git baseline.
+    // Restore clean code. A passing inspection is not enough: the latest spec gate must also pass.
     git(dir, 'checkout', '--', 'src.txt');
+    const noGate = run('finish', '-d', dir, '001-cancel');
+    assert.equal(noGate.status, 2);
+    assert.match(noGate.stderr, /No gate result for "001-cancel"/);
+
+    // A partial gate (--skip-run) does not count.
+    runOk('gate', '-d', dir, '001-cancel', '--skip-run');
+    assert.match(run('finish', '-d', dir, '001-cancel').stderr, /ran with --skip-run or --skip-build/);
+
+    // A blocked gate refuses the finish even with an "Approved" inspection verdict.
+    const blockingVerify = { kind: 'verify', commands: ['node -e "process.exit(1)"'] };
+    writeFileSync(
+      join(dir, 'my-specs/general-guidelines/broken-build.md'),
+      `# Broken build\n\nStatus: Approved\n\n\`\`\`json myspec\n${JSON.stringify(blockingVerify)}\n\`\`\`\n`,
+    );
+    assert.equal(run('gate', '-d', dir, '001-cancel').status, 1);
+    assert.match(run('finish', '-d', dir, '001-cancel').stderr, /latest gate is blocked .*Verification command failed/);
+    rmSync(join(dir, 'my-specs/general-guidelines/broken-build.md'));
+
+    // A gate run on uncommitted code does not count, even after the code is restored.
+    writeFileSync(join(dir, 'src.txt'), 'edited after inspection\n');
+    runOk('gate', '-d', dir, '001-cancel');
+    git(dir, 'checkout', '--', 'src.txt');
+    assert.match(run('finish', '-d', dir, '001-cancel').stderr, /ran with uncommitted changes \(src\.txt\)/);
+
+    // A full, passing gate on the inspected commit lets the finish through.
+    runOk('gate', '-d', dir, '001-cancel');
     const fin = runOk('finish', '-d', dir, '001-cancel');
     assert.match(fin.stdout, /Finished spec 001-cancel \(finished\)/);
     assert.match(fin.stdout, /Baseline: verified/);
+    assert.match(fin.stdout, /Gate: passed on this commit \(\.myspec\/logs\/001-cancel\/gate-result\.json\)/);
 
     // Finished spec cannot be re-activated or re-finished.
     assert.equal(run('activate', '-d', dir, '001-cancel').status, 2);
@@ -183,9 +210,377 @@ describe('deterministic lifecycle CLI commands', () => {
     assert.equal(run('check-patch', '-d', dir).status, 1);
     assert.equal(run('check-patch', '-d', dir, '--limit', '6').status, 0);
   });
+
+  it('resolves a spec by its number in activate, gate, and finish, and refuses unknown or ambiguous numbers', () => {
+    const dir = gitRepo();
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'en');
+    for (const id of ['007-cancel', '012-refund-a', '012-refund-b']) {
+      mkdirSync(join(dir, 'my-specs/specs', id, 'inspections'), { recursive: true });
+      writeFileSync(join(dir, 'my-specs/specs', id, 'spec.md'), `# ${id}\n\n### AC-01: Works\n`);
+    }
+    writeFileSync(
+      join(dir, 'my-specs/specs/manifest.json'),
+      JSON.stringify({
+        version: 1,
+        specs: ['007-cancel', '012-refund-a', '012-refund-b'].map((id) => ({ id, status: 'proposed', completionInspection: null })),
+      }, null, 2),
+    );
+    git(dir, 'add', '.');
+    git(dir, 'commit', '-q', '-m', 'specs');
+
+    // Both "7" and "007" resolve to the single folder 007-cancel.
+    assert.match(runOk('activate', '-d', dir, '7').stdout, /Spec 007-cancel: activated/);
+    assert.match(runOk('activate', '-d', dir, '007').stdout, /Spec 007-cancel: already active/);
+    const report = JSON.parse(runOk('gate', '-d', dir, '007', '--skip-run', '--json').stdout);
+    assert.equal(report.specId, '007-cancel');
+    assert.equal(report.specStatus, 'active');
+
+    const head = git(dir, 'rev-parse', 'HEAD');
+    writeFileSync(
+      join(dir, 'my-specs/specs/007-cancel/inspections/inspection-001.md'),
+      `# Inspection 001\n\n\`2026-11-23\` · Baseline \`${head.slice(0, 10)}\` · Previous \`None\`\n\n## Verdict\n\n**Ready** — All verified.\n`,
+    );
+    runOk('gate', '-d', dir, '7');
+    assert.match(runOk('finish', '-d', dir, '7').stdout, /Finished spec 007-cancel/);
+
+    // Unknown and ambiguous numbers are refused without touching the manifest.
+    const before = read(dir, 'my-specs/specs/manifest.json');
+    for (const command of ['activate', 'finish', 'gate']) {
+      const unknown = run(command, '-d', dir, '99');
+      assert.equal(unknown.status, 2);
+      assert.match(unknown.stderr, /No spec folder numbered 099/);
+      const ambiguous = run(command, '-d', dir, '12');
+      assert.equal(ambiguous.status, 2);
+      assert.match(ambiguous.stderr, /012-refund-a, 012-refund-b/);
+    }
+    assert.equal(read(dir, 'my-specs/specs/manifest.json'), before);
+
+    // The full folder name keeps working.
+    assert.match(runOk('activate', '-d', dir, '012-refund-a').stdout, /Spec 012-refund-a: activated/);
+  });
+
+  it('accepts the Portuguese command names aprovar, ativar, portao, portão, and finalizar', () => {
+    const dir = gitRepo();
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'pt');
+    mkdirSync(join(dir, 'minhas-specs/orientacoes-gerais'), { recursive: true });
+    writeFileSync(
+      join(dir, 'minhas-specs/orientacoes-gerais/regra.md'),
+      '# Regra\n\nStatus: Proposto\n\n## Histórico de aprovação\n\n- Nenhuma aprovação registrada.\n',
+    );
+    mkdirSync(join(dir, 'minhas-specs/specs/001-cancelar/inspecoes'), { recursive: true });
+    writeFileSync(join(dir, 'minhas-specs/specs/001-cancelar/spec.md'), '# Cancelar\n\n### CA-01: Cancela\n');
+    writeFileSync(
+      join(dir, 'minhas-specs/specs/manifesto.json'),
+      JSON.stringify({ versao: 1, especificacoes: [{ identificador: '001-cancelar', situacao: 'proposta', inspecaoDeConclusao: null }] }, null, 2),
+    );
+    git(dir, 'add', '.');
+    git(dir, 'commit', '-q', '-m', 'workspace');
+
+    const approved = runOk('aprovar', '-d', dir, 'orientacoes-gerais/regra.md', '-c', 'Aprovada').stdout;
+    assert.match(approved, /^Aprovado minhas-specs\/orientacoes-gerais\/regra\.md \(Status: Proposto -> Status: Aprovado\)$/m);
+    assert.match(approved, /^ {2}Aprovado por: Ada Lovelace <ada@example\.com>$/m);
+    git(dir, 'commit', '-q', '-am', 'aprovada');
+
+    const activated = runOk('ativar', '-d', dir, '1').stdout;
+    assert.match(activated, /^Spec 001-cancelar: ativada \(ativa\)$/m);
+    assert.match(activated, /^ {2}Manifesto: minhas-specs\/specs\/manifesto\.json$/m);
+    assert.match(runOk('ativar', '-d', dir, '001').stdout, /^Spec 001-cancelar: já estava ativa$/m);
+
+    // The report is in Portuguese; JSON keys and status codes stay the same for scripts.
+    const report = runOk('portao', '-d', dir, '1', '--skip-run').stdout;
+    assert.match(report, /^# Portão Myspec: 001-cancelar$/m);
+    assert.match(report, /^- Resultado: \*\*APROVADO\*\*$/m);
+    assert.match(report, /^- Situação da spec: `ativa`$/m);
+    // Without a verification contract the line is left out of the report.
+    assert.doesNotMatch(report, /Comandos de verificação/);
+    const json = JSON.parse(runOk('portão', '-d', dir, '1', '--skip-run', '--json').stdout);
+    assert.equal(json.specId, '001-cancelar');
+    assert.equal(json.buildAndTest.status, 'not_configured');
+
+    // Errors and usage messages follow the language of the command name.
+    const unknown = run('finalizar', '-d', dir, '99');
+    assert.equal(unknown.status, 2);
+    assert.match(unknown.stderr, /Nenhuma pasta de spec com o número 099/);
+    assert.match(run('ativar', '-d', dir).stderr, /Uso: myspec ativar <spec>/);
+    assert.match(run('activate', '-d', dir, '99').stderr, /No spec folder numbered 099/);
+
+    const head = git(dir, 'rev-parse', 'HEAD');
+    writeFileSync(
+      join(dir, 'minhas-specs/specs/001-cancelar/inspecoes/inspecao-001.md'),
+      `# Inspeção 001\n\n\`2026-11-23\` · Base \`${head.slice(0, 10)}\` · Anterior \`Nenhuma\`\n\n## Veredito\n\n**Apta** — Tudo verificado.\n`,
+    );
+    // The latest portao ran with --skip-run, so it does not count for the finish.
+    assert.match(run('finalizar', '-d', dir, '1').stderr, /rodou com --skip-run ou --skip-build .*Rode o `myspec portao 001-cancelar` completo/);
+    runOk('portao', '-d', dir, '1');
+    const finished = runOk('FINALIZAR', '-d', dir, '1').stdout;
+    assert.match(finished, /^Spec 001-cancelar finalizada \(finalizada\)$/m);
+    assert.match(finished, /^ {2}Inspeção: minhas-specs\/specs\/001-cancelar\/inspecoes\/inspecao-001\.md \(Apta\)$/m);
+    assert.match(finished, /^ {2}Portão: aprovado neste commit \(\.myspec\/logs\/001-cancelar\/gate-result\.json\)$/m);
+    assert.match(finished, /^ {2}Código: conferido contra o commit atual, sem alterações pendentes$/m);
+    assert.match(run('finalizar', '-d', dir, '1').stderr, /já está finalizada \(inspeção de conclusão: 001\)/);
+  });
+
+  it('accepts discarded specs as final, refuses lifecycle commands on them, and translates them on language switch', () => {
+    const dir = gitRepo();
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'en');
+    const discardedSpec = '# Dropped\n\nStatus: Discarded\n\n### AC-01: Never built\n';
+    for (const id of ['001-dropped', '002-next']) mkdirSync(join(dir, 'my-specs/specs', id), { recursive: true });
+    writeFileSync(join(dir, 'my-specs/specs/001-dropped/spec.md'), discardedSpec);
+    writeFileSync(join(dir, 'my-specs/specs/001-dropped/file-tree.md'), '# Tree\n\n```text\nsrc/\n└── Dropped.cs  # add\n```\n');
+    writeFileSync(join(dir, 'my-specs/specs/002-next/spec.md'), '# Next\n\n### AC-01: Works\n');
+    writeFileSync(
+      join(dir, 'my-specs/specs/manifest.json'),
+      JSON.stringify({
+        version: 1,
+        specs: [
+          { id: '001-dropped', status: 'discarded', completionInspection: null },
+          { id: '002-next', status: 'proposed', completionInspection: null },
+        ],
+      }, null, 2),
+    );
+
+    // The manifest stays valid: other specs keep their lifecycle.
+    runOk('activate', '-d', dir, '002-next');
+
+    // Lifecycle commands refuse the discarded spec and leave it untouched.
+    assert.equal(run('activate', '-d', dir, '001-dropped').status, 2);
+    assert.equal(run('finish', '-d', dir, '001-dropped').status, 2);
+    assert.equal(run('gate', '-d', dir, '001-dropped', '--skip-run').status, 2);
+    const manifest = JSON.parse(read(dir, 'my-specs/specs/manifest.json'));
+    assert.deepEqual(manifest.specs[0], { id: '001-dropped', status: 'discarded', completionInspection: null });
+
+    // A discarded spec's tree never blocks a patch.
+    mkdirSync(join(dir, 'src'), { recursive: true });
+    writeFileSync(join(dir, 'src/Dropped.cs'), 'x');
+    assert.equal(JSON.parse(runOk('check-patch', '-d', dir, '--json').stdout).eligible, true);
+
+    // A discarded completion inspection must stay null.
+    manifest.specs[0].completionInspection = '001';
+    writeFileSync(join(dir, 'my-specs/specs/manifest.json'), JSON.stringify(manifest, null, 2));
+    assert.equal(run('activate', '-d', dir, '002-next').status === 0, false);
+    manifest.specs[0].completionInspection = null;
+    writeFileSync(join(dir, 'my-specs/specs/manifest.json'), JSON.stringify(manifest, null, 2));
+
+    // Language switch translates the status and keeps the discarded spec as a historical record.
+    runOk('install', '-d', dir, '-l', 'pt');
+    const ptManifest = JSON.parse(read(dir, 'minhas-specs/specs/manifesto.json'));
+    assert.equal(ptManifest.especificacoes[0].situacao, 'descartada');
+    assert.equal(ptManifest.especificacoes[0].inspecaoDeConclusao, null);
+    assert.equal(read(dir, 'minhas-specs/specs/001-dropped/spec.md'), discardedSpec);
+  });
 });
 
 describe('structured metric parsers and myspec gate', () => {
+  it('reads planned files from the tree only and compares them only for an active spec with baseCommit', () => {
+    const dir = gitRepo();
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'pt');
+    // The tree has full paths; the responsibilities abbreviate them, as many projects do.
+    const tree = [
+      '# Árvore de arquivos da implementação',
+      '',
+      '## Árvore',
+      '',
+      '```text',
+      'App.Core/',
+      '├── Modelos/Linha.cs        # modificar',
+      '└── Validadores/LinhaValidador.cs  # modificar',
+      '```',
+      '',
+      '## Responsabilidades dos arquivos',
+      '',
+      '- `Core/Modelos/Linha.cs`: dois campos novos.',
+      '- `Core/Validadores/LinhaValidador.cs`: as regras dos campos.',
+      '',
+    ].join('\n');
+    assert.deepEqual(parseFileTreePaths(tree), ['App.Core/Modelos/Linha.cs', 'App.Core/Validadores/LinhaValidador.cs']);
+    // Without a tree block, the responsibilities are still the fallback.
+    assert.deepEqual(parseFileTreePaths('## Responsabilidades dos arquivos\n\n- `src/A.cs`: a.\n'), ['src/A.cs']);
+
+    for (const id of ['081-finalizada', '082-ativa-antiga', '083-ativa']) {
+      mkdirSync(join(dir, 'minhas-specs/specs', id), { recursive: true });
+      writeFileSync(join(dir, 'minhas-specs/specs', id, 'spec.md'), `# ${id}\n\n### CA-01: Funciona\n`);
+      writeFileSync(join(dir, 'minhas-specs/specs', id, 'arvore-de-arquivos.md'), tree);
+    }
+    writeFileSync(
+      join(dir, 'minhas-specs/specs/manifesto.json'),
+      JSON.stringify({
+        versao: 1,
+        especificacoes: [
+          { identificador: '081-finalizada', situacao: 'finalizada', inspecaoDeConclusao: '001' },
+          { identificador: '082-ativa-antiga', situacao: 'ativa', inspecaoDeConclusao: null },
+          { identificador: '083-ativa', situacao: 'proposta', inspecaoDeConclusao: null },
+        ],
+      }, null, 2),
+    );
+    git(dir, 'add', '.');
+    git(dir, 'commit', '-q', '-m', 'base');
+    runOk('ativar', '-d', dir, '83');
+    // Unrelated uncommitted work in the working tree, like another session's.
+    writeFileSync(join(dir, 'outro-trabalho.md'), 'x');
+    mkdirSync(join(dir, 'App.Core/Modelos'), { recursive: true });
+    writeFileSync(join(dir, 'App.Core/Modelos/Linha.cs'), 'class Linha {}');
+
+    // Finished spec: no comparison with today's working tree, and no attention item for it.
+    const finished = JSON.parse(runOk('portao', '-d', dir, '81', '--skip-run', '--json').stdout);
+    assert.equal(finished.fileTreeDrift, undefined);
+    assert.equal(finished.fileTreeDriftSkipped.planned, 2);
+    assert.match(finished.fileTreeDriftSkipped.reason, /a spec está `finalizada`/);
+    assert.deepEqual(finished.attentionItems, []);
+    assert.match(runOk('portao', '-d', dir, '81', '--skip-run').stdout, /^- Comparação não feita: a spec está `finalizada`/m);
+
+    // Active spec activated before baseCommit existed: not compared, and the report asks for it.
+    const legacy = JSON.parse(runOk('portao', '-d', dir, '82', '--skip-run', '--json').stdout);
+    assert.equal(legacy.fileTreeDrift, undefined);
+    assert.match(legacy.attentionItems.join('\n'), /não tem commitBase/);
+
+    // Active spec with baseCommit: compared with the changes since then.
+    const active = JSON.parse(runOk('portao', '-d', dir, '83', '--skip-run', '--json').stdout);
+    assert.deepEqual(active.fileTreeDrift.planned, ['App.Core/Modelos/Linha.cs', 'App.Core/Validadores/LinhaValidador.cs']);
+    assert.deepEqual(active.fileTreeDrift.unplanned, ['outro-trabalho.md']);
+    assert.deepEqual(active.fileTreeDrift.untouched, ['App.Core/Validadores/LinhaValidador.cs']);
+  });
+
+  it('writes command output to ignored per-spec logs, so output above 1 MB does not fail a command', () => {
+    const dir = gitRepo();
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'pt');
+    const specDir = join(dir, 'minhas-specs/specs/004-relatorio');
+    mkdirSync(specDir, { recursive: true });
+    writeFileSync(join(specDir, 'spec.md'), '# Relatório\n\n### CA-01: Gera\n');
+    writeFileSync(
+      join(dir, 'minhas-specs/specs/manifesto.json'),
+      JSON.stringify({ versao: 1, especificacoes: [{ identificador: '004-relatorio', situacao: 'proposta', inspecaoDeConclusao: null }] }, null, 2),
+    );
+    // A verification command that prints 3 MB, three times the old in-memory limit.
+    const verify = { kind: 'verify', commands: ['node -e "process.stdout.write(\'x\'.repeat(3 * 1024 * 1024))"'] };
+    mkdirSync(join(dir, 'minhas-specs/orientacoes-gerais'), { recursive: true });
+    writeFileSync(
+      join(dir, 'minhas-specs/orientacoes-gerais/comandos.md'),
+      `# Comandos\n\nStatus: Aprovado\n\n\`\`\`json myspec\n${JSON.stringify(verify)}\n\`\`\`\n`,
+    );
+    git(dir, 'add', '.');
+    git(dir, 'commit', '-q', '-m', 'base');
+
+    const passing = JSON.parse(runOk('portao', '-d', dir, '4', '--json').stdout);
+    assert.equal(passing.buildAndTest.status, 'ok');
+    assert.equal(passing.logDir, '.myspec/logs/004-relatorio');
+    assert.equal(passing.buildAndTest.logPath, '.myspec/logs/004-relatorio/comandos.log');
+    const log = read(dir, '.myspec/logs/004-relatorio/comandos.log');
+    assert.ok(log.length > 3 * 1024 * 1024);
+    assert.match(log, /^# command: node -e/m);
+    assert.match(log, /^# exit: 0$/m);
+    // The logs never show up as changes in the repository.
+    assert.equal(git(dir, 'status', '--porcelain'), '');
+
+    // A failing metric command: the report points to its log and shows the last lines.
+    const metric = { kind: 'metric', command: 'node -e "console.log(\'linha antes da falha\'); process.exit(3)"', format: 'json', resultPaths: ['saida.json'], gates: [{ metric: 'x', op: '=', threshold: 0, scope: 'both', enforcement: 'blocking' }] };
+    mkdirSync(join(dir, 'minhas-specs/metricas'), { recursive: true });
+    writeFileSync(
+      join(dir, 'minhas-specs/metricas/quebra.md'),
+      `# Quebra\n\nStatus: Aprovado\n\n\`\`\`json myspec\n${JSON.stringify(metric)}\n\`\`\`\n`,
+    );
+    const failing = run('portao', '-d', dir, '--project');
+    assert.equal(failing.status, 1);
+    assert.match(failing.stdout, /^- Comandos de verificação: `ok` \(minhas-specs\/orientacoes-gerais\/comandos\.md\)$/m);
+    assert.match(failing.stdout, /^- Logs dos comandos: `\.myspec\/logs\/projeto`$/m);
+    assert.match(failing.stdout, /o comando de medição falhou .*Log: \.myspec\/logs\/projeto\/quebra\.log/);
+    assert.match(failing.stdout, /^## Saída dos comandos que falharam$/m);
+    assert.match(failing.stdout, /linha antes da falha\n\n# exit: 3/);
+    // Project logs live apart from spec logs, and a --skip-run run executes nothing and keeps the previous logs.
+    assert.equal(existsSync(join(dir, '.myspec/logs/projeto/comandos.log')), true);
+    runOk('portao', '-d', dir, '4', '--skip-run');
+    assert.equal(existsSync(join(dir, '.myspec/logs/004-relatorio/comandos.log')), true);
+
+    // A new run of the same spec starts its folder clean.
+    writeFileSync(join(dir, '.myspec/logs/004-relatorio/antigo.log'), 'stale');
+    run('portao', '-d', dir, '4');
+    assert.equal(existsSync(join(dir, '.myspec/logs/004-relatorio/antigo.log')), false);
+  });
+
+  it('applies changed-code gates only to a spec and project gates only to --project', () => {
+    const dir = gitRepo();
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'en');
+    mkdirSync(join(dir, 'src'), { recursive: true });
+    writeFileSync(join(dir, 'src/Hot.cs'), 'class Hot {}\n');
+    mkdirSync(join(dir, 'my-specs/specs/001-hot'), { recursive: true });
+    writeFileSync(join(dir, 'my-specs/specs/001-hot/spec.md'), '# Hot\n\n### AC-01: Works\n');
+    writeFileSync(join(dir, 'my-specs/specs/001-hot/file-tree.md'), '# Tree\n\n```text\nsrc/\n└── Hot.cs  # modify\n```\n');
+    writeFileSync(
+      join(dir, 'my-specs/specs/manifest.json'),
+      JSON.stringify({ version: 1, specs: [{ id: '001-hot', status: 'proposed', completionInspection: null }] }, null, 2),
+    );
+    // One uncovered method with complexity 10: CRAP = 10² × 1³ + 10 = 110.
+    mkdirSync(join(dir, 'reports'), { recursive: true });
+    writeFileSync(join(dir, 'reports/coverage.cobertura.xml'), `<coverage><packages><package><classes>
+  <class name="Hot" filename="src/Hot.cs"><methods><method name="Run" signature="()" complexity="10">
+    <lines><line number="1" hits="0" /></lines></method></methods>
+    <lines><line number="1" hits="0" /></lines></class>
+</classes></package></packages></coverage>`);
+    mkdirSync(join(dir, 'my-specs/metrics'), { recursive: true });
+    const block = {
+      kind: 'metric',
+      format: 'cobertura',
+      resultPaths: ['reports/*.xml'],
+      gates: [
+        { metric: 'crap.max', label: 'CRAP of changed code', op: '<=', threshold: 30, scope: 'changed', enforcement: 'blocking' },
+        { metric: 'crap.max', label: 'CRAP of the project', op: '<=', threshold: 30, scope: 'project', enforcement: 'attention' },
+      ],
+    };
+    writeFileSync(
+      join(dir, 'my-specs/metrics/crap.md'),
+      `# CRAP\n\nStatus: Approved\n\n\`\`\`json myspec\n${JSON.stringify(block, null, 2)}\n\`\`\`\n`,
+    );
+    git(dir, 'add', '.');
+    git(dir, 'commit', '-q', '-m', 'base');
+
+    const project = JSON.parse(run('gate', '-d', dir, '--project', '--skip-run', '--json').stdout);
+    assert.equal(project.passed, true);
+    assert.deepEqual(project.metrics[0].gates.map((g) => [g.gateLabel, g.status]), [['CRAP of the project', 'attention']]);
+
+    runOk('activate', '-d', dir, '1');
+    writeFileSync(join(dir, 'src/Hot.cs'), 'class Hot { void Run() {} }\n');
+    const spec = run('gate', '-d', dir, '1', '--skip-run', '--json');
+    assert.equal(spec.status, 1);
+    const specReport = JSON.parse(spec.stdout);
+    assert.equal(specReport.passed, false);
+    assert.deepEqual(specReport.metrics[0].gates.map((g) => [g.gateLabel, g.status]), [['CRAP of changed code', 'fail']]);
+  });
+
+  it('merges Cobertura reports of the same code line by line instead of adding them up', () => {
+    // One Coverlet report per test project: both list the same class, each with only its own hits.
+    const report = (hitsLine1, hitsLine2) => `<?xml version="1.0"?>
+<coverage><packages><package name="App"><classes>
+  <class name="App.Order" filename="src/Order.cs" line-rate="0">
+    <methods>
+      <method name="Cancel" signature="()" complexity="4" line-rate="0">
+        <lines>
+          <line number="10" hits="${hitsLine1}" branch="true" condition-coverage="${hitsLine1 ? 50 : 0}% (${hitsLine1 ? 1 : 0}/2)" />
+          <line number="11" hits="${hitsLine2}" branch="false" />
+        </lines>
+      </method>
+    </methods>
+    <lines>
+      <line number="10" hits="${hitsLine1}" branch="true" condition-coverage="${hitsLine1 ? 50 : 0}% (${hitsLine1 ? 1 : 0}/2)" />
+      <line number="11" hits="${hitsLine2}" branch="false" />
+    </lines>
+  </class>
+</classes></package></packages></coverage>`;
+
+    const merged = parseCoberturaXml([report(3, 0), report(0, 5)], ['src/Order.cs']);
+    assert.equal(merged.project.linesTotal, 2);
+    assert.equal(merged.project.linesCovered, 2);
+    assert.equal(merged.project.lineCoveragePct, 100);
+    assert.equal(merged.project.branchesTotal, 2);
+    assert.equal(merged.project.branchesCovered, 1);
+    assert.equal(merged.project.methods.length, 1);
+    assert.equal(merged.project.methods[0].crapScore, 4);
+    assert.equal(merged.changed.linesCovered, 2);
+
+    // A report whose tests never reach the class does not lower the coverage of the other.
+    const withEmptyReport = parseCoberturaXml([report(3, 5), report(0, 0)]);
+    assert.equal(withEmptyReport.project.lineCoveragePct, 100);
+    assert.deepEqual(parseCoberturaXml(report(3, 0)).project.linesCovered, 1);
+  });
+
   it('parses Cobertura XML, SARIF, TRX, Stryker JSON, and generic JSON accurately', () => {
     const cobertura = `<?xml version="1.0"?>
 <coverage>
