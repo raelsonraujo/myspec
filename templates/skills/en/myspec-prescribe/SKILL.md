@@ -11,8 +11,9 @@ Turn a change request into a compact, testable contract for implementation and Q
 
 1. Read every Markdown file under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat applicable `Status: Approved` documents as mandatory; surface conflicts with higher-priority instructions.
 2. Read `my-specs/specs/manifest.json` before creating or revising specs. If missing or inconsistent, reconcile it via `{{skill:myspec-setup}}` first.
-3. Never revise a `finished` spec, its tree, inspections, or completion entry. Any change that can impact a finished spec—even a bugfix or behavior-preserving refactor—requires a new numbered spec.
+3. Never revise a `finished` or `discarded` spec, its tree, inspections, or completion entry. Any change that can impact a finished spec—even a bugfix or behavior-preserving refactor—requires a new numbered spec; resuming the subject of a discarded spec also requires a new spec.
 4. For every newly saved spec, append `{"id":"<folder>","status":"proposed","completionInspection":null}` to `manifest.json` in the same task (re-reading before writing and preserving all other entries/fields). Revising a `proposed` or `active` spec preserves its status.
+5. Discard a `proposed` spec only when the developer explicitly decides it will not be implemented: change only that entry to `"status":"discarded"` with `completionInspection: null`, and keep the folder and `spec.md`. An `active` spec is not discarded; the developer first decides what to do with the started implementation.
 
 ## As-Is Specs
 
@@ -20,7 +21,7 @@ Write every `proposed` or `active` spec as a standalone, as-is description of th
 - Describe only current required behavior. Remove obsolete context, scope, assumptions, and criteria when revising, and never leave comparisons ("previously", "now", "instead of", "changed from") in the body.
 - Keep stable AC IDs when revising: rewrite surviving ACs as-is, drop obsolete ones without renumbering or reusing their IDs.
 - Put context on earlier revisions or another spec changed by this one only in an optional closing `## Revision History` (date, what changed, concrete reason, folder ID). Omit it unless needed; the body must stand alone without it.
-- Finished specs are frozen and never rewritten.
+- Finished and discarded specs are frozen and never rewritten.
 
 ## Workflow
 

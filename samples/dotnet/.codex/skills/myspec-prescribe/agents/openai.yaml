@@ -1,4 +1,0 @@
-interface:
-  display_name: "Myspec Prescribe"
-  short_description: "Define focused, testable implementation specs"
-  default_prompt: "Use $myspec-prescribe to turn this change request into a focused specification."

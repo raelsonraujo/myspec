@@ -18,6 +18,7 @@ export function parseSpecManifest(content: string) {
   if (data[format.version] !== 1 || !Array.isArray(rawEntries)) throw new Error('Invalid spec manifest');
   const ids = new Set<string>();
   const finished = new Set<string>();
+  const discarded = new Set<string>();
   const entries = rawEntries.map((raw) => {
     const entry = object(raw);
     const id = entry[format.id];
@@ -37,9 +38,11 @@ export function parseSpecManifest(content: string) {
     ) throw new Error('Invalid spec manifest entry');
     ids.add(id);
     if (status === format.statuses[2]) finished.add(id);
+    if (status === format.statuses[3]) discarded.add(id);
     return entry;
   });
-  return { data, format, entries, finished };
+  // Finished and discarded specs are both final, historical baselines.
+  return { data, format, entries, finished, discarded };
 }
 
 /** Changes representation only; order, identifiers, completion sequences and custom fields retain their values. */

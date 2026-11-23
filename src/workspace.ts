@@ -149,7 +149,8 @@ function relabelDocuments(root: string, language: LanguageId, source: WorkspaceL
   if (lifecyclePaths.length > 0) {
     try {
       if (lifecyclePaths.length !== 1) throw new Error('Conflicting spec manifests');
-      finishedSpecs = parseSpecManifest(readFileSync(join(root, lifecyclePaths[0]), 'utf8')).finished;
+      const { finished, discarded } = parseSpecManifest(readFileSync(join(root, lifecyclePaths[0]), 'utf8'));
+      finishedSpecs = new Set([...finished, ...discarded]);
     } catch {
       // Unknown completion states must not allow migration to rewrite a historical baseline.
       preserveAllSpecs = true;

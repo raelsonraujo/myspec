@@ -23,7 +23,3 @@
 ## Decisões estruturais
 
 - <Limite, dependência ou padrão importante refletido por esta árvore.>
-
-## Decisões em aberto
-
-- <Decisão que exige entrada do desenvolvedor antes da implementação, ou `Nenhum`.>

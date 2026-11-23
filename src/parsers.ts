@@ -98,42 +98,128 @@ function summarizeCobertura(
   };
 }
 
-function parseLineStats(xmlFragment: string): {
+interface LineHit {
+  hits: number;
+  branchesCovered: number;
+  branchesTotal: number;
+}
+
+interface ParsedCoberturaMethod {
+  methodName: string;
+  complexity: number;
+  lineRate?: number;
+  lines: Map<string, LineHit>;
+}
+
+interface ParsedCoberturaClass {
+  className: string;
+  fileName: string;
+  lines: Map<string, LineHit>;
+  methods: Map<string, ParsedCoberturaMethod>;
+}
+
+/** Reads `<line>` elements keyed by line number, so the same line from several reports is counted once. */
+function parseLines(xmlFragment: string): Map<string, LineHit> {
+  const lines = new Map<string, LineHit>();
+  let position = 0;
+  for (const match of xmlFragment.matchAll(/<line\b([^>]*)\/?>/gi)) {
+    const attrs = match[1];
+    const key = xmlAttr(attrs, 'number') ?? `#${position}`;
+    position += 1;
+    const hit: LineHit = { hits: Number(xmlAttr(attrs, 'hits') ?? '0'), branchesCovered: 0, branchesTotal: 0 };
+    const frac = xmlAttr(attrs, 'condition-coverage')?.match(/\((\d+)\/(\d+)\)/);
+    if (frac) {
+      hit.branchesCovered = Number(frac[1]);
+      hit.branchesTotal = Number(frac[2]);
+    }
+    mergeLine(lines, key, hit);
+  }
+  return lines;
+}
+
+/** A line is covered when any report covered it; its branch coverage is the best any report reached. */
+function mergeLine(lines: Map<string, LineHit>, key: string, hit: LineHit): void {
+  const existing = lines.get(key);
+  if (!existing) {
+    lines.set(key, { ...hit });
+    return;
+  }
+  existing.hits = Math.max(existing.hits, hit.hits);
+  existing.branchesTotal = Math.max(existing.branchesTotal, hit.branchesTotal);
+  existing.branchesCovered = Math.min(existing.branchesTotal, Math.max(existing.branchesCovered, hit.branchesCovered));
+}
+
+function lineStats(lines: Map<string, LineHit>): {
   linesTotal: number;
   linesCovered: number;
   branchesTotal: number;
   branchesCovered: number;
 } {
-  let linesTotal = 0;
   let linesCovered = 0;
   let branchesTotal = 0;
   let branchesCovered = 0;
-
-  for (const match of xmlFragment.matchAll(/<line\b([^>]*)\/?>/gi)) {
-    const attrs = match[1];
-    const hits = Number(xmlAttr(attrs, 'hits') ?? '0');
-    linesTotal += 1;
-    if (hits > 0) linesCovered += 1;
-
-    const cond = xmlAttr(attrs, 'condition-coverage');
-    if (cond) {
-      const frac = cond.match(/\((\d+)\/(\d+)\)/);
-      if (frac) {
-        branchesCovered += Number(frac[1]);
-        branchesTotal += Number(frac[2]);
-      }
-    }
+  for (const line of lines.values()) {
+    if (line.hits > 0) linesCovered += 1;
+    branchesTotal += line.branchesTotal;
+    branchesCovered += line.branchesCovered;
   }
-
-  return { linesTotal, linesCovered, branchesTotal, branchesCovered };
+  return { linesTotal: lines.size, linesCovered, branchesTotal, branchesCovered };
 }
 
 /**
- * Parses a merged Cobertura XML report (e.g., Coverlet + ReportGenerator) and computes
- * line/branch coverage, cyclomatic complexity, CRAP score, and method/class executable lines.
+ * Collects the classes of one or more Cobertura reports. Coverlet writes one report per test project, each with the
+ * same production classes and only its own hits, so classes, methods, and lines are merged instead of added up.
+ */
+function collectCoberturaClasses(xmls: string[]): ParsedCoberturaClass[] {
+  const classes = new Map<string, ParsedCoberturaClass>();
+  for (const xml of xmls) {
+    for (const classMatch of xml.matchAll(/<class\b([^>]*)>([\s\S]*?)<\/class>/gi)) {
+      const classAttrs = classMatch[1];
+      const classBody = classMatch[2];
+      const className = xmlAttr(classAttrs, 'name') ?? 'Unknown';
+      const fileName = normalizeRepoPath(xmlAttr(classAttrs, 'filename') ?? '');
+      const key = `${fileName}::${className}`;
+      let parsed = classes.get(key);
+      if (!parsed) {
+        parsed = { className, fileName, lines: new Map(), methods: new Map() };
+        classes.set(key, parsed);
+      }
+
+      // Class-level <lines> block (avoids double counting method lines when both exist).
+      const linesBlock = classBody.match(/<lines\b[^>]*>([\s\S]*?)<\/lines>\s*$/i) ??
+        classBody.match(/<\/methods>\s*<lines\b[^>]*>([\s\S]*?)<\/lines>/i);
+      for (const [lineKey, hit] of parseLines(linesBlock ? linesBlock[1] : classBody)) mergeLine(parsed.lines, lineKey, hit);
+
+      const methodsBlock = classBody.match(/<methods\b[^>]*>([\s\S]*?)<\/methods>/i);
+      if (!methodsBlock) continue;
+      for (const methodMatch of methodsBlock[1].matchAll(/<method\b([^>]*)>([\s\S]*?)<\/method>/gi)) {
+        const mAttrs = methodMatch[1];
+        const methodName = xmlAttr(mAttrs, 'name') ?? 'Unknown';
+        const methodKey = `${methodName}${xmlAttr(mAttrs, 'signature') ?? ''}`;
+        const complexity = Number(xmlAttr(mAttrs, 'complexity') ?? '1');
+        const lineRateAttr = xmlAttr(mAttrs, 'line-rate');
+        const lineRate = lineRateAttr !== undefined ? Number(lineRateAttr) : undefined;
+        let method = parsed.methods.get(methodKey);
+        if (!method) {
+          method = { methodName, complexity, lineRate, lines: new Map() };
+          parsed.methods.set(methodKey, method);
+        } else {
+          method.complexity = Math.max(method.complexity, complexity);
+          if (lineRate !== undefined) method.lineRate = Math.max(method.lineRate ?? 0, lineRate);
+        }
+        for (const [lineKey, hit] of parseLines(methodMatch[2])) mergeLine(method.lines, lineKey, hit);
+      }
+    }
+  }
+  return [...classes.values()];
+}
+
+/**
+ * Parses one Cobertura XML report, or several reports of the same code (e.g., one Coverlet report per test project),
+ * and computes line/branch coverage, cyclomatic complexity, CRAP score, and method/class executable lines.
  */
 export function parseCoberturaXml(
-  xml: string,
+  xml: string | string[],
   changedFiles?: string[],
   summaryJson?: string,
 ): CoberturaReport {
@@ -174,17 +260,10 @@ export function parseCoberturaXml(
   const classTotalsByName = new Map<string, CoberturaClassMetric>();
   const changedClassTotalsByName = new Map<string, CoberturaClassMetric>();
 
-  for (const classMatch of xml.matchAll(/<class\b([^>]*)>([\s\S]*?)<\/class>/gi)) {
-    const classAttrs = classMatch[1];
-    const classBody = classMatch[2];
-    const className = xmlAttr(classAttrs, 'name') ?? 'Unknown';
-    const fileName = normalizeRepoPath(xmlAttr(classAttrs, 'filename') ?? '');
+  for (const parsedClass of collectCoberturaClasses(Array.isArray(xml) ? xml : [xml])) {
+    const { className, fileName } = parsedClass;
     const inChanged = matchesChangedFiles(fileName, changedFiles);
-
-    // Class-level <lines> block (avoids double counting method lines when both exist).
-    const linesBlock = classBody.match(/<lines\b[^>]*>([\s\S]*?)<\/lines>\s*$/i) ??
-      classBody.match(/<\/methods>\s*<lines\b[^>]*>([\s\S]*?)<\/lines>/i);
-    const classStats = parseLineStats(linesBlock ? linesBlock[1] : classBody);
+    const classStats = lineStats(parsedClass.lines);
 
     projLinesCov += classStats.linesCovered;
     projLinesTot += classStats.linesTotal;
@@ -223,35 +302,26 @@ export function parseCoberturaXml(
       }
     }
 
-    const methodsBlock = classBody.match(/<methods\b[^>]*>([\s\S]*?)<\/methods>/i);
-    if (methodsBlock) {
-      for (const methodMatch of methodsBlock[1].matchAll(/<method\b([^>]*)>([\s\S]*?)<\/method>/gi)) {
-        const mAttrs = methodMatch[1];
-        const mBody = methodMatch[2];
-        const methodName = xmlAttr(mAttrs, 'name') ?? 'Unknown';
-        const complexity = Number(xmlAttr(mAttrs, 'complexity') ?? '1');
-        const mStats = parseLineStats(mBody);
-        const lineRateAttr = xmlAttr(mAttrs, 'line-rate');
-        const lineCoverage = mStats.linesTotal > 0
-          ? mStats.linesCovered / mStats.linesTotal
-          : lineRateAttr !== undefined
-            ? Number(lineRateAttr)
-            : 1;
-        const crapScore = complexity * complexity * Math.pow(1 - lineCoverage, 3) + complexity;
+    for (const method of parsedClass.methods.values()) {
+      const { methodName, complexity } = method;
+      const mStats = lineStats(method.lines);
+      const lineCoverage = mStats.linesTotal > 0
+        ? mStats.linesCovered / mStats.linesTotal
+        : method.lineRate ?? 1;
+      const crapScore = complexity * complexity * Math.pow(1 - lineCoverage, 3) + complexity;
 
-        const metric: CoberturaMethodMetric = {
-          className,
-          fileName,
-          methodName,
-          complexity,
-          linesTotal: mStats.linesTotal,
-          linesCovered: mStats.linesCovered,
-          lineCoverage,
-          crapScore,
-        };
-        allMethods.push(metric);
-        if (inChanged) changedMethods.push(metric);
-      }
+      const metric: CoberturaMethodMetric = {
+        className,
+        fileName,
+        methodName,
+        complexity,
+        linesTotal: mStats.linesTotal,
+        linesCovered: mStats.linesCovered,
+        lineCoverage,
+        crapScore,
+      };
+      allMethods.push(metric);
+      if (inChanged) changedMethods.push(metric);
     }
   }
 

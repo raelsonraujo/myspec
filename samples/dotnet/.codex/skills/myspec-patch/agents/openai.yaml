@@ -1,4 +1,0 @@
-interface:
-  display_name: "Myspec Patch"
-  short_description: "Make small, bounded code fixes"
-  default_prompt: "Use $myspec-patch to make this small code adjustment while preserving Myspec guidance."

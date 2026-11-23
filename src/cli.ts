@@ -8,6 +8,7 @@ import { install, type InstallResult } from './install.js';
 import { LANGUAGES, parseLanguage, type LanguageId } from './languages.js';
 import { activateSpec, approveContractDocument, checkPatch, finishSpec } from './lifecycle.js';
 import { readManifest } from './manifest.js';
+import { messages, type MessageLanguage } from './messages.js';
 import { parseProviders, PROVIDERS, UsageError, type ProviderId } from './providers.js';
 import { listToolingTemplates, parseTooling } from './tooling.js';
 
@@ -25,9 +26,9 @@ const help = () => `myspec ${VERSION} - spec-driven development skills and deter
 Usage:
   myspec install -p <provider> -l <language> [-t <tooling>] [-d <dir>]
   myspec approve <path> [-c <context>] [--by <identity>] [-d <dir>]
-  myspec activate <spec-id> [-d <dir>]
-  myspec gate [<spec-id>] [--project] [--skip-run] [--skip-build] [--json] [-d <dir>]
-  myspec finish <spec-id> [--inspection <NNN>] [--force] [-d <dir>]
+  myspec activate <spec> [-d <dir>]
+  myspec gate [<spec>] [--project] [--skip-run] [--skip-build] [--json] [-d <dir>]
+  myspec finish <spec> [--inspection <NNN>] [--force] [-d <dir>]
   myspec check-patch [--limit <N>] [--base <ref>] [--json] [-d <dir>]
 
 Commands:
@@ -38,6 +39,9 @@ Commands:
   finish             Finalize an active spec after verifying its latest passing inspection and git baseline
   check-patch        Check whether current git changes are eligible for patching (limit & finished specs)
 
+  Portuguese names: aprovar (approve), ativar (activate), portao or portão (gate), finalizar (finish);
+  called by these names, the commands answer in Portuguese.
+
 Install options:
   -p, --provider     codex, claude, gemini, or a comma-separated list (codex,claude,gemini). Repeatable.
   -l, --language     Skill language: en (eng) or pt
@@ -47,10 +51,11 @@ Install options:
   -v, --version      Show the version
 
 Workflow options:
+  <spec>             Spec folder name (001-cancel-order) or just its number (1 or 001)
   -c, --context      Approval context message for \`approve\`
   --by               Override approver identity ("Name <email>") for \`approve\`
   --inspection       Expected latest 3-digit inspection sequence for \`finish\`
-  --force            Bypass git baseline check in \`finish\`
+  --force            In \`finish\`, accept a different commit or uncommitted changes (the latest gate must still pass)
   --project          Evaluate project-wide metrics in \`gate\`
   --skip-run         Parse existing report files without re-running measurement commands in \`gate\`
   --skip-build       Skip build-and-test commands in \`gate\`
@@ -75,7 +80,19 @@ Examples:
   myspec gate 001-cancel-order
   myspec finish 001-cancel-order
   myspec check-patch
+  myspec ativar 1
+  myspec portao 1
+  myspec finalizar 1
 `;
+
+/** Portuguese names accepted for the workflow commands. */
+const COMMAND_ALIASES: Record<string, string> = {
+  aprovar: 'approve',
+  ativar: 'activate',
+  portao: 'gate',
+  'portão': 'gate',
+  finalizar: 'finish',
+};
 
 async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parseArgs({
@@ -105,7 +122,8 @@ async function main(argv: string[]): Promise<number> {
     console.log(VERSION);
     return 0;
   }
-  const [command, ...rest] = positionals;
+  const [typedCommand, ...rest] = positionals;
+  const command = typedCommand && (COMMAND_ALIASES[typedCommand.toLowerCase()] ?? typedCommand);
   if (values.help || !command) {
     console.log(help());
     return command || values.help ? 0 : 2;
@@ -130,43 +148,50 @@ async function main(argv: string[]): Promise<number> {
     return 0;
   }
 
+  // A Portuguese command name makes the command answer in Portuguese.
+  const language: MessageLanguage = COMMAND_ALIASES[typedCommand.toLowerCase()] ? 'pt' : 'en';
+  const t = messages(language);
+  const usage = (options: string) => new UsageError(t.usage(`myspec ${typedCommand} ${options}`));
+
   if (command === 'approve') {
-    if (rest.length !== 1) throw new UsageError('Usage: myspec approve <path> [-c <context>] [--by <identity>] [-d <dir>]');
+    if (rest.length !== 1) throw usage('<path> [-c <context>] [--by <identity>] [-d <dir>]');
     const result = approveContractDocument({
       root,
       targetPath: rest[0],
       context: values.context,
       approvedBy: values.by,
+      language,
     });
-    console.log(`Approved ${result.path} (${result.previousStatus} -> ${result.newStatus})`);
-    console.log(`  Approved by: ${result.approvedBy}`);
-    console.log(`  Approved on: ${result.approvedOn}`);
-    console.log(`  Context: ${result.context}`);
+    console.log(t.approved(result.path, result.previousStatus, result.newStatus));
+    console.log(t.approvedBy(result.approvedBy));
+    console.log(t.approvedOn(result.approvedOn));
+    console.log(t.approvalContext(result.context));
     return 0;
   }
 
   if (command === 'activate') {
-    if (rest.length !== 1) throw new UsageError('Usage: myspec activate <spec-id> [-d <dir>]');
-    const result = activateSpec(root, rest[0]);
-    const label = result.alreadyActive ? 'already active' : `activated (${result.status})`;
-    console.log(`Spec ${result.specId}: ${label}`);
-    console.log(`  Manifest: ${result.manifestPath}`);
-    if (result.baseCommit) console.log(`  Base commit: ${result.baseCommit}`);
+    if (rest.length !== 1) throw usage('<spec> [-d <dir>]');
+    const result = activateSpec(root, rest[0], language);
+    console.log(result.alreadyActive ? t.alreadyActive(result.specId) : t.activated(result.specId, result.status));
+    console.log(t.manifestLine(result.manifestPath));
+    if (result.baseCommit) console.log(t.baseCommitLine(result.baseCommit));
     return 0;
   }
 
   if (command === 'finish') {
-    if (rest.length !== 1) throw new UsageError('Usage: myspec finish <spec-id> [--inspection <NNN>] [--force] [-d <dir>]');
+    if (rest.length !== 1) throw usage('<spec> [--inspection <NNN>] [--force] [-d <dir>]');
     const result = finishSpec({
       root,
       specId: rest[0],
       inspection: values.inspection,
       force: values.force,
+      language,
     });
-    console.log(`Finished spec ${result.specId} (${result.status})`);
-    console.log(`  Inspection: ${result.inspectionPath} (${result.verdict})`);
-    console.log(`  Manifest: ${result.manifestPath}`);
-    if (result.baselineVerified) console.log('  Baseline: verified against HEAD with clean working tree');
+    console.log(t.finished(result.specId, result.status));
+    console.log(t.inspectionLine(result.inspectionPath, result.verdict));
+    console.log(t.gateVerified(result.gateResultPath));
+    console.log(t.manifestLine(result.manifestPath));
+    if (result.baselineVerified) console.log(t.baselineVerified());
     return 0;
   }
 
@@ -187,18 +212,19 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'gate') {
-    if (rest.length > 1) throw new UsageError(`Unexpected argument "${rest[1]}".`);
+    if (rest.length > 1) throw new UsageError(t.unexpectedArgument(rest[1]));
     const result = runGate({
       root,
       specId: rest[0],
       project: values.project,
       skipRun: values['skip-run'],
       skipBuild: values['skip-build'],
+      language,
     });
     if (values.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {
-      process.stdout.write(formatGateMarkdown(result));
+      process.stdout.write(formatGateMarkdown(result, language));
     }
     return result.passed ? 0 : 1;
   }

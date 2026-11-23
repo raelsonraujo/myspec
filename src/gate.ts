@@ -1,16 +1,20 @@
-import { execSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
+import { prepareCommandLogFolder, runLoggedCommand, writeGateResult, type CommandLogFolder } from './command-log.js';
 import {
   gitChangedFiles,
+  gitDirtyFilesOutsideWorkspace,
   gitHead,
   isMyspecManagedFile,
   normalizeRepoPath,
   parseFileTreePaths,
   parseSpecCriteria,
+  readSpecManifest,
+  resolveSpecId,
   resolveWorkspace,
   type WorkspaceContext,
 } from './lifecycle.js';
+import { messages, type MessageLanguage, type Messages } from './messages.js';
 import {
   parseCoberturaXml,
   parseGenericMetricsJson,
@@ -21,7 +25,6 @@ import {
   type CoberturaScopeSummary,
 } from './parsers.js';
 import { UsageError } from './providers.js';
-import { parseSpecManifest } from './spec-manifest.js';
 
 export type GateOperator = '<=' | '>=' | '=' | '<' | '>';
 export type GateScope = 'changed' | 'project' | 'both';
@@ -101,6 +104,8 @@ export interface MetricRunSummary {
   command?: string;
   commandStatus: 'ok' | 'failed' | 'skipped' | 'none';
   commandError?: string;
+  /** Repository-relative log of the measurement command, when it ran. */
+  logPath?: string;
   measuredValues: { label: string; value: string; scope: 'changed' | 'project' }[];
   gates: GateCheckResult[];
   note?: string;
@@ -122,15 +127,24 @@ export interface GateReport {
   headCommit?: string | null;
   acceptanceCriteria: string[];
   fileTreeDrift?: FileTreeDrift;
+  /** Set when the file tree exists but is not compared (spec not active, or active without baseCommit). */
+  fileTreeDriftSkipped?: { fileTreePath: string; planned: number; reason: string };
   buildAndTest: {
     status: 'ok' | 'failed' | 'skipped' | 'not_configured';
     sources: string[];
     commands: string[];
     error?: string;
+    logPath?: string;
   };
   metrics: MetricRunSummary[];
   blockingFailures: string[];
   attentionItems: string[];
+  /** Folder with the output of every command this run executed, one log per contract. */
+  logDir?: string;
+  /** Last lines of the log of each command that failed. */
+  failedOutputs: { logPath: string; tail: string }[];
+  /** Record of this spec gate that `myspec finish` checks; absent for `--project`. */
+  resultPath?: string;
   passed: boolean;
 }
 
@@ -140,6 +154,7 @@ export interface GateOptions {
   project?: boolean;
   skipRun?: boolean;
   skipBuild?: boolean;
+  language?: MessageLanguage;
 }
 
 const VALID_OPERATORS = new Set<GateOperator>(['<=', '>=', '=', '<', '>']);
@@ -151,7 +166,7 @@ const VALID_FORMATS = new Set<MetricFormat>(['cobertura', 'sarif', 'trx', 'stryk
  * Extracts and parses a fenced ```json myspec ... ``` contract block from a Markdown file.
  * Returns `undefined` when no contract block is present; throws on invalid JSON or schema.
  */
-export function extractMyspecBlock(content: string, filePath: string): Record<string, unknown> | undefined {
+export function extractMyspecBlock(content: string, filePath: string, t: Messages = messages()): Record<string, unknown> | undefined {
   const match = content.match(/^```json\s+myspec\s*\r?\n([\s\S]*?)^```\s*$/m);
   if (!match) return undefined;
   let parsed: unknown;
@@ -159,10 +174,10 @@ export function extractMyspecBlock(content: string, filePath: string): Record<st
     parsed = JSON.parse(match[1]);
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
-    throw new Error(`Invalid \`json myspec\` block in ${filePath}: ${detail}`);
+    throw new Error(t.invalidBlock(filePath, detail));
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error(`Invalid \`json myspec\` block in ${filePath}: expected a JSON object.`);
+    throw new Error(t.blockNotObject(filePath));
   }
   return parsed as Record<string, unknown>;
 }
@@ -179,7 +194,7 @@ export function resolveCommandSpec(spec: CommandSpec | undefined): string | unde
   return undefined;
 }
 
-function validateCommandSpec(value: unknown, context: string): CommandSpec {
+function validateCommandSpec(value: unknown, context: string, t: Messages): CommandSpec {
   if (typeof value === 'string' && value.trim()) return value;
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     const obj = value as { win32?: unknown; posix?: unknown };
@@ -191,47 +206,47 @@ function validateCommandSpec(value: unknown, context: string): CommandSpec {
       return { win32: obj.win32 as string | undefined, posix: obj.posix as string | undefined };
     }
   }
-  throw new Error(`Invalid command specification in ${context}. Expected a string or { win32, posix }.`);
+  throw new Error(t.invalidCommandSpec(context));
 }
 
-function validateVerifySpec(raw: Record<string, unknown>, filePath: string): VerifyContractSpec {
+function validateVerifySpec(raw: Record<string, unknown>, filePath: string, t: Messages): VerifyContractSpec {
   if (!Array.isArray(raw.commands) || raw.commands.length === 0) {
-    throw new Error(`Invalid verify contract in ${filePath}: "commands" must be a non-empty array.`);
+    throw new Error(t.verifyCommandsEmpty(filePath));
   }
-  const commands = raw.commands.map((cmd, idx) => validateCommandSpec(cmd, `${filePath} commands[${idx}]`));
+  const commands = raw.commands.map((cmd, idx) => validateCommandSpec(cmd, `${filePath} commands[${idx}]`, t));
   const workingDir = raw.workingDir === undefined ? '.' : String(raw.workingDir);
   return { kind: 'verify', workingDir, commands };
 }
 
-function validateMetricSpec(raw: Record<string, unknown>, filePath: string): MetricContractSpec {
+function validateMetricSpec(raw: Record<string, unknown>, filePath: string, t: Messages): MetricContractSpec {
   if (raw.kind !== 'metric') {
-    throw new Error(`Invalid metric contract in ${filePath}: "kind" must be "metric".`);
+    throw new Error(t.metricKindInvalid(filePath));
   }
   if (typeof raw.format !== 'string' || !VALID_FORMATS.has(raw.format as MetricFormat)) {
-    throw new Error(`Invalid metric contract in ${filePath}: "format" must be one of ${[...VALID_FORMATS].join(', ')}.`);
+    throw new Error(t.metricFormatInvalid(filePath, [...VALID_FORMATS]));
   }
-  const command = raw.command === undefined ? undefined : validateCommandSpec(raw.command, `${filePath} command`);
+  const command = raw.command === undefined ? undefined : validateCommandSpec(raw.command, `${filePath} command`, t);
   const workingDir = raw.workingDir === undefined ? '.' : String(raw.workingDir);
   const resultPaths = raw.resultPaths === undefined
     ? []
     : Array.isArray(raw.resultPaths) && raw.resultPaths.every((p) => typeof p === 'string')
       ? (raw.resultPaths as string[]).map(normalizeRepoPath)
-      : (() => { throw new Error(`Invalid metric contract in ${filePath}: "resultPaths" must be a string array.`); })();
+      : (() => { throw new Error(t.metricFieldNotStringArray(filePath, 'resultPaths')); })();
 
   const report = raw.report === undefined
     ? undefined
     : Array.isArray(raw.report) && raw.report.every((r) => typeof r === 'string')
       ? (raw.report as string[])
-      : (() => { throw new Error(`Invalid metric contract in ${filePath}: "report" must be a string array.`); })();
+      : (() => { throw new Error(t.metricFieldNotStringArray(filePath, 'report')); })();
 
   const gates: MetricGateSpec[] = [];
   if (raw.gates !== undefined) {
     if (!Array.isArray(raw.gates)) {
-      throw new Error(`Invalid metric contract in ${filePath}: "gates" must be an array.`);
+      throw new Error(t.metricGatesNotArray(filePath));
     }
     for (const [idx, item] of raw.gates.entries()) {
       if (!item || typeof item !== 'object' || Array.isArray(item)) {
-        throw new Error(`Invalid gate[${idx}] in ${filePath}: expected an object.`);
+        throw new Error(t.gateNotObject(idx, filePath));
       }
       const g = item as Record<string, unknown>;
       if (
@@ -241,10 +256,10 @@ function validateMetricSpec(raw: Record<string, unknown>, filePath: string): Met
         typeof g.scope !== 'string' || !VALID_SCOPES.has(g.scope as GateScope) ||
         typeof g.enforcement !== 'string' || !VALID_ENFORCEMENTS.has(g.enforcement as GateEnforcement)
       ) {
-        throw new Error(`Invalid gate[${idx}] in ${filePath}: requires metric, op, threshold, scope, and enforcement.`);
+        throw new Error(t.gateFieldsMissing(idx, filePath));
       }
       if (g.above !== undefined && (typeof g.above !== 'number' || Number.isNaN(g.above))) {
-        throw new Error(`Invalid gate[${idx}] in ${filePath}: "above" must be a number.`);
+        throw new Error(t.gateAboveInvalid(idx, filePath));
       }
       gates.push({
         metric: g.metric,
@@ -271,18 +286,18 @@ function validateMetricSpec(raw: Record<string, unknown>, filePath: string): Met
   };
 }
 
-export function parseMetricDocument(filePath: string, content: string): ParsedMetricContract {
+export function parseMetricDocument(filePath: string, content: string, t: Messages = messages()): ParsedMetricContract {
   const titleMatch = content.match(/^#\s+(.+)$/m);
   const title = titleMatch ? titleMatch[1].trim() : filePath;
   const id = filePath.split('/').at(-1)!.replace(/\.md$/i, '');
   const approved = /^Status:\s*(Approved|Aprovado)\s*$/m.test(content);
 
   try {
-    const raw = extractMyspecBlock(content, filePath);
+    const raw = extractMyspecBlock(content, filePath, t);
     if (!raw) {
       return { id, title, path: filePath, approved, workingDir: '.' };
     }
-    const spec = validateMetricSpec(raw, filePath);
+    const spec = validateMetricSpec(raw, filePath, t);
     return {
       id,
       title,
@@ -308,7 +323,10 @@ export function parseMetricDocument(filePath: string, content: string): ParsedMe
  * Discovers all approved `general-guidelines/*.md` (or `orientacoes-gerais/*.md`) documents
  * declaring a structured `json myspec` block with `"kind": "verify"`.
  */
-export function discoverVerifyContracts(ws: WorkspaceContext): { contracts: ParsedVerifyContract[]; errors: string[] } {
+export function discoverVerifyContracts(
+  ws: WorkspaceContext,
+  t: Messages = messages(),
+): { contracts: ParsedVerifyContract[]; errors: string[] } {
   const dir = join(ws.workspaceDir, ws.layout.generalGuidelines);
   if (!existsSync(dir)) return { contracts: [], errors: [] };
 
@@ -322,7 +340,7 @@ export function discoverVerifyContracts(ws: WorkspaceContext): { contracts: Pars
 
     let raw: Record<string, unknown> | undefined;
     try {
-      raw = extractMyspecBlock(content, rel);
+      raw = extractMyspecBlock(content, rel, t);
     } catch (error) {
       errors.push(error instanceof Error ? error.message : String(error));
       continue;
@@ -330,12 +348,12 @@ export function discoverVerifyContracts(ws: WorkspaceContext): { contracts: Pars
     if (!raw || raw.kind !== 'verify') continue;
 
     try {
-      const spec = validateVerifySpec(raw, rel);
+      const spec = validateVerifySpec(raw, rel, t);
       const resolvedCommands = spec.commands
         .map((c) => resolveCommandSpec(c))
         .filter((c): c is string => Boolean(c));
       if (resolvedCommands.some((c) => c.includes('<solution>'))) {
-        errors.push(`${rel} still contains an unresolved <solution> placeholder.`);
+        errors.push(t.unresolvedSolution(rel));
         continue;
       }
       contracts.push({ path: rel, workingDir: spec.workingDir ?? '.', commands: resolvedCommands });
@@ -475,6 +493,7 @@ function buildGateCheck(
   measuredDisplay: string,
   scopeUsed: 'changed' | 'project' | 'none',
   mode: 'spec' | 'project',
+  t: Messages,
 ): GateCheckResult {
   const gateLabel = gate.label ?? gate.metric;
   const threshold = formatThreshold(gate);
@@ -484,13 +503,13 @@ function buildGateCheck(
       metricId: contract.id,
       metricTitle: contract.title,
       gateLabel,
-      measuredValue: `${measuredDisplay} (project)`,
+      measuredValue: `${measuredDisplay} ${t.projectSuffix()}`,
       numericValue,
       scopeUsed,
       threshold,
       enforcement: gate.enforcement,
       status: 'insufficient_evidence',
-      detail: 'Changed-code gate cannot be proved from project-wide measurement alone.',
+      detail: t.changedGateFromProject(),
     };
   }
   if (numericValue === undefined) {
@@ -503,7 +522,7 @@ function buildGateCheck(
       threshold,
       enforcement: gate.enforcement,
       status: 'insufficient_evidence',
-      detail: `Metric key "${gate.metric}" produced no numeric value.`,
+      detail: t.metricKeyNoValue(gate.metric),
     };
   }
   const ok = compareValue(numericValue, gate.op, gate.threshold);
@@ -511,7 +530,7 @@ function buildGateCheck(
     metricId: contract.id,
     metricTitle: contract.title,
     gateLabel,
-    measuredValue: scopeUsed === 'project' && mode === 'spec' ? `${measuredDisplay} (project)` : measuredDisplay,
+    measuredValue: scopeUsed === 'project' && mode === 'spec' ? `${measuredDisplay} ${t.projectSuffix()}` : measuredDisplay,
     numericValue,
     scopeUsed,
     threshold,
@@ -521,8 +540,10 @@ function buildGateCheck(
 }
 
 export function runGate(options: GateOptions): GateReport {
-  const ws = resolveWorkspace(options.root);
+  const t = messages(options.language);
+  const ws = resolveWorkspace(options.root, t);
   const mode: 'spec' | 'project' = options.specId && !options.project ? 'spec' : 'project';
+  const specId = mode === 'spec' && options.specId ? resolveSpecId(ws, options.specId, t) : options.specId;
   const headCommit = gitHead(ws.root) ?? null;
 
   let specStatus: string | undefined;
@@ -530,54 +551,84 @@ export function runGate(options: GateOptions): GateReport {
   let acceptanceCriteria: string[] = [];
   let fileTreeDrift: FileTreeDrift | undefined;
   let changedFiles: string[] = [];
+  let plannedFiles: string[] | undefined;
+  let fileTreeDriftSkipped: GateReport['fileTreeDriftSkipped'];
+  let isActive = false;
 
-  if (mode === 'spec' && options.specId) {
-    const specDir = join(ws.workspaceDir, ws.layout.specs, options.specId);
+  if (mode === 'spec' && specId) {
+    const specDir = join(ws.workspaceDir, ws.layout.specs, specId);
     const specFile = join(specDir, 'spec.md');
     if (!existsSync(specFile)) {
-      throw new UsageError(`Spec not found: ${ws.layout.dir}/${ws.layout.specs}/${options.specId}/spec.md`);
+      throw new UsageError(t.specNotFound(`${ws.layout.dir}/${ws.layout.specs}/${specId}/spec.md`));
     }
     acceptanceCriteria = parseSpecCriteria(readFileSync(specFile, 'utf8'));
 
     const manifestAbs = join(ws.workspaceDir, ws.layout.specs, ws.layout.specManifest.fileName);
     if (existsSync(manifestAbs)) {
-      const { format, entries } = parseSpecManifest(readFileSync(manifestAbs, 'utf8'));
-      const entry = entries.find((e) => e[format.id] === options.specId);
+      const manifestRel = `${ws.layout.dir}/${ws.layout.specs}/${ws.layout.specManifest.fileName}`;
+      const { format, entries } = readSpecManifest(manifestRel, manifestAbs, t);
+      const entry = entries.find((e) => e[format.id] === specId);
       if (entry) {
         specStatus = entry[format.status] as string;
         baseCommit = (entry[format.baseCommit] as string | null | undefined) ?? null;
+        if (specStatus === format.statuses[3]) {
+          throw new UsageError(t.discardedNoImplementation(specId, specStatus));
+        }
+        isActive = specStatus === format.statuses[1];
       }
     }
 
-    changedFiles = gitChangedFiles(ws.root, baseCommit).filter((file) => !isMyspecManagedFile(ws, file));
+    // The changes of a spec are what moved since its baseCommit. Without an active spec and its baseCommit, the
+    // working tree holds unrelated work, so the file tree is not compared with it.
+    const comparable = isActive && Boolean(baseCommit);
+    if (comparable) {
+      changedFiles = gitChangedFiles(ws.root, baseCommit).filter((file) => !isMyspecManagedFile(ws, file));
+    }
 
-    const treeRel = `${ws.layout.dir}/${ws.layout.specs}/${options.specId}/${ws.layout.fileTree}`;
+    const treeRel = `${ws.layout.dir}/${ws.layout.specs}/${specId}/${ws.layout.fileTree}`;
     const treeAbs = join(ws.root, treeRel);
     if (existsSync(treeAbs)) {
       const planned = parseFileTreePaths(readFileSync(treeAbs, 'utf8'), ws.root);
-      const plannedSet = new Set(planned);
-      const changedSet = new Set(changedFiles);
-      fileTreeDrift = {
-        fileTreePath: treeRel,
-        planned,
-        changed: changedFiles,
-        unplanned: changedFiles.filter((f) => !plannedSet.has(f)),
-        untouched: planned.filter((f) => !changedSet.has(f)),
-      };
+      if (comparable) {
+        const plannedSet = new Set(planned);
+        const changedSet = new Set(changedFiles);
+        fileTreeDrift = {
+          fileTreePath: treeRel,
+          planned,
+          changed: changedFiles,
+          unplanned: changedFiles.filter((f) => !plannedSet.has(f)),
+          untouched: planned.filter((f) => !changedSet.has(f)),
+        };
+      } else {
+        plannedFiles = planned;
+        fileTreeDriftSkipped = {
+          fileTreePath: treeRel,
+          planned: planned.length,
+          reason: isActive ? t.driftSkippedNoBase() : t.driftSkippedNotActive(specStatus ?? '—'),
+        };
+      }
     }
   }
 
   const blockingFailures: string[] = [];
   const attentionItems: string[] = [];
+  const failedOutputs: GateReport['failedOutputs'] = [];
+
+  // Command output goes to `.myspec/logs/<spec>` (or `project`), created only when a command actually runs.
+  let logFolder: CommandLogFolder | undefined;
+  const commandLogs = () =>
+    (logFolder ??= prepareCommandLogFolder(ws.root, mode === 'spec' && specId ? specId : t.logFolderProject()));
 
   if (fileTreeDrift && fileTreeDrift.unplanned.length > 0) {
     attentionItems.push(
-      `File-tree drift: ${fileTreeDrift.unplanned.length} changed file(s) not listed in ${fileTreeDrift.fileTreePath} (${fileTreeDrift.unplanned.join(', ')}).`,
+      t.treeDrift(fileTreeDrift.unplanned.length, fileTreeDrift.fileTreePath, fileTreeDrift.unplanned),
     );
   }
+  // An active spec without baseCommit cannot be inspected against its tree; a finished one simply has nothing to compare.
+  if (fileTreeDriftSkipped && isActive) attentionItems.push(fileTreeDriftSkipped.reason);
 
   // 1. Structured verify contracts from any approved general-guidelines/*.md
-  const verify = discoverVerifyContracts(ws);
+  const verify = discoverVerifyContracts(ws, t);
   for (const err of verify.errors) blockingFailures.push(err);
   const allVerifyCommands = verify.contracts.flatMap((c) => c.commands);
   const buildAndTest: GateReport['buildAndTest'] = {
@@ -595,13 +646,15 @@ export function runGate(options: GateOptions): GateReport {
   if (buildAndTest.status === 'ok') {
     outer: for (const vc of verify.contracts) {
       const cwd = resolve(ws.root, vc.workingDir);
+      const logName = basename(vc.path, '.md');
       for (const cmd of vc.commands) {
-        try {
-          execSync(cmd, { cwd, stdio: 'pipe', encoding: 'utf8' });
-        } catch (error) {
+        const run = runLoggedCommand(commandLogs(), logName, cmd, cwd, headCommit);
+        buildAndTest.logPath = run.logPath;
+        if (!run.ok) {
           buildAndTest.status = 'failed';
-          buildAndTest.error = error instanceof Error ? error.message : String(error);
-          blockingFailures.push(`Verification command failed (${vc.path}): ${cmd}`);
+          buildAndTest.error = run.tail;
+          blockingFailures.push(t.verifyCommandFailed(vc.path, cmd, run.logPath));
+          failedOutputs.push({ logPath: run.logPath, tail: run.tail });
           break outer;
         }
       }
@@ -615,10 +668,10 @@ export function runGate(options: GateOptions): GateReport {
     : [];
   const contracts = metricFiles.map((file) => {
     const rel = `${ws.layout.dir}/${ws.layout.metrics}/${file}`;
-    return parseMetricDocument(rel, readFileSync(join(metricsDir, file), 'utf8'));
+    return parseMetricDocument(rel, readFileSync(join(metricsDir, file), 'utf8'), t);
   });
 
-  const commandResults = new Map<string, { status: 'ok' | 'failed'; error?: string }>();
+  const commandResults = new Map<string, { status: 'ok' | 'failed'; error?: string; logPath: string }>();
   const coberturaCache = new Map<string, CoberturaReport>();
 
   const metricSummaries: MetricRunSummary[] = [];
@@ -633,9 +686,9 @@ export function runGate(options: GateOptions): GateReport {
         commandStatus: 'skipped',
         measuredValues: [],
         gates: [],
-        note: `Not measured: ${contract.path} is not approved.`,
+        note: t.metricNotApprovedNote(contract.path),
       });
-      attentionItems.push(`${contract.path} is not approved and was not measured.`);
+      attentionItems.push(t.metricNotApproved(contract.path));
       continue;
     }
 
@@ -655,7 +708,7 @@ export function runGate(options: GateOptions): GateReport {
     }
 
     if (!contract.spec) {
-      const note = `No \`json myspec\` contract block in ${contract.path}; add one with setup or evaluate manually.`;
+      const note = t.noContractBlock(contract.path);
       attentionItems.push(`${contract.title}: ${note}`);
       metricSummaries.push({
         id: contract.id,
@@ -671,13 +724,15 @@ export function runGate(options: GateOptions): GateReport {
     }
 
     const spec = contract.spec;
-    const specGates = spec.gates ?? [];
+    // A spec gate judges the changed code and a project gate judges the whole project: each mode applies only its own.
+    const specGates = (spec.gates ?? []).filter((gate) => (mode === 'spec' ? gate.scope !== 'project' : gate.scope !== 'changed'));
 
     let commandStatus: MetricRunSummary['commandStatus'] = 'none';
     let commandError: string | undefined;
+    let commandLogPath: string | undefined;
     if (contract.command) {
       if (contract.command.includes('<solution>')) {
-        const msg = `${contract.path} still contains an unresolved <solution> placeholder.`;
+        const msg = t.unresolvedSolution(contract.path);
         blockingFailures.push(msg);
         metricSummaries.push({
           id: contract.id,
@@ -699,22 +754,23 @@ export function runGate(options: GateOptions): GateReport {
         const key = `${contract.workingDir}::${contract.command}`;
         let cached = commandResults.get(key);
         if (!cached) {
-          try {
-            execSync(contract.command, { cwd: resolve(ws.root, contract.workingDir), stdio: 'pipe', encoding: 'utf8' });
-            cached = { status: 'ok' };
-          } catch (error) {
-            cached = { status: 'failed', error: error instanceof Error ? error.message : String(error) };
-          }
+          // A command shared by several metrics runs once; its log is named after the first metric that uses it.
+          const run = runLoggedCommand(commandLogs(), contract.id, contract.command, resolve(ws.root, contract.workingDir), headCommit);
+          cached = run.ok
+            ? { status: 'ok', logPath: run.logPath }
+            : { status: 'failed', error: run.tail, logPath: run.logPath };
+          if (!run.ok) failedOutputs.push({ logPath: run.logPath, tail: run.tail });
           commandResults.set(key, cached);
         }
         commandStatus = cached.status;
         commandError = cached.error;
+        commandLogPath = cached.logPath;
       }
     }
 
     if (commandStatus === 'failed') {
       const hasBlocking = specGates.some((g) => g.enforcement === 'blocking');
-      const msg = `${contract.title}: measurement command failed (${contract.command})`;
+      const msg = t.measurementFailed(contract.title, contract.command ?? '', commandLogPath ?? '');
       if (hasBlocking) blockingFailures.push(msg);
       else attentionItems.push(msg);
       metricSummaries.push({
@@ -725,12 +781,13 @@ export function runGate(options: GateOptions): GateReport {
         command: contract.command,
         commandStatus,
         commandError,
+        logPath: commandLogPath,
         measuredValues: [],
         gates: specGates.map((g) => ({
           metricId: contract.id,
           metricTitle: contract.title,
           gateLabel: g.label ?? g.metric,
-          measuredValue: 'Not measured (command failed)',
+          measuredValue: t.notMeasuredCommandFailed(),
           scopeUsed: 'none',
           threshold: formatThreshold(g),
           enforcement: g.enforcement,
@@ -741,7 +798,7 @@ export function runGate(options: GateOptions): GateReport {
     }
 
     if (spec.format === 'manual') {
-      const note = `Manual evaluation required for ${contract.path} (see its documented result path and budgets).`;
+      const note = t.manualEvaluation(contract.path);
       attentionItems.push(`${contract.title}: ${note}`);
       metricSummaries.push({
         id: contract.id,
@@ -750,6 +807,7 @@ export function runGate(options: GateOptions): GateReport {
         approved: true,
         command: contract.command,
         commandStatus,
+        logPath: commandLogPath,
         measuredValues: [],
         gates: [],
         note,
@@ -763,17 +821,18 @@ export function runGate(options: GateOptions): GateReport {
     let gates: GateCheckResult[] = [];
     let note: string | undefined;
 
-    const filterFiles = mode === 'spec' ? (changedFiles.length > 0 ? changedFiles : fileTreeDrift?.planned) : undefined;
+    const filterFiles = mode === 'spec' ? (changedFiles.length > 0 ? changedFiles : (fileTreeDrift?.planned ?? plannedFiles)) : undefined;
 
     if (spec.format === 'cobertura') {
-      const xmlFile = resultFiles.find((f) => f.toLowerCase().endsWith('.xml'));
+      // Every matching report is read: Coverlet writes one per test project, all covering the same production code.
+      const xmlFiles = resultFiles.filter((f) => f.toLowerCase().endsWith('.xml'));
       const summaryFile = resultFiles.find((f) => f.toLowerCase().endsWith('summary.json'));
-      if (xmlFile) {
-        const cacheKey = `${xmlFile}::${summaryFile ?? ''}::${(filterFiles ?? []).join(',')}`;
+      if (xmlFiles.length > 0) {
+        const cacheKey = `${xmlFiles.join('|')}::${summaryFile ?? ''}::${(filterFiles ?? []).join(',')}`;
         let parsed = coberturaCache.get(cacheKey);
         if (!parsed) {
           parsed = parseCoberturaXml(
-            readFileSync(xmlFile, 'utf8'),
+            xmlFiles.map((f) => readFileSync(f, 'utf8')),
             filterFiles,
             summaryFile ? readFileSync(summaryFile, 'utf8') : undefined,
           );
@@ -788,10 +847,10 @@ export function runGate(options: GateOptions): GateReport {
         }
         gates = specGates.map((gate) => {
           const val = readCoberturaKey(data, gate.metric, gate.above);
-          return buildGateCheck(contract, gate, val.numeric, val.display, scope, mode);
+          return buildGateCheck(contract, gate, val.numeric, val.display, scope, mode, t);
         });
       } else {
-        note = `No Cobertura XML found at ${resultPaths.join(', ') || '(unspecified)'}.`;
+        note = t.resultNotFound('Cobertura XML', resultPaths.join(', ') || t.unspecified());
       }
     } else if (spec.format === 'sarif') {
       const sarifs = resultFiles.filter((f) => f.toLowerCase().endsWith('.sarif'));
@@ -811,10 +870,10 @@ export function runGate(options: GateOptions): GateReport {
               : gate.metric === 'coupling.total'
                 ? data.total
                 : undefined;
-          return buildGateCheck(contract, gate, val, val !== undefined ? String(val) : 'N/A', scope, mode);
+          return buildGateCheck(contract, gate, val, val !== undefined ? String(val) : 'N/A', scope, mode, t);
         });
       } else {
-        note = `No SARIF files found at ${resultPaths.join(', ') || '(unspecified)'}.`;
+        note = t.resultNotFound('SARIF', resultPaths.join(', ') || t.unspecified());
       }
     } else if (spec.format === 'trx') {
       const trxs = resultFiles.filter((f) => f.toLowerCase().endsWith('.trx'));
@@ -832,10 +891,10 @@ export function runGate(options: GateOptions): GateReport {
               : gate.metric === 'trx.skipped'
                 ? parsed.skipped
                 : undefined;
-          return buildGateCheck(contract, gate, val, val !== undefined ? String(val) : 'N/A', 'project', mode);
+          return buildGateCheck(contract, gate, val, val !== undefined ? String(val) : 'N/A', 'project', mode, t);
         });
       } else {
-        note = `No TRX files found at ${resultPaths.join(', ') || '(unspecified)'}.`;
+        note = t.resultNotFound('TRX', resultPaths.join(', ') || t.unspecified());
       }
     } else if (spec.format === 'stryker') {
       const jsonFile = resultFiles.find((f) => f.toLowerCase().endsWith('.json'));
@@ -856,10 +915,10 @@ export function runGate(options: GateOptions): GateReport {
           const str = gate.metric === 'mutation.score'
             ? (data.scorePct !== null ? `${data.scorePct}%` : 'N/A')
             : (val !== undefined ? String(val) : 'N/A');
-          return buildGateCheck(contract, gate, val, str, scope, mode);
+          return buildGateCheck(contract, gate, val, str, scope, mode, t);
         });
       } else {
-        note = `No Stryker JSON report found at ${resultPaths.join(', ') || '(unspecified)'}.`;
+        note = t.resultNotFound('Stryker JSON', resultPaths.join(', ') || t.unspecified());
       }
     } else if (spec.format === 'json') {
       const jsonFile = resultFiles.find((f) => f.toLowerCase().endsWith('.json'));
@@ -881,10 +940,11 @@ export function runGate(options: GateOptions): GateReport {
             match ? `${match.value}${match.unit ?? ''}` : 'N/A',
             match?.scope ?? (match ? 'project' : 'none'),
             mode,
+            t,
           );
         });
       } else {
-        note = `No JSON result file found at ${resultPaths.join(', ') || '(unspecified)'}.`;
+        note = t.resultNotFound('JSON', resultPaths.join(', ') || t.unspecified());
       }
     }
 
@@ -893,9 +953,9 @@ export function runGate(options: GateOptions): GateReport {
     }
     for (const g of gates) {
       if (g.status === 'fail') {
-        blockingFailures.push(`${g.metricTitle} — ${g.gateLabel}: measured ${g.measuredValue}, required ${g.threshold}`);
+        blockingFailures.push(t.gateFailed(g.metricTitle, g.gateLabel, g.measuredValue, g.threshold));
       } else if (g.status === 'attention' || g.status === 'insufficient_evidence') {
-        attentionItems.push(`${g.metricTitle} — ${g.gateLabel}: measured ${g.measuredValue} (gate ${g.threshold}, ${g.status})`);
+        attentionItems.push(t.gateNeedsAttention(g.metricTitle, g.gateLabel, g.measuredValue, g.threshold, g.status));
       }
     }
 
@@ -906,81 +966,116 @@ export function runGate(options: GateOptions): GateReport {
       approved: true,
       command: contract.command,
       commandStatus,
+      logPath: commandLogPath,
       measuredValues,
       gates,
       note,
     });
   }
 
+  const passed = blockingFailures.length === 0;
+  // A spec gate leaves its outcome on record: `myspec finish` accepts only a full, passing run on the current commit.
+  const resultPath = mode === 'spec' && specId
+    ? writeGateResult(ws.root, {
+      specId,
+      passed,
+      headCommit,
+      dirtyFiles: gitDirtyFilesOutsideWorkspace(ws),
+      skipRun: Boolean(options.skipRun),
+      skipBuild: Boolean(options.skipBuild),
+      finishedAt: new Date().toISOString(),
+      blockingFailures,
+    })
+    : undefined;
+
   return {
     mode,
-    specId: options.specId,
+    specId,
     specStatus,
     baseCommit,
     headCommit,
     acceptanceCriteria,
     fileTreeDrift,
+    fileTreeDriftSkipped,
     buildAndTest,
     metrics: metricSummaries,
     blockingFailures,
     attentionItems,
-    passed: blockingFailures.length === 0,
+    logDir: logFolder?.path,
+    failedOutputs,
+    resultPath,
+    passed,
   };
 }
 
-export function formatGateMarkdown(report: GateReport): string {
+export function formatGateMarkdown(report: GateReport, language?: MessageLanguage): string {
+  const t = messages(language);
+  const fileList = (files: string[]) => (files.length > 0 ? files.map((f) => `\`${f}\``).join(', ') : t.none());
   const lines: string[] = [];
-  const header = report.mode === 'spec'
-    ? `# Myspec Gate: ${report.specId}`
-    : '# Myspec Gate: Project';
-  lines.push(header, '');
-  lines.push(`- Result: **${report.passed ? 'PASS' : 'BLOCKED'}**`);
-  if (report.headCommit) lines.push(`- HEAD: \`${report.headCommit.slice(0, 10)}\``);
-  if (report.baseCommit) lines.push(`- Base commit: \`${report.baseCommit.slice(0, 10)}\``);
-  if (report.specStatus) lines.push(`- Spec status: \`${report.specStatus}\``);
+  lines.push(report.mode === 'spec' ? t.reportTitleSpec(report.specId ?? '') : t.reportTitleProject(), '');
+  lines.push(t.result(report.passed));
+  if (report.headCommit) lines.push(t.headLine(report.headCommit.slice(0, 10)));
+  if (report.baseCommit) lines.push(t.baseCommitReportLine(report.baseCommit.slice(0, 10)));
+  if (report.specStatus) lines.push(t.specStatusLine(report.specStatus));
   if (report.acceptanceCriteria.length > 0) {
-    lines.push(`- Acceptance criteria IDs: ${report.acceptanceCriteria.map((id) => `\`${id}\``).join(', ')}`);
+    lines.push(t.criteriaLine(report.acceptanceCriteria.map((id) => `\`${id}\``).join(', ')));
   }
-  lines.push(
-    `- Verification commands: \`${report.buildAndTest.status}\`${report.buildAndTest.sources.length ? ` (${report.buildAndTest.sources.join(', ')})` : ''}`,
-  );
+  // Without a verification contract there is nothing to report; the JSON output still carries `not_configured`.
+  if (report.buildAndTest.status !== 'not_configured') {
+    lines.push(
+      t.verificationLine(
+        report.buildAndTest.status,
+        report.buildAndTest.sources.length ? ` (${report.buildAndTest.sources.join(', ')})` : '',
+      ),
+    );
+  }
+  if (report.logDir) lines.push(t.logsLine(report.logDir));
 
+  if (report.fileTreeDriftSkipped) {
+    lines.push('', t.driftHeading(), '');
+    lines.push(t.plannedFiles(report.fileTreeDriftSkipped.planned));
+    lines.push(`- ${report.fileTreeDriftSkipped.reason}`);
+  }
   if (report.fileTreeDrift) {
-    lines.push('', '## File-Tree Drift', '');
-    lines.push(`- Planned files: ${report.fileTreeDrift.planned.length}`);
-    lines.push(`- Changed files: ${report.fileTreeDrift.changed.length}`);
-    lines.push(
-      `- Unplanned edits: ${report.fileTreeDrift.unplanned.length > 0 ? report.fileTreeDrift.unplanned.map((f) => `\`${f}\``).join(', ') : 'None'}`,
-    );
-    lines.push(
-      `- Untouched planned files: ${report.fileTreeDrift.untouched.length > 0 ? report.fileTreeDrift.untouched.map((f) => `\`${f}\``).join(', ') : 'None'}`,
-    );
+    lines.push('', t.driftHeading(), '');
+    lines.push(t.plannedFiles(report.fileTreeDrift.planned.length));
+    lines.push(t.changedFiles(report.fileTreeDrift.changed.length));
+    lines.push(t.unplannedEdits(fileList(report.fileTreeDrift.unplanned)));
+    lines.push(t.untouchedFiles(fileList(report.fileTreeDrift.untouched)));
   }
 
   if (report.metrics.length > 0) {
-    lines.push('', '## Metrics', '', '| Metric | Value | Gate | Status |', '| --- | --- | --- | --- |');
+    lines.push('', t.metricsHeading(), '', t.metricsTableHeader(), '| --- | --- | --- | --- |');
     for (const metric of report.metrics) {
       if (metric.gates.length > 0) {
         for (const gate of metric.gates) {
-          lines.push(`| ${metric.title}: ${gate.gateLabel} | ${gate.measuredValue} | \`${gate.threshold}\` (${gate.enforcement}) | ${gate.status} |`);
+          lines.push(
+            `| ${metric.title}: ${gate.gateLabel} | ${gate.measuredValue} | \`${gate.threshold}\` (${t.statusLabel(gate.enforcement)}) | ${t.statusLabel(gate.status)} |`,
+          );
         }
       } else if (metric.measuredValues.length > 0) {
         for (const mv of metric.measuredValues) {
-          lines.push(`| ${metric.title}: ${mv.label} | ${mv.value} | — | recorded |`);
+          lines.push(`| ${metric.title}: ${mv.label} | ${mv.value} | — | ${t.statusLabel('recorded')} |`);
         }
       } else {
-        lines.push(`| ${metric.title} | ${metric.note ?? metric.commandStatus} | — | not_measured |`);
+        lines.push(`| ${metric.title} | ${metric.note ?? metric.commandStatus} | — | ${t.statusLabel('not_measured')} |`);
       }
     }
   }
 
   if (report.blockingFailures.length > 0) {
-    lines.push('', '## Blocking Failures', '');
+    lines.push('', t.blockingHeading(), '');
     for (const item of report.blockingFailures) lines.push(`- ${item}`);
   }
   if (report.attentionItems.length > 0) {
-    lines.push('', '## Attention', '');
+    lines.push('', t.attentionHeading(), '');
     for (const item of report.attentionItems) lines.push(`- ${item}`);
+  }
+  if (report.failedOutputs.length > 0) {
+    lines.push('', t.failedOutputHeading());
+    for (const failed of report.failedOutputs) {
+      lines.push('', t.tailIntro(failed.tail.split('\n').length, failed.logPath), '', '```text', failed.tail, '```');
+    }
   }
 
   return `${lines.join('\n')}\n`;

@@ -439,7 +439,7 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/README.md'), read(join(TEMPLATES, 'workspace/pt'), 'README.md'));
   });
 
-  for (const version of ['0.4.5', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.6.0', '0.6.1']) {
+  for (const version of ['0.4.5', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.6.0', '0.6.1', '0.7.1']) {
     for (const [language, workspace] of [['en', 'my-specs'], ['pt', 'minhas-specs']]) {
       it(`refreshes the ${version} ${language} workflow guidance without rewriting existing specs`, () => {
         const dir = repo();
