@@ -77,11 +77,12 @@ export function planToolingArtifacts(id: string, language: LanguageId, variables
   const englishNames = englishMeasurementNames(template, language);
   const sourceDir = join(template.dir, language);
   return (existsSync(sourceDir) ? listFiles(sourceDir) : []).map((file) => {
-    const name = file.slice(measurementDir.length + 1);
+    const path = toolingArtifactPath(file);
+    const name = path.slice(measurementDir.length + 1);
     return {
-      path: file,
+      path,
       content: renderVariables(readFileSync(join(sourceDir, file), 'utf8'), variables),
-      templateName: file.startsWith(`${measurementDir}/`) ? (englishNames.get(name) ?? name) : undefined,
+      templateName: path.startsWith(`${measurementDir}/`) ? (englishNames.get(name) ?? name) : undefined,
     };
   });
 }
@@ -129,8 +130,13 @@ const measurementFolder = (language: LanguageId) =>
 function englishMeasurementNames(template: ToolingTemplate, language: LanguageId): Map<string, string> {
   const names = template.measurementNames?.[language] ?? {};
   const englishDir = join(template.dir, 'en', measurementFolder('en'));
-  const english = existsSync(englishDir) ? listFiles(englishDir) : [];
+  const english = existsSync(englishDir) ? listFiles(englishDir).map(toolingArtifactPath) : [];
   return new Map(english.map((file) => [localizeMeasurementPath(file, names), file]));
+}
+
+// npm pack excludes files named .gitignore, so the template uses a different name.
+function toolingArtifactPath(file: string): string {
+  return file.replace(/(^|\/)gitignore\.template$/, '$1.gitignore');
 }
 
 function renderVariables(content: string, variables: ToolingVariables): string {

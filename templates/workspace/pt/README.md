@@ -61,6 +61,6 @@ prescrever > implementar (árvore) > implementar > inspecionar (bloqueada) > imp
 
 Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Uma spec está concluída, e o trabalho pode avançar para a próxima, quando sua inspeção mais recente estiver `Apta` ou `Apta com ressalvas` e o desenvolvedor confirmar explicitamente a finalização após revisá-la; somente então inspecionar registra `finalizada` no manifesto, e trabalho posterior segue por nova spec. Prefira implementar a corrigir quando a mudança exceder o limite de arquivos aplicável à correção ou afetar uma spec cuja árvore nunca foi aprovada.
 
-Invoque um skill com `$nome` no Codex ou `/nome` no Claude Code, por exemplo `$myspec-configurar` ou `/myspec-configurar`.
+Invoque um skill com `$nome` no Codex ou `/nome` no Claude Code e no Gemini (Antigravity / Gemini CLI), por exemplo `$myspec-configurar` ou `/myspec-configurar`.
 
 `specs/manifesto.json` é mantido pelos skills; configurar o inicializa sem reiniciar status existentes. `myspec.json` é mantido pela CLI `myspec`; não o edite manualmente.

@@ -1,7 +1,8 @@
 {
   "name": "myspec",
-  "version": "0.6.1",
-  "description": "Spec-driven development skills for AI coding agents (Codex, Claude Code).",
+  "version": "0.7.0",
+  "private": true,
+  "description": "Spec-driven development skills for AI coding agents (Codex, Claude Code, Gemini).",
   "type": "module",
   "bin": {
     "myspec": "dist/cli.js"
@@ -23,6 +24,8 @@
     "spec-driven-development",
     "codex",
     "claude-code",
+    "gemini",
+    "antigravity",
     "skills"
   ],
   "license": "MIT",

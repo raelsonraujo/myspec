@@ -27,7 +27,7 @@ Commands:
   install            Install the Myspec skills and the workspace (my-specs, or minhas-specs in pt)
 
 Options:
-  -p, --provider     codex, claude, or both (codex,claude). Repeatable.
+  -p, --provider     codex, claude, gemini, or a comma-separated list (codex,claude,gemini). Repeatable.
   -l, --language     Skill language: en (eng) or pt
   -t, --tooling      Initial quality tooling template to generate. Repeatable.
   -d, --dir          Target repository (default: current directory)
@@ -44,7 +44,8 @@ ${toolingList()}
 Examples:
   myspec install -p codex -l pt
   myspec install -p claude -l pt -t dotnet-quality
-  myspec install -p codex,claude -l en -d ../my-repo
+  myspec install -p gemini -l en
+  myspec install -p codex,claude,gemini -l en -d ../my-repo
   myspec install -t dotnet-quality
 `;
 
@@ -91,7 +92,7 @@ async function main(argv: string[]): Promise<number> {
 }
 
 async function promptProviders(): Promise<ProviderId[]> {
-  const answer = await ask(`Provider (${Object.keys(PROVIDERS).join(', ')}; comma-separated for both): `);
+  const answer = await ask(`Provider (${Object.keys(PROVIDERS).join(', ')}; comma-separated for multiple): `);
   const providers = parseProviders([answer]);
   if (providers.length === 0) throw new UsageError('At least one provider is required.');
   return providers;

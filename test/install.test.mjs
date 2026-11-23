@@ -14,6 +14,11 @@ const LEGACY_QUALITY = fileURLToPath(new URL('./fixtures/quality-0.4.1', import.
 const LEGACY_README = fileURLToPath(new URL('./fixtures/workspace-readme-0.4.2-pt.md', import.meta.url));
 const EN_SKILLS = ['myspec-audit', 'myspec-implement', 'myspec-inspect', 'myspec-patch', 'myspec-prescribe', 'myspec-quantify', 'myspec-setup'];
 const PT_SKILLS = ['myspec-auditar', 'myspec-configurar', 'myspec-corrigir', 'myspec-implementar', 'myspec-inspecionar', 'myspec-prescrever', 'myspec-quantificar'];
+const PROVIDER_SPECS = {
+  codex: { dir: '.codex/skills', prefix: '$' },
+  claude: { dir: '.claude/skills', prefix: '/' },
+  gemini: { dir: '.agents/skills', prefix: '/' },
+};
 
 const dirs = [];
 function repo() {
@@ -56,6 +61,38 @@ describe('myspec install', () => {
     assert.ok(!existsSync(join(dir, '.claude/skills/myspec-configurar/agents')));
     assert.match(read(dir, '.claude/skills/myspec-corrigir/SKILL.md'), /recomende `\/myspec-prescrever`/);
     assert.ok(!existsSync(join(dir, '.codex')));
+    assert.ok(!existsSync(join(dir, '.agents')));
+  });
+
+  it('installs English Gemini skills into .agents/skills with slash invocation and without Codex metadata', () => {
+    const dir = repo();
+    const result = installOk(dir, '-p', 'gemini', '-l', 'en');
+
+    assert.deepEqual(skillDirs(dir, '.agents/skills'), EN_SKILLS);
+    assert.ok(!existsSync(join(dir, '.agents/skills/myspec-setup/agents')));
+    assert.ok(existsSync(join(dir, '.agents/skills/myspec-setup/assets/metric-template.md')));
+    const implement = read(dir, '.agents/skills/myspec-implement/SKILL.md');
+    assert.match(implement, /Suggest `\/myspec-inspect` to record/);
+    assert.doesNotMatch(implement, /\{\{skill:/);
+    assert.ok(!existsSync(join(dir, '.codex')));
+    assert.ok(!existsSync(join(dir, '.claude')));
+    const manifest = JSON.parse(read(dir, 'my-specs/myspec.json'));
+    assert.deepEqual(manifest.providers, ['gemini']);
+    assert.ok(manifest.files.includes('.agents/skills/myspec-setup/SKILL.md'));
+    assert.match(result.stdout, /Myspec installed for Gemini \(English\)/);
+    assert.match(result.stdout, /Run \/myspec-setup/);
+  });
+
+  it('accepts Gemini platform aliases (antigravity, agy, gemini-cli, neon)', () => {
+    for (const alias of ['antigravity', 'agy', 'gemini-cli', 'geminicli', 'neon']) {
+      const dir = repo();
+      installOk(dir, '-p', alias, '-l', 'pt');
+
+      assert.deepEqual(skillDirs(dir, '.agents/skills'), PT_SKILLS, alias);
+      assert.ok(!existsSync(join(dir, '.agents/skills/myspec-configurar/agents')), alias);
+      assert.match(read(dir, '.agents/skills/myspec-corrigir/SKILL.md'), /recomende `\/myspec-prescrever`/, alias);
+      assert.deepEqual(JSON.parse(read(dir, 'minhas-specs/myspec.json')).providers, ['gemini'], alias);
+    }
   });
 
   it('installs the inspection template the inspect skills record into the spec folder', () => {
@@ -74,11 +111,13 @@ describe('myspec install', () => {
     assert.match(read(dir, '.codex/skills/myspec-inspecionar/SKILL.md'), /pertence a `\$myspec-quantificar`/);
   });
 
-  it('accepts both providers at once', () => {
+  it('accepts multiple providers at once', () => {
     const dir = repo();
-    installOk(dir, '-p', 'codex/claude', '-l', 'en');
+    const result = installOk(dir, '-p', 'codex/claude/gemini', '-l', 'en');
     assert.deepEqual(skillDirs(dir, '.codex/skills'), EN_SKILLS);
     assert.deepEqual(skillDirs(dir, '.claude/skills'), EN_SKILLS);
+    assert.deepEqual(skillDirs(dir, '.agents/skills'), EN_SKILLS);
+    assert.match(result.stdout, /\$myspec-setup \(Codex\) \/ \/myspec-setup \(Claude Code\) \/ \/myspec-setup \(Gemini\)/);
   });
 
   for (const [language, workspace, skillName, reportTemplate, report] of [
@@ -87,12 +126,12 @@ describe('myspec install', () => {
   ]) {
     it(`adds the ${language} audit skill on reinstall with provider-specific references and report assets`, () => {
       const dir = repo();
-      installOk(dir, '-p', 'codex/claude', '-l', language);
+      installOk(dir, '-p', 'codex/claude/gemini', '-l', language);
       // Model an installed release that did not ship the audit skill.
       const manifestPath = `${workspace}/myspec.json`;
       const manifest = JSON.parse(read(dir, manifestPath));
-      for (const provider of ['codex', 'claude']) {
-        rmSync(join(dir, `.${provider}/skills/${skillName}`), { recursive: true });
+      for (const { dir: skillsDir } of Object.values(PROVIDER_SPECS)) {
+        rmSync(join(dir, `${skillsDir}/${skillName}`), { recursive: true });
       }
       manifest.files = manifest.files.filter((path) => !path.includes(`/skills/${skillName}/`));
       writeFileSync(join(dir, manifestPath), JSON.stringify(manifest));
@@ -101,9 +140,8 @@ describe('myspec install', () => {
 
       const updated = JSON.parse(read(dir, manifestPath));
       const templateDir = join(TEMPLATES, 'skills', language, skillName);
-      for (const provider of ['codex', 'claude']) {
-        const skillPath = `.${provider}/skills/${skillName}`;
-        const prefix = provider === 'codex' ? '$' : '/';
+      for (const [provider, { dir: skillsDir, prefix }] of Object.entries(PROVIDER_SPECS)) {
+        const skillPath = `${skillsDir}/${skillName}`;
         for (const file of ['SKILL.md', `assets/${reportTemplate}`]) {
           const expected = read(templateDir, file).replace(/\{\{skill:([a-z0-9-]+)\}\}/g, (_, name) => `${prefix}${name}`);
           assert.equal(read(dir, `${skillPath}/${file}`), expected);
@@ -374,16 +412,20 @@ describe('myspec install', () => {
 
   it('never overwrites repository contract documents and leaves unrelated skills alone', () => {
     const dir = repo();
-    installOk(dir, '-p', 'codex', '-l', 'en');
+    installOk(dir, '-p', 'codex,gemini', '-l', 'en');
     writeFileSync(join(dir, 'my-specs/README.md'), 'custom readme');
     writeFileSync(join(dir, 'my-specs/metrics/coverage.md'), 'approved metric');
     writeFileSync(join(dir, '.codex/skills/other-skill.md'), 'not ours');
+    mkdirSync(join(dir, '.agents/skills/other-skill'), { recursive: true });
+    writeFileSync(join(dir, '.agents/skills/other-skill/SKILL.md'), 'unrelated agent skill');
 
-    installOk(dir, '-p', 'codex', '-l', 'pt');
+    installOk(dir, '-l', 'pt');
 
     assert.equal(read(dir, 'minhas-specs/README.md'), 'custom readme');
     assert.equal(read(dir, 'minhas-specs/metricas/coverage.md'), 'approved metric');
     assert.equal(read(dir, '.codex/skills/other-skill.md'), 'not ours');
+    assert.equal(read(dir, '.agents/skills/other-skill/SKILL.md'), 'unrelated agent skill');
+    assert.deepEqual(skillDirs(dir, '.agents/skills'), [...PT_SKILLS, 'other-skill'].sort());
   });
 
   it('refreshes a README an earlier version shipped, even with CRLF line endings', () => {
@@ -397,11 +439,11 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/README.md'), read(join(TEMPLATES, 'workspace/pt'), 'README.md'));
   });
 
-  for (const version of ['0.4.5', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.6.0']) {
+  for (const version of ['0.4.5', '0.5.0', '0.5.1', '0.5.2', '0.5.3', '0.6.0', '0.6.1']) {
     for (const [language, workspace] of [['en', 'my-specs'], ['pt', 'minhas-specs']]) {
       it(`refreshes the ${version} ${language} workflow guidance without rewriting existing specs`, () => {
         const dir = repo();
-        installOk(dir, '-p', 'codex/claude', '-l', language);
+        installOk(dir, '-p', 'codex/claude/gemini', '-l', language);
         const legacyReadme = readFileSync(new URL(`./fixtures/workspace-readme-${version}-${language}.md`, import.meta.url), 'utf8');
         writeFileSync(join(dir, workspace, 'README.md'), legacyReadme.replace(/\n/g, '\r\n'));
         const specFolder = join(dir, workspace, 'specs/001-existing');
@@ -409,9 +451,9 @@ describe('myspec install', () => {
         const legacySpec = '# Existing change\n\n## Acceptance Criteria\n\n- The result is visible.\n';
         writeFileSync(join(specFolder, 'spec.md'), legacySpec);
         const managedSkills = listSkills(language);
-        for (const provider of ['codex', 'claude']) {
+        for (const { dir: skillsDir } of Object.values(PROVIDER_SPECS)) {
           for (const skill of managedSkills) {
-            writeFileSync(join(dir, `.${provider}/skills`, skill.name, 'SKILL.md'), '# Previous managed skill\n');
+            writeFileSync(join(dir, skillsDir, skill.name, 'SKILL.md'), '# Previous managed skill\n');
           }
         }
 
@@ -419,12 +461,11 @@ describe('myspec install', () => {
 
         assert.equal(read(dir, `${workspace}/README.md`), read(join(TEMPLATES, 'workspace', language), 'README.md'));
         assert.equal(readFileSync(join(specFolder, 'spec.md'), 'utf8'), legacySpec);
-        for (const provider of ['codex', 'claude']) {
-          const prefix = provider === 'codex' ? '$' : '/';
+        for (const { dir: skillsDir, prefix } of Object.values(PROVIDER_SPECS)) {
           for (const skill of managedSkills) {
             for (const file of skill.files.filter((path) => path.endsWith('.md'))) {
               const expected = read(skill.dir, file).replace(/\{\{skill:([a-z0-9-]+)\}\}/g, (_, name) => `${prefix}${name}`);
-              assert.equal(read(dir, `.${provider}/skills/${skill.name}/${file}`), expected);
+              assert.equal(read(dir, `${skillsDir}/${skill.name}/${file}`), expected);
             }
           }
         }
@@ -786,7 +827,7 @@ describe('tooling templates', () => {
               // Inside the names block and in .gitignore, each name is the English one renamed for the language.
               const inBlock = lines.slice(0, index + 1).some((l) => l.startsWith('# Names of this folder')) &&
                 !lines.slice(0, index).some((l) => l.startsWith('# End of the names'));
-              if (file === '.gitignore') return localizeMeasurementPath(line, names);
+              if (file === 'gitignore.template') return localizeMeasurementPath(line, names);
               return inBlock ? line.replace(/'([^']*)'$/, (_, name) => `'${localizeMeasurementPath(name, names)}'`) : line;
             })
             .join('\n');
