@@ -4,15 +4,49 @@ CLI de desenvolvimento orientado a especificações (SDD) para agentes de códig
 
 ## Instalação
 
-```bash
-npm install -g myspec
-```
+Você precisa de Node.js 20 ou superior. Baixe o arquivo `myspec-<versão>.tgz` nos [assets da release](https://github.com/raelsonraujo/myspec/releases). Use a tag e o nome do arquivo da versão escolhida nos comandos abaixo.
 
-Durante o desenvolvimento, a partir deste repositório:
+Na pasta em que salvou o arquivo, verifique sua origem e integridade com a [CLI do GitHub](https://cli.github.com/manual/gh_release_verify-asset).
 
 ```bash
-npm install && npm link
+gh release verify-asset v0.6.0 ./myspec-0.6.0.tgz --repo raelsonraujo/myspec
 ```
+
+Após a verificação, instale o pacote local e confira a versão.
+
+```bash
+npm install -g --offline --ignore-scripts ./myspec-0.6.0.tgz
+myspec --version
+```
+
+## Desenvolvimento
+
+Na raiz do clone, instale as dependências e vincule a CLI.
+
+```bash
+npm ci
+npm link
+```
+
+## Publicação de releases
+
+Ative [releases imutáveis](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes) nas configurações do repositório antes da primeira publicação. Use uma tag que corresponda à versão do `package.json`, como `v0.6.0` para a versão `0.6.0`.
+
+Em um checkout limpo da tag, rode os comandos abaixo. `npm test` compila a CLI antes de executar os testes.
+
+```bash
+npm ci --ignore-scripts
+npm test
+npm pack --ignore-scripts
+```
+
+Com a tag no GitHub, crie o rascunho com o pacote anexado.
+
+```bash
+gh release create v0.6.0 ./myspec-0.6.0.tgz --verify-tag --draft --generate-notes --repo raelsonraujo/myspec
+```
+
+Revise o rascunho no GitHub e publique a release. A publicação bloqueia alterações na tag e no arquivo anexado e gera a atestação usada na instalação.
 
 ## Uso
 
@@ -22,7 +56,7 @@ myspec install -p codex -l pt
 
 | Opção | Valores | Descrição |
 | --- | --- | --- |
-| `-p, --provider` | `codex`, `claude`, ou ambos (`codex,claude`) | Agente que receberá os skills. Pode ser repetida. |
+| `-p, --provider` | `codex`, `claude`, `gemini`, ou combinação (`codex,claude,gemini`) | Agente que receberá os skills. Pode ser repetida. Aceita aliases como `antigravity`, `agy`, `gemini-cli` e `neon` para `gemini`. |
 | `-l, --language` | `en` (`eng`), `pt` | Idioma dos skills. Apenas um idioma é instalado. |
 | `-t, --tooling` | `dotnet-quality` | Template de tooling de qualidade inicial. Pode ser repetida. |
 | `-d, --dir` | caminho | Repositório de destino (padrão: diretório atual). |
@@ -84,6 +118,7 @@ A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.e
 <repo>/
 ├── .codex/skills/myspec-*/     # -p codex: SKILL.md, assets/ e agents/openai.yaml
 ├── .claude/skills/myspec-*/    # -p claude: SKILL.md e assets/
+├── .agents/skills/myspec-*/    # -p gemini: SKILL.md e assets/ (Antigravity / Gemini CLI)
 └── my-specs/                   # minhas-specs/ em -l pt
     ├── README.md
     ├── myspec.json             # manifesto mantido pela CLI
@@ -109,7 +144,7 @@ Na versão `pt`, todo o workspace fica em português: pastas (`metricas/`, `orie
 | `myspec-audit` | `myspec-auditar` | Varre o projeto contra práticas de código e orientações gerais aprovadas, registra evidências, violações e lacunas em `compliance-report.md` (`relatorio-de-conformidade.md`) e prioriza próximos passos |
 | `myspec-patch` | `myspec-corrigir` | Ajuste pequeno (até 5 arquivos por padrão, com limite substituível por orientação geral aprovada do projeto) sem nova spec, inclusive dentro de uma spec ativa; impactos em finalizadas exigem nova spec |
 
-Use `$myspec-audit` no Codex ou `/myspec-audit` no Claude Code (`myspec-auditar` em português) para revisar a aderência às regras no projeto inteiro. A auditoria cobre código, testes, configuração, documentação e registros de processo conforme a aplicabilidade de cada regra. Ela distingue violações comprovadas, evidência insuficiente, regras não aplicáveis e conflitos, explicita áreas não revisadas e acompanha achados do relatório anterior. Não exige métricas nem specs e não altera código ou o ciclo de vida das specs. Quantificar continua responsável por métricas; inspecionar, pela aceitação de uma spec.
+Use `$myspec-audit` no Codex ou `/myspec-audit` no Claude Code e no Gemini (`myspec-auditar` em português) para revisar a aderência às regras no projeto inteiro. A auditoria cobre código, testes, configuração, documentação e registros de processo conforme a aplicabilidade de cada regra. Ela distingue violações comprovadas, evidência insuficiente, regras não aplicáveis e conflitos, explicita áreas não revisadas e acompanha achados do relatório anterior. Não exige métricas nem specs e não altera código ou o ciclo de vida das specs. Quantificar continua responsável por métricas; inspecionar, pela aceitação de uma spec.
 
 `minhas-specs/specs/manifesto.json` rastreia cada spec pelo nome exato da pasta. A configuração o constrói a partir de evidências de implementação e inspeção existentes quando ausente. O ciclo só avança `proposta → ativa → finalizada`: prescrever acrescenta novas specs como `proposta`; implementar muda para `ativa` imediatamente antes de editar a implementação, após aprovação da árvore; inspecionar registra inspeção `Apta` ou `Apta com ressalvas`, apresenta os achados e pergunta se o desenvolvedor deseja finalizar. A spec permanece `ativa` até confirmação explícita; só então inspecionar altera a entrada no manifesto para `finalizada` e registra a inspeção de conclusão. A mudança de situação registra a confirmação, sem criar artefato separado. Planejar ou aprovar árvore não inicia implementação. Inspeção bloqueada mantém a spec ativa. Chaves JSON e valores de situação são escritos em português brasileiro.
 
@@ -139,7 +174,7 @@ A árvore de arquivos referencia cada ID e seus locais de produção e verifica�
 
 Patching (`myspec-patch`/`myspec-corrigir`) é a exceção para trabalho ainda não finalizado ou mudanças que não possam afetar specs finalizadas: um ajuste elegível não precisa de nova spec nem critérios BDD. O limite padrão é de cinco arquivos, incluindo testes; uma orientação geral aplicável do projeto com `Status: Approved`/`Status: Aprovado` em `my-specs/general-guidelines/`/`minhas-specs/orientacoes-gerais/` pode substituir esse limite de arquivos. Mantêm-se os demais portões de escopo e a obrigação de preservar o contrato de qualquer spec já implementada que tocar; mudar esse contrato exige revisar a spec ainda não finalizada ou criar outra quando já finalizada.
 
-As referências entre skills são geradas na sintaxe de cada agente: `$myspec-setup` no Codex e `/myspec-setup` no Claude Code.
+As referências entre skills são geradas na sintaxe de cada agente: `$myspec-setup` no Codex e `/myspec-setup` no Claude Code e no Gemini (Antigravity / Gemini CLI).
 
 ## Reinstalação
 

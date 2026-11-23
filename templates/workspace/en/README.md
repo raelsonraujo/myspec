@@ -61,6 +61,6 @@ prescribe > implement (file tree) > implement > inspect (blocked) > implement/pa
 
 Repeat implement or patch followed by inspect as often as needed. A spec is complete, and work can advance to the next one, when its latest inspection is `Ready` or `Ready with observations` and the developer explicitly confirms finalization after reviewing that inspection; only then does inspect record `finished` in the manifest, and later work proceeds through a new spec. Prefer implement over patch when a change exceeds the applicable patch file limit or affects a spec whose file tree has never been approved.
 
-Invoke a skill with `$name` in Codex or `/name` in Claude Code, e.g. `$myspec-setup` or `/myspec-setup`.
+Invoke a skill with `$name` in Codex or `/name` in Claude Code and Gemini (Antigravity / Gemini CLI), e.g. `$myspec-setup` or `/myspec-setup`.
 
 `specs/manifest.json` is maintained by the skills; setup initializes it without resetting existing statuses. `myspec.json` is maintained by the `myspec` CLI; do not edit it by hand.

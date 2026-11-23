@@ -1,4 +1,4 @@
-export type ProviderId = 'codex' | 'claude';
+export type ProviderId = 'codex' | 'claude' | 'gemini';
 
 export interface Provider {
   id: ProviderId;
@@ -29,6 +29,13 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     invocationPrefix: '/',
     includesFile: (relativePath) => !isAgentMetadata(relativePath),
   },
+  gemini: {
+    id: 'gemini',
+    displayName: 'Gemini',
+    skillsDir: '.agents/skills',
+    invocationPrefix: '/',
+    includesFile: (relativePath) => !isAgentMetadata(relativePath),
+  },
 };
 
 const ALIASES: Record<string, ProviderId> = {
@@ -37,9 +44,15 @@ const ALIASES: Record<string, ProviderId> = {
   claude: 'claude',
   'claude-code': 'claude',
   claudecode: 'claude',
+  gemini: 'gemini',
+  'gemini-cli': 'gemini',
+  geminicli: 'gemini',
+  antigravity: 'gemini',
+  agy: 'gemini',
+  neon: 'gemini',
 };
 
-/** Parses values like `codex`, `codex,claude`, or `codex/claude` (repeatable). */
+/** Parses values like `codex`, `codex,claude,gemini`, or `codex/claude` (repeatable). */
 export function parseProviders(values: string[]): ProviderId[] {
   const ids = new Set<ProviderId>();
   for (const token of values.flatMap((value) => value.split(/[,/]/))) {
