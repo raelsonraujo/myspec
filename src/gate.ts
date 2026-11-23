@@ -554,6 +554,7 @@ export function runGate(options: GateOptions): GateReport {
   let plannedFiles: string[] | undefined;
   let fileTreeDriftSkipped: GateReport['fileTreeDriftSkipped'];
   let isActive = false;
+  const attentionItems: string[] = [];
 
   if (mode === 'spec' && specId) {
     const specDir = join(ws.workspaceDir, ws.layout.specs, specId);
@@ -588,7 +589,9 @@ export function runGate(options: GateOptions): GateReport {
     const treeRel = `${ws.layout.dir}/${ws.layout.specs}/${specId}/${ws.layout.fileTree}`;
     const treeAbs = join(ws.root, treeRel);
     if (existsSync(treeAbs)) {
-      const planned = parseFileTreePaths(readFileSync(treeAbs, 'utf8'), ws.root);
+      const planned = parseFileTreePaths(readFileSync(treeAbs, 'utf8'), ws.root, (label) => {
+        attentionItems.push(t.ambiguousFileTreeRoot(treeRel, label));
+      });
       if (comparable) {
         const plannedSet = new Set(planned);
         const changedSet = new Set(changedFiles);
@@ -611,7 +614,6 @@ export function runGate(options: GateOptions): GateReport {
   }
 
   const blockingFailures: string[] = [];
-  const attentionItems: string[] = [];
   const failedOutputs: GateReport['failedOutputs'] = [];
 
   // Command output goes to `.myspec/logs/<spec>` (or `project`), created only when a command actually runs.

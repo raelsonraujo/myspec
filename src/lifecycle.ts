@@ -125,14 +125,29 @@ function localDate(): string {
  * Extracts repository-relative file paths declared in `file-tree.md` / `arvore-de-arquivos.md`. The fenced tree
  * (`├──`, `└──`) is the source; bulleted paths under File Responsibilities are read only when the file has no tree,
  * because they often abbreviate paths and would count the same file twice.
- * When `repoRoot` is supplied, strips a leading `<repo-name>/` wrapper folder if it matches the
- * repository folder name and is not itself a subdirectory inside `repoRoot`.
+ * A `./` header makes all entries relative to the repository root. Legacy trees can still use
+ * the checkout name as a wrapper when it is not also a path in the checkout.
  */
-export function parseFileTreePaths(content: string, repoRoot?: string): string[] {
+export function parseFileTreePaths(
+  content: string,
+  repoRoot?: string,
+  onAmbiguousRoot?: (label: string) => void,
+): string[] {
   const paths = new Set<string>();
-  const rootName = repoRoot ? basename(resolve(repoRoot)).toLowerCase() : undefined;
-  const rootWrapperIsNotSubdir =
-    rootName && repoRoot ? !existsSync(join(repoRoot, basename(resolve(repoRoot)))) : false;
+  const codeBlockMatch = content.match(/```[^\n]*\r?\n([\s\S]*?)```/);
+  const treeLines = codeBlockMatch?.[1].split(/\r?\n/) ?? [];
+  const rootHeader = treeLines.find((line) => line.trim())?.trim();
+  const checkoutName = repoRoot && rootHeader !== './' ? basename(resolve(repoRoot)) : undefined;
+  const rootName = checkoutName?.toLowerCase();
+  const rootWrapperIsNotSubdir = repoRoot && checkoutName && !existsSync(join(repoRoot, checkoutName));
+
+  const rootLabel = rootHeader?.match(/^([^/\\│├└|`]+)\/$/)?.[1];
+  if (onAmbiguousRoot && repoRoot && rootLabel && rootLabel !== '.' && rootLabel !== '..') {
+    const matchesCheckout = rootLabel.toLowerCase() === rootName;
+    const existsInCheckout = existsSync(join(repoRoot, rootLabel));
+    const ambiguous = matchesCheckout ? existsInCheckout : !existsInCheckout;
+    if (ambiguous) onAmbiguousRoot(rootLabel);
+  }
 
   const stripRootWrapper = (fullPath: string): string => {
     const normalized = normalizeRepoPath(fullPath);
@@ -146,10 +161,9 @@ export function parseFileTreePaths(content: string, repoRoot?: string): string[]
   };
 
   // 1. Parse fenced tree code blocks under ## Tree / ## Árvore (or first fenced block).
-  const codeBlockMatch = content.match(/```[^\n]*\r?\n([\s\S]*?)```/);
   if (codeBlockMatch) {
     const stack: { depth: number; segment: string }[] = [];
-    for (const rawLine of codeBlockMatch[1].split(/\r?\n/)) {
+    for (const rawLine of treeLines) {
       const withoutComment = rawLine.replace(/\s+#\s*(add|modify|delete|adicionar|modificar|excluir)\b.*$/i, '').trimEnd();
       if (!withoutComment.trim()) continue;
 
