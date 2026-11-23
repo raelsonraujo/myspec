@@ -60,6 +60,30 @@ Diferente da complexidade e do CRAP score, nenhuma ferramenta fixada define um l
 - Aceitar o escopo instrumentado pelos testes: assemblies sem nenhum teste ficam fora desta métrica, como já ficam da complexidade e da cobertura.
 - Usar portões `Atenção`: tamanho elevado é sinal de melhoria, não inspeção bloqueada, até que o time adote explicitamente portões `Bloqueante`.
 
+## Contrato estruturado
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File minhas-specs/medicao/gerar-relatorio-de-cobertura.ps1 -NoOpen",
+    "posix": "bash minhas-specs/medicao/gerar-relatorio-de-cobertura.sh --no-open"
+  },
+  "format": "cobertura",
+  "resultPaths": [
+    "minhas-specs/medicao/cobertura/relatorio/Cobertura.xml",
+    "minhas-specs/medicao/cobertura/relatorio/Summary.json"
+  ],
+  "gates": [
+    { "metric": "methodLines.max", "label": "Maior quantidade de linhas executáveis de um método", "op": "<=", "threshold": 30, "scope": "both", "enforcement": "attention" },
+    { "metric": "methodLines.countAbove", "above": 30, "label": "Métodos acima de 30 linhas executáveis", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" },
+    { "metric": "classLines.max", "label": "Maior quantidade de linhas executáveis de uma classe", "op": "<=", "threshold": 300, "scope": "both", "enforcement": "attention" },
+    { "metric": "classLines.countAbove", "above": 300, "label": "Classes acima de 300 linhas executáveis", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" }
+  ]
+}
+```
+
 ## Histórico de aprovação
 
 - Nenhuma aprovação registrada.

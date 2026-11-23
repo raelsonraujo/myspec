@@ -59,6 +59,27 @@ Prefira complexidade naturalmente menor quando ela decorrer de um design claro e
 - Excluir migrations e arquivos gerados: sua ramificação e volume gerados distorceriam as métricas do código controlado pelo desenvolvedor.
 - Usar portões `Atenção`: método fora da faixa normal é sinal de melhoria, não inspeção bloqueada, até que o time adote explicitamente portões `Bloqueante`.
 
+## Contrato estruturado
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File minhas-specs/medicao/gerar-relatorio-de-cobertura.ps1 -NoOpen",
+    "posix": "bash minhas-specs/medicao/gerar-relatorio-de-cobertura.sh --no-open"
+  },
+  "format": "cobertura",
+  "resultPaths": [
+    "minhas-specs/medicao/cobertura/relatorio/Cobertura.xml"
+  ],
+  "gates": [
+    { "metric": "complexity.max", "label": "Maior complexidade ciclomática entre os métodos", "op": "<=", "threshold": 15, "scope": "both", "enforcement": "attention" },
+    { "metric": "complexity.countAbove", "above": 15, "label": "Métodos acima de 15", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" }
+  ]
+}
+```
+
 ## Histórico de aprovação
 
 - Nenhuma aprovação registrada.

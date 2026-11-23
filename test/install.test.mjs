@@ -585,6 +585,7 @@ describe('myspec install --tooling', () => {
       'minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md',
       'minhas-specs/orientacoes-gerais/regras-de-dependencia.md',
       'minhas-specs/orientacoes-gerais/caminhos-criticos-de-performance.md',
+      'minhas-specs/praticas-de-codigo/um-tipo-de-nivel-superior-por-arquivo.md',
     ]) {
       assert.ok(existsSync(join(dir, path)), path);
     }
@@ -593,6 +594,7 @@ describe('myspec install --tooling', () => {
     }
     assert.ok(!existsSync(join(dir, 'minhas-specs/orientacoes-gerais/.gitkeep')));
     assert.ok(!existsSync(join(dir, 'minhas-specs/metricas/.gitkeep')));
+    assert.ok(!existsSync(join(dir, 'minhas-specs/praticas-de-codigo/.gitkeep')));
     assert.ok(!existsSync(join(dir, 'minhas-specs/ferramentas.md')));
     assert.match(read(dir, 'minhas-specs/metricas/crap-score.md'), /^Status: Proposto$/m);
     assert.match(read(dir, 'minhas-specs/metricas/crap-score.md'), /^## Portões$/m);
@@ -652,6 +654,8 @@ describe('myspec install --tooling', () => {
     assert.match(read(dir, 'my-specs/measurement/README.md'), /dotnet restore App\.slnx/);
     assert.match(read(dir, 'my-specs/measurement/README.md'), /dotnet sln App\.slnx add/);
     assert.ok(existsSync(join(dir, 'my-specs/general-guidelines/performance-critical-paths.md')));
+    assert.ok(existsSync(join(dir, 'my-specs/coding-practices/one-top-level-type-per-file.md')));
+    assert.match(read(dir, 'my-specs/coding-practices/one-top-level-type-per-file.md'), /^Status: Proposed$/m);
     for (const script of ['run-coverage-report', 'run-benchmarks', 'run-coupling', 'run-architecture-tests', 'run-mutation']) {
       assert.doesNotMatch(read(dir, `my-specs/measurement/${script}.sh`), /\r/, script);
       assert.ok(existsSync(join(dir, `my-specs/measurement/${script}.ps1`)), script);
@@ -895,8 +899,28 @@ describe('skill templates', () => {
         assert.doesNotMatch(readFileSync(join(skill.dir, 'SKILL.md'), 'utf8'), /git config/, `${language}: ${skill.name}/SKILL.md`);
       }
     }
-    assert.match(read(join(TEMPLATES, 'skills/pt/myspec-implementar/assets'), 'modelo-de-arvore-de-arquivos.md'), /^## Histórico de revisões$/m);
-    assert.match(read(join(TEMPLATES, 'skills/en/myspec-implement/assets'), 'file-tree-template.md'), /^## Revision History$/m);
+    const ptTree = read(join(TEMPLATES, 'skills/pt/myspec-implementar/assets'), 'modelo-de-arvore-de-arquivos.md');
+    const enTree = read(join(TEMPLATES, 'skills/en/myspec-implement/assets'), 'file-tree-template.md');
+    assert.doesNotMatch(ptTree, /^Status:|^## Histórico de revisões$/m);
+    assert.doesNotMatch(enTree, /^Status:|^## Revision History$/m);
+  });
+
+  it('keeps spec templates lean and keeps C# type-per-file rules out of core skills', () => {
+    assert.doesNotMatch(
+      read(join(TEMPLATES, 'skills/en/myspec-prescribe/assets'), 'spec-template.md'),
+      /These BDD scenarios are the single source of truth/,
+    );
+    assert.doesNotMatch(
+      read(join(TEMPLATES, 'skills/pt/myspec-prescrever/assets'), 'modelo-de-spec.md'),
+      /Estes cenários BDD são a fonte única da verdade/,
+    );
+    for (const skill of ['en/myspec-implement', 'en/myspec-patch', 'pt/myspec-implementar', 'pt/myspec-corrigir']) {
+      assert.doesNotMatch(
+        read(join(TEMPLATES, 'skills', skill), 'SKILL.md'),
+        /one top-level class|uma definição de nível superior/i,
+        skill,
+      );
+    }
   });
 
   it('keeps specs as-is with history only in an optional closing section', () => {

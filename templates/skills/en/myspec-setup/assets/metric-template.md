@@ -48,6 +48,21 @@ Created on: `<date>`
 
 - `<decision>`: <reason and rejected alternative, when relevant>.
 
+## Machine Contract
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": "<exact command or { \"win32\": \"...\", \"posix\": \"...\" }>",
+  "format": "<supported parser format or manual>",
+  "resultPaths": ["<repository-relative path or glob>"],
+  "gates": [
+    { "metric": "<metric key or json value name>", "label": "<reported value>", "op": "<= | >= | = | < | >", "threshold": 0, "scope": "changed | project | both", "enforcement": "blocking | attention" }
+  ]
+}
+```
+
 ## Approval History
 
 - Approved by: `<git user.name> <git user.email>`

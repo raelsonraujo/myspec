@@ -9,6 +9,7 @@ export interface SpecManifestLayout {
   id: string;
   status: string;
   completionInspection: string;
+  baseCommit: string;
   statuses: readonly [string, string, string];
 }
 
@@ -70,7 +71,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       specs: 'specs',
       specManifest: {
         fileName: 'manifest.json', version: 'version', specs: 'specs', id: 'id', status: 'status',
-        completionInspection: 'completionInspection', statuses: ['proposed', 'active', 'finished'],
+        completionInspection: 'completionInspection', baseCommit: 'baseCommit', statuses: ['proposed', 'active', 'finished'],
       },
       metrics: 'metrics',
       legacyMetrics: 'tooling',
@@ -107,7 +108,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       specs: 'specs',
       specManifest: {
         fileName: 'manifesto.json', version: 'versao', specs: 'especificacoes', id: 'identificador', status: 'situacao',
-        completionInspection: 'inspecaoDeConclusao', statuses: ['proposta', 'ativa', 'finalizada'],
+        completionInspection: 'inspecaoDeConclusao', baseCommit: 'commitBase', statuses: ['proposta', 'ativa', 'finalizada'],
       },
       metrics: 'metricas',
       legacyMetrics: 'ferramentas',

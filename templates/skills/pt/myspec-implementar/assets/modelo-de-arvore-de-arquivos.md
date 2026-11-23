@@ -1,20 +1,16 @@
 # Árvore de arquivos da implementação
 
-Status: Proposto
-
 ## Árvore
 
 ```text
 <projeto>/
-├── <arquivo-a-adicionar>            # adicionar via <contexto breve>
-├── <arquivo-a-modificar>            # modificar para <contexto breve>
-├── <arquivo-a-excluir>              # excluir porque <contexto breve>
+├── <arquivo-a-adicionar>            # adicionar
+├── <arquivo-a-modificar>            # modificar
+├── <arquivo-a-excluir>              # excluir
 └── <projeto-de-testes>/
     ├── <arquivo-de-teste-a-adicionar> # adicionar
-    └── <arquivo-de-teste-a-modificar> # modificar para o comportamento alterado
+    └── <arquivo-de-teste-a-modificar> # modificar
 ```
-
-Termine cada entrada de arquivo com um comentário que comece exatamente com um marcador de operação: `# adicionar`, `# modificar` ou `# excluir`. O marcador pode ter contexto curto. Não deixe entradas sem marcador e omita exemplos não aplicáveis.
 
 ## Responsabilidades dos arquivos
 
@@ -22,9 +18,7 @@ Termine cada entrada de arquivo com um comentário que comece exatamente com um 
 
 ## Cobertura dos critérios de aceitação
 
-Referencie todo ID de critério BDD de `spec.md`; este mapeamento não redefine seu comportamento.
-
-- `CA-01`: <local de produção>; <local de teste planejado ou procedimento concreto de verificação de todos os resultados Então/E>.
+- `CA-01`: <caminho de produção>; <caminho de teste planejado ou método de verificação>.
 
 ## Decisões estruturais
 
@@ -32,11 +26,4 @@ Referencie todo ID de critério BDD de `spec.md`; este mapeamento não redefine 
 
 ## Decisões em aberto
 
-- <Decisão que exige entrada do desenvolvedor antes da aprovação, ou `Nenhum`.>
-
-## Histórico de revisões
-
-| Data | Status | Revisão |
-| --- | --- | --- |
-| `<data>` | Proposto | <o que esta revisão propôs ou alterou> |
-| `<data>` | Aprovado | <qual revisão foi aprovada> |
+- <Decisão que exige entrada do desenvolvedor antes da implementação, ou `Nenhum`.>

@@ -14,10 +14,6 @@
 
 ## Acceptance Criteria
 
-These BDD scenarios are the single source of truth for this change's specific measurable behaviors. Give every distinct scenario a stable `AC-NN` ID and reference it in the file tree, implementation evidence, and inspections. Keep all required change-specific observable outcomes here, including those summarized elsewhere in this spec.
-
-Do not repeat coding practices or general guidelines as criteria; applicable approved rules are enforced directly from their source documents without an AC. Reference a source when context is needed, and specify only behavior this change adds or alters.
-
 ### AC-01: <Observable outcome>
 
 - Given <concrete initial state and relevant inputs>
@@ -35,6 +31,4 @@ Do not repeat coding practices or general guidelines as criteria; applicable app
 
 ## Revision History
 
-Optional: omit this section unless readers need context about an earlier revision of this spec or about behavior delivered by another spec that this one changes. The sections above describe the current requirements as-is and must stand on their own without it.
-
-- `<YYYY-MM-DD>`: <What changed and the concrete reason, referencing another spec by its folder ID, such as `001-example`, when relevant.>
+- `<YYYY-MM-DD>`: <Optional; omit this section unless readers need context on an earlier revision or another spec by folder ID, e.g. `001-example`.>

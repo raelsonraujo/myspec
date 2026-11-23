@@ -56,6 +56,29 @@ None.
 - Exclude migrations and generated files: their generated volume would distort developer-controlled coverage.
 - Define no coverage gate: coverage risk is judged per method through the CRAP Score gate instead of a project-wide percentage.
 
+## Machine Contract
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1 -NoOpen",
+    "posix": "bash my-specs/measurement/run-coverage-report.sh --no-open"
+  },
+  "format": "cobertura",
+  "resultPaths": [
+    "my-specs/measurement/coverage/report/Cobertura.xml",
+    "my-specs/measurement/coverage/report/Summary.json"
+  ],
+  "report": [
+    "coverage.line",
+    "coverage.branch"
+  ],
+  "gates": []
+}
+```
+
 ## Approval History
 
 - None yet.

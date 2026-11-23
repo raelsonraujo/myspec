@@ -27,7 +27,7 @@ Risco de mudança de cada método controlado pelo desenvolvedor, combinando comp
 - Versão: ReportGenerator `5.5.10`; `coverlet.collector` `6.0.4`
 - Instalação ou restauração: siga `minhas-specs/medicao/README.md` e depois execute `dotnet restore {{solution}}` e `dotnet tool restore`
 - Comando de medição: `pwsh -NoProfile -File minhas-specs/medicao/gerar-relatorio-de-cobertura.ps1 -NoOpen` ou `bash minhas-specs/medicao/gerar-relatorio-de-cobertura.sh --no-open`
-- Formato e caminho do resultado: seção Risk Hotspots do relatório HTML; `minhas-specs/medicao/cobertura/relatorio/index.html`
+- Formato e caminho do resultado: Cobertura XML (`complexity` e cobertura por método, avaliado por `myspec gate`) e seção Risk Hotspots do HTML; `minhas-specs/medicao/cobertura/relatorio/Cobertura.xml`; `minhas-specs/medicao/cobertura/relatorio/index.html`
 - Escopo: todo assembly que não seja de teste e seja instrumentado por ao menos um projeto de testes de `{{solution}}`
 - Exclusões: as mesmas de `minhas-specs/metricas/complexidade-ciclomatica.md`
 - Isolamento de código alterado: o mesmo de `minhas-specs/metricas/complexidade-ciclomatica.md`
@@ -53,6 +53,27 @@ Para todo método acima deste portão ou do portão de complexidade ciclomática
 
 - Ler o score do ReportGenerator em vez de calculá-lo: o relatório usa os mesmos dados de complexidade e cobertura que as outras métricas registram.
 - Usar portões `Atenção`: score elevado é sinal de melhoria, não inspeção bloqueada, até que o time adote explicitamente portões `Bloqueante`.
+
+## Contrato estruturado
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File minhas-specs/medicao/gerar-relatorio-de-cobertura.ps1 -NoOpen",
+    "posix": "bash minhas-specs/medicao/gerar-relatorio-de-cobertura.sh --no-open"
+  },
+  "format": "cobertura",
+  "resultPaths": [
+    "minhas-specs/medicao/cobertura/relatorio/Cobertura.xml"
+  ],
+  "gates": [
+    { "metric": "crap.max", "label": "Maior CRAP score entre os métodos", "op": "<=", "threshold": 30, "scope": "both", "enforcement": "attention" },
+    { "metric": "crap.countAbove", "above": 30, "label": "Métodos acima de 30", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" }
+  ]
+}
+```
 
 ## Histórico de aprovação
 

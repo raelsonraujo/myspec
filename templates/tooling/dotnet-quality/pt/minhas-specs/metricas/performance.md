@@ -52,6 +52,24 @@ Os orçamentos são os valores aprovados para cada caminho crítico em `minhas-s
 - Usar alocação como métrica principal de performance: bytes alocados por operação são estáveis entre máquinas, enquanto o tempo só é comparado com a execução anterior no mesmo ambiente.
 - Medir apenas caminhos críticos aprovados: microbenchmarks têm custo de manutenção, então cobrem os caminhos escolhidos pelo time, não todo método.
 
+## Contrato estruturado
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File minhas-specs/medicao/executar-benchmarks.ps1",
+    "posix": "bash minhas-specs/medicao/executar-benchmarks.sh"
+  },
+  "format": "manual",
+  "resultPaths": [
+    "minhas-specs/medicao/benchmarks/results/*.json"
+  ],
+  "gates": []
+}
+```
+
 ## Histórico de aprovação
 
 - Nenhuma aprovação registrada.

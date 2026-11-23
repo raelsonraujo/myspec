@@ -16,6 +16,19 @@ Verify the repository from its root with these commands, in order:
 2. Build: `dotnet build {{solution}} --configuration Release --no-restore`
 3. Test: `dotnet test {{solution}} --configuration Release --no-build`
 
+```json myspec
+{
+  "kind": "verify",
+  "workingDir": ".",
+  "commands": [
+    "dotnet restore {{solution}}",
+    "dotnet tool restore",
+    "dotnet build {{solution}} --configuration Release --no-restore",
+    "dotnet test {{solution}} --configuration Release --no-build"
+  ]
+}
+```
+
 Run them before measuring any metric under `my-specs/metrics/`. When a metric's measurement command already runs the same tests, such as `my-specs/measurement/run-coverage-report`, its test results may stand in for step 3 of the same baseline.
 
 ## Guidance Precedence

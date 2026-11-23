@@ -27,8 +27,8 @@ Change risk of each developer-controlled method, combining cyclomatic complexity
 - Version: ReportGenerator `5.5.10`; `coverlet.collector` `6.0.4`
 - Installation or restore: follow `my-specs/measurement/README.md`, then `dotnet restore {{solution}}` and `dotnet tool restore`
 - Measurement command: `pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1 -NoOpen` or `bash my-specs/measurement/run-coverage-report.sh --no-open`
-- Output format: the Risk Hotspots section of the HTML report
-- Result path: `my-specs/measurement/coverage/report/index.html`
+- Output format: Cobertura XML (`complexity` and line coverage per method, evaluated by `myspec gate`); Risk Hotspots section of the HTML report
+- Result path: `my-specs/measurement/coverage/report/Cobertura.xml`; `my-specs/measurement/coverage/report/index.html`
 - Scope: every non-test assembly instrumented by at least one test project in `{{solution}}`
 - Exclusions: same as `my-specs/metrics/cyclomatic-complexity.md`
 - Changed-code isolation: same as `my-specs/metrics/cyclomatic-complexity.md`
@@ -54,6 +54,27 @@ For every method above this gate or the Cyclomatic Complexity gate, report both 
 
 - Read the score from ReportGenerator instead of computing it: the report uses the same complexity and coverage data the other metrics record.
 - Use `Attention` gates: an elevated score is an improvement signal rather than a blocked inspection until the team explicitly adopts `Blocking` gates.
+
+## Machine Contract
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1 -NoOpen",
+    "posix": "bash my-specs/measurement/run-coverage-report.sh --no-open"
+  },
+  "format": "cobertura",
+  "resultPaths": [
+    "my-specs/measurement/coverage/report/Cobertura.xml"
+  ],
+  "gates": [
+    { "metric": "crap.max", "label": "Highest CRAP score among methods", "op": "<=", "threshold": 30, "scope": "both", "enforcement": "attention" },
+    { "metric": "crap.countAbove", "above": 30, "label": "Methods above 30", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" }
+  ]
+}
+```
 
 ## Approval History
 

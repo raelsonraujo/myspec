@@ -1,20 +1,16 @@
 # Implementation File Tree
 
-Status: Proposed
-
 ## Tree
 
 ```text
 <project>/
-├── <file-to-add>                    # add via <brief context>
-├── <file-to-modify>                 # modify for <brief context>
-├── <file-to-delete>                 # delete because <brief context>
+├── <file-to-add>                    # add
+├── <file-to-modify>                 # modify
+├── <file-to-delete>                 # delete
 └── <test-project>/
     ├── <test-file-to-add>           # add
-    └── <test-file-to-modify>        # modify for changed behavior
+    └── <test-file-to-modify>        # modify
 ```
-
-End every file entry with a comment beginning with exactly one operation marker: `# add`, `# modify`, or `# delete`. The marker may be followed by a short context explaining how or why the operation applies, such as `# add via dotnet ef`. Do not leave a file entry unmarked. Omit operation examples that do not apply to the proposal.
 
 ## File Responsibilities
 
@@ -22,9 +18,7 @@ End every file entry with a comment beginning with exactly one operation marker:
 
 ## Acceptance Criteria Coverage
 
-Reference every BDD criterion ID from `spec.md`; this mapping does not redefine its behavior.
-
-- `AC-01`: <production location>; <planned test location or concrete verification procedure for every Then/And outcome>.
+- `AC-01`: <production path>; <planned test path or verification method>.
 
 ## Structural Decisions
 
@@ -32,11 +26,4 @@ Reference every BDD criterion ID from `spec.md`; this mapping does not redefine 
 
 ## Open Decisions
 
-- <Decision requiring developer input before approval, or `None`.>
-
-## Revision History
-
-| Date | Status | Revision |
-| --- | --- | --- |
-| `<date>` | Proposed | <what this revision proposed or changed> |
-| `<date>` | Approved | <which revision was approved> |
+- <Decision requiring developer input before implementation, or `None`.>

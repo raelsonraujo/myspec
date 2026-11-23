@@ -53,6 +53,24 @@ The budgets are the values each critical path approves in `my-specs/general-guid
 - Use allocation as the primary performance metric: bytes allocated per operation are stable across machines, while time is compared only against the previous run on the same environment.
 - Benchmark only approved critical paths: microbenchmarks cost maintenance, so they cover the paths the team chose rather than every method.
 
+## Machine Contract
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File my-specs/measurement/run-benchmarks.ps1",
+    "posix": "bash my-specs/measurement/run-benchmarks.sh"
+  },
+  "format": "manual",
+  "resultPaths": [
+    "my-specs/measurement/benchmarks/results/*.json"
+  ],
+  "gates": []
+}
+```
+
 ## Approval History
 
 - None yet.

@@ -60,6 +60,27 @@ Prefer naturally lower complexity when it follows from a clear, cohesive design,
 - Exclude migrations and generated files: their generated branching and volume would distort developer-controlled metrics.
 - Use `Attention` gates: a method outside the normal range is an improvement signal rather than a blocked inspection until the team explicitly adopts `Blocking` gates.
 
+## Machine Contract
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1 -NoOpen",
+    "posix": "bash my-specs/measurement/run-coverage-report.sh --no-open"
+  },
+  "format": "cobertura",
+  "resultPaths": [
+    "my-specs/measurement/coverage/report/Cobertura.xml"
+  ],
+  "gates": [
+    { "metric": "complexity.max", "label": "Highest cyclomatic complexity among methods", "op": "<=", "threshold": 15, "scope": "both", "enforcement": "attention" },
+    { "metric": "complexity.countAbove", "above": 15, "label": "Methods above 15", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" }
+  ]
+}
+```
+
 ## Approval History
 
 - None yet.

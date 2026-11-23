@@ -61,6 +61,30 @@ Unlike complexity and the CRAP score, no pinned tool defines a default size boun
 - Accept the scope instrumented by the tests: assemblies without any test stay out of this metric, as they already do for complexity and coverage.
 - Use `Attention` gates: a large size is an improvement signal rather than a blocked inspection until the team explicitly adopts `Blocking` gates.
 
+## Machine Contract
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File my-specs/measurement/run-coverage-report.ps1 -NoOpen",
+    "posix": "bash my-specs/measurement/run-coverage-report.sh --no-open"
+  },
+  "format": "cobertura",
+  "resultPaths": [
+    "my-specs/measurement/coverage/report/Cobertura.xml",
+    "my-specs/measurement/coverage/report/Summary.json"
+  ],
+  "gates": [
+    { "metric": "methodLines.max", "label": "Highest executable line count of a method", "op": "<=", "threshold": 30, "scope": "both", "enforcement": "attention" },
+    { "metric": "methodLines.countAbove", "above": 30, "label": "Methods above 30 executable lines", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" },
+    { "metric": "classLines.max", "label": "Highest executable line count of a class", "op": "<=", "threshold": 300, "scope": "both", "enforcement": "attention" },
+    { "metric": "classLines.countAbove", "above": 300, "label": "Classes above 300 executable lines", "op": "=", "threshold": 0, "scope": "both", "enforcement": "attention" }
+  ]
+}
+```
+
 ## Approval History
 
 - None yet.

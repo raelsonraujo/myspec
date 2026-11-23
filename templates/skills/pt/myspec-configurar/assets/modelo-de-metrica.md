@@ -47,6 +47,21 @@ Criado em: `<data>`
 
 - `<decisão>`: <motivo e alternativa rejeitada, quando relevante>.
 
+## Contrato estruturado
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": "<comando exato ou { \"win32\": \"...\", \"posix\": \"...\" }>",
+  "format": "<formato suportado pelo parser ou manual>",
+  "resultPaths": ["<caminho relativo ao repositório ou glob>"],
+  "gates": [
+    { "metric": "<chave da métrica ou nome do valor JSON>", "label": "<valor registrado>", "op": "<= | >= | = | < | >", "threshold": 0, "scope": "changed | project | both", "enforcement": "blocking | attention" }
+  ]
+}
+```
+
 ## Histórico de aprovação
 
 - Aprovado por: `<git user.name> <git user.email>`

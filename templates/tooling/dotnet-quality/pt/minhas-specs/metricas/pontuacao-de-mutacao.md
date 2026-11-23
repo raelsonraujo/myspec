@@ -55,6 +55,26 @@ Todo mutante sobrevivente em arquivo alterado é candidato a teste novo ou a uma
 - Fixar o Stryker como ferramenta local do repositório: desenvolvedores e CI usam a mesma versão sem instalação global.
 - Usar portão `Atenção`: mutante sobrevivente é sinal de teste fraco, não inspeção bloqueada, até que o time adote explicitamente um portão `Bloqueante`.
 
+## Contrato estruturado
+
+```json myspec
+{
+  "kind": "metric",
+  "workingDir": ".",
+  "command": {
+    "win32": "pwsh -NoProfile -File minhas-specs/medicao/executar-testes-de-mutacao.ps1",
+    "posix": "bash minhas-specs/medicao/executar-testes-de-mutacao.sh"
+  },
+  "format": "stryker",
+  "resultPaths": [
+    "minhas-specs/medicao/mutacao/reports/mutation-report.json"
+  ],
+  "gates": [
+    { "metric": "mutation.score", "label": "Pontuação de mutação dos arquivos alterados", "op": ">=", "threshold": 60, "unit": "%", "scope": "changed", "enforcement": "attention" }
+  ]
+}
+```
+
 ## Histórico de aprovação
 
 - Nenhuma aprovação registrada.

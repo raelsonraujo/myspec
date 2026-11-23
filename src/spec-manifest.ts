@@ -23,12 +23,14 @@ export function parseSpecManifest(content: string) {
     const id = entry[format.id];
     const status = entry[format.status];
     const completion = entry[format.completionInspection];
+    const baseCommit = entry[format.baseCommit];
     const foreignFields = formats.filter((other) => other !== format)
-      .flatMap((other) => [other.id, other.status, other.completionInspection]);
+      .flatMap((other) => [other.id, other.status, other.completionInspection, other.baseCommit]);
     if (
       typeof id !== 'string' || !id || id === '.' || id === '..' || /[/\\]/.test(id) || ids.has(id) ||
       typeof status !== 'string' || !format.statuses.includes(status) ||
       foreignFields.some((key) => Object.hasOwn(entry, key)) ||
+      (baseCommit !== undefined && baseCommit !== null && (typeof baseCommit !== 'string' || !baseCommit.trim())) ||
       (status === format.statuses[2]
         ? typeof completion !== 'string' || !/^\d{3}$/.test(completion)
         : completion !== null)
@@ -51,7 +53,7 @@ export function translateSpecManifest(content: string, language: LanguageId): st
       return [mapped ? target[mapped] : key, field];
     }));
   const translatedEntries = entries.map((entry) => {
-    const translated = rename(entry, ['id', 'status', 'completionInspection']);
+    const translated = rename(entry, ['id', 'status', 'completionInspection', 'baseCommit']);
     translated[target.status] = target.statuses[format.statuses.indexOf(entry[format.status] as string)];
     return translated;
   });

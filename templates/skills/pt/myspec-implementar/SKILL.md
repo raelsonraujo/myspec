@@ -1,49 +1,46 @@
 ---
 name: myspec-implementar
-description: Implementa uma especificação ainda não finalizada, ativando sua entrada no manifesto ao iniciar implementação, em uma pasta nomeada sob minhas-specs/specs, preservando estrutura de arquivos aprovada, código limpo e testes dos caminhos críticos. Use para implementar, continuar ou concluir uma especificação de código.
+description: Implementa uma especificação ainda não finalizada, criando seu plano de árvore de arquivos e ativando sua entrada no manifesto ao iniciar implementação, em uma pasta nomeada sob minhas-specs/specs, com interação focada, código limpo e testes dos caminhos críticos e critérios de aceitação. Use para implementar, continuar ou concluir uma especificação de código.
 ---
 
 # Myspec Implementar
 
-Implemente uma especificação sem decidir silenciosamente sua arquitetura ou comportamento de produto.
+Implemente uma spec ainda não finalizada de `minhas-specs/specs/<id-spec>/spec.md` usando um plano explícito de árvore de arquivos e verificação com evidências.
 
-## Portão obrigatório de orientações
+## Portões de orientações e ciclo de vida
 
-Antes de avançar além da descoberta inicial e somente-leitura do repositório e da especificação, leia todos os Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Todo documento aplicável com `Status: Aprovado` é obrigatório; cumpra-o antes da ação correspondente e exponha conflitos com instruções de maior prioridade. Ausências, documentos não aprovados ou `Nenhum` não impõem restrição; informe limitações relevantes.
+1. Leia todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios e exponha conflitos com instruções de maior prioridade.
+2. Leia `minhas-specs/specs/manifesto.json` e a entrada da spec. Se estiver ausente ou inconsistente, reconcilie via `{{skill:myspec-configurar}}` primeiro.
+3. Uma spec `finalizada` é imutável: nunca a implemente, altere ou reabra; recomende `{{skill:myspec-prescrever}}` para qualquer trabalho posterior.
+4. Leia `spec.md` e confirme que seus critérios BDD (`CA-NN`) estão completos, claros e verificáveis. Práticas, orientações e portões de métricas aprovados aplicam-se diretamente de seus documentos, sem CAs duplicados. Se faltarem critérios específicos da mudança ou houver contradição, pause e recomende `{{skill:myspec-prescrever}}` em vez de adivinhar. Trate `## Histórico de revisões` apenas como contexto.
 
-## Portão do ciclo de vida
+## Plano de árvore de arquivos
 
-Antes de propor ou editar árvore ou implementação, leia `minhas-specs/specs/manifesto.json` e a entrada da spec solicitada. Se estiver ausente, incompleto ou inconsistente, use primeiro o procedimento Manifesto de specs de `{{skill:myspec-configurar}}`; não adivinhe status nem crie manifesto parcial. Spec `finalizada` é imutável: não implemente, revise contrato/árvore, altere evidência de conclusão nem reabra. Recomende `{{skill:myspec-prescrever}}` para delimitar qualquer impacto posterior em nova spec, inclusive correções e refatorações. A nova spec pode alterar deliberadamente os mesmos arquivos de código, mantendo a finalizada como histórico.
+Estabeleça sempre `minhas-specs/specs/<id-spec>/arvore-de-arquivos.md` no estado atual usando [assets/modelo-de-arvore-de-arquivos.md](assets/modelo-de-arvore-de-arquivos.md) antes de editar código de produção ou testes:
+- Termine cada entrada de arquivo na árvore com `# adicionar`, `# modificar` ou `# excluir` (e contexto breve opcional).
+- Mapeie cada `CA-NN` de `spec.md` para seu caminho de produção e caminho/método de verificação, sem redefinir comportamento.
+- Nunca registre identidade Git, autor, aprovador, status ou histórico de revisões em `arvore-de-arquivos.md`.
 
-Mantenha `proposta` durante descoberta, proposta, revisão e aprovação da árvore. Após passar pelos portões de contrato e árvore, imediatamente antes da primeira edição da implementação de produção ou testes, altere somente essa entrada de `proposta` para `ativa`, com `inspecaoDeConclusao: null`. Releia antes de gravar e preserve entradas e campos não relacionados. Continuação de implementação ativa mantém `ativa`, mesmo com testes passando, interrupção da invocação ou bloqueio. Nunca rebaixe status. Somente `{{skill:myspec-inspecionar}}` finaliza esta implementação com inspeção final registrada e confirmação explícita do desenvolvedor após revisá-la.
+**Padrão conferir-antes vs. implementação automática opcional:**
+- **Por padrão**, após criar ou revisar materialmente `arvore-de-arquivos.md` de uma spec `proposta`, apresente-a ao desenvolvedor e **pare sem editar código ou testes** para que ele confira a estrutura primeiro. Quando o desenvolvedor confirmar para prosseguir, avance para ativação e implementação.
+- **Implementação automática opcional:** Prossiga diretamente de `arvore-de-arquivos.md` para ativação e implementação **somente** se:
+  1. o desenvolvedor pedir explicitamente no prompt para implementar automaticamente sem parar na revisão da árvore, **ou**
+  2. uma orientação geral aplicável com `Status: Aprovado` em `minhas-specs/orientacoes-gerais/` autorizar explicitamente a implementação automática após gerar `arvore-de-arquivos.md`.
+- Mesmo com implementação automática habilitada, pause e pergunte se surgir decisão relevante não resolvida que afete comportamento público, arquitetura, persistência, segurança ou compatibilidade.
 
-## Portão rígido: árvore de arquivos
+## Ativação e implementação
 
-Use os critérios BDD identificados de `spec.md` como fonte única da verdade dos comportamentos mensuráveis específicos da mudança. Antes de propor ou implementar a árvore, verifique passos explícitos `Dado / Quando / Então`, resultados verificáveis e se comportamentos obrigatórios específicos da mudança em outras seções estão representados nos critérios.
-
-Regras já estabelecidas por práticas ou orientações aprovadas aplicáveis são exigidas de seus documentos, sem repeti-las como CAs; sua ausência nos critérios não é lacuna de contrato. Não acrescente critérios de conformidade nem exija revisão da spec apenas para repetir orientações. Referencie a origem da regra quando precisar de contexto, sem copiá-la. Se faltarem critérios, forem ambíguos, não BDD ou contraditórios, exponha a lacuna exata e recomende `{{skill:myspec-prescrever}}` para revisar a spec antes da implementação afetada; nunca invente cenários a partir do código nem reescreva silenciosamente o contrato. O corpo da spec é o contrato atual; uma seção `## Histórico de revisões` (ou a equivalente do projeto) é apenas contexto e nunca acrescenta, restaura nem remove requisitos. Regras de engenharia e portões de métricas aprovados continuam aplicáveis separadamente.
-
-Resolva a pasta solicitada em `minhas-specs/specs` e leia `spec.md`. Se `arvore-de-arquivos.md` não existir, inspecione repositório e especificação, crie-o pelo modelo `assets/modelo-de-arvore-de-arquivos.md`, defina `Status: Proposto` e acrescente ao `Histórico de revisões` uma entrada `Proposto` com a data de hoje (`AAAA-MM-DD`). Inclua arquivos a adicionar, modificar ou excluir, suas responsabilidades, locais de teste e decisões estruturais; apresente a proposta e encerre sem editar implementação.
-
-Se existir, mas não estiver `Aprovado`, revise-o frente à especificação e repositório, apresente preocupações ou alternativas e peça aprovação/revisão, sem editar implementação. Em invocação posterior, incorpore revisões ou, após aprovação explícita, marque `Aprovado`. Registre cada revisão e aprovação como nova entrada datada no `Histórico de revisões`, com descrição concisa do que mudou ou foi aprovado; nunca edite nem remova entradas anteriores. Revisar uma árvore aprovada a devolve a `Proposto` até nova aprovação. A mera existência nunca é aprovação.
-
-A árvore, como tudo na pasta da spec, é um registro de trabalho local do desenvolvedor: nunca registre nela identidade Git, autor ou aprovador.
-
-Mapeie todo ID de critério para locais de produção e de teste ou verificação planejada na árvore; ela não pode introduzir nem redefinir comportamento.
-
-## Implementação interativa
-
-1. Leia árvore aprovada, especificação, instruções do repositório e código afetado. Se a pasta da spec ainda não finalizada tiver `inspecoes/`, leia a inspeção de maior número e use seus achados abertos como entrada. Inspeção bloqueada permite continuar implementação ativa; spec finalizada exige nova spec. Após o portão, leia os arquivos de métrica em `minhas-specs/metricas/` quando existirem, para conhecer as ferramentas e os portões que o código alterado deve cumprir, sem que eles substituam as orientações.
-2. Mapeie cada ID de critério para implementação e testes que estabeleçam o estado Dado, exercitem o evento Quando e verifiquem todos os resultados Então/E. Preserve os IDs nos registros de cobertura e no relatório de implementação; os nomes dos testes podem seguir as convenções do repositório.
-3. Antes de editar, informe a primeira fatia pretendida e levante escolhas materiais não resolvidas. Pergunte, em vez de supor, quando a escolha alterar comportamento público, arquitetura, persistência, segurança, compatibilidade ou a árvore aprovada.
-4. Implemente em fatias revisáveis; se evidência invalidar a árvore, pause e proponha atualização.
-5. Execute testes focados durante a iteração e, depois, o build e conjunto de testes mais amplo proporcionalmente relevante.
-6. Informe arquivos alterados, cobertura dos critérios com evidência de teste/verificação nomeada, achados de inspeção tratados, resultados, conformidade e riscos restantes. Sugira `{{skill:myspec-inspecionar}}` para registrar o estado resultante.
+1. Imediatamente antes da primeira edição de código ou teste em uma spec `proposta`, ative-a executando `myspec activate <id-spec>` (ou alterando somente essa entrada no `manifesto.json` de `proposta` para `ativa`, com `inspecaoDeConclusao: null` e o HEAD Git atual em `commitBase`). Nunca ative apenas ao criar `arvore-de-arquivos.md`.
+2. Leia `minhas-specs/metricas/` (quando existir) para conhecer os portões de qualidade aplicáveis e leia a inspeção mais recente em `inspecoes/` (quando existir) para tratar achados abertos.
+3. Implemente em fatias limpas, coesas e revisáveis, cobrindo cada `CA-NN` (`Dado / Quando / Então / E`) e caminhos críticos de falha, fronteira, autorização e integridade de dados.
+4. Mantenha `arvore-de-arquivos.md` atualizada se a implementação exigir legitimamente outro arquivo (e destaque o ajuste no relato para manter o desvio do `myspec gate` limpo).
+5. Se a implementação revelar mudança comportamental necessária, pause e resolva em `spec.md` via `{{skill:myspec-prescrever}}` antes de codificar. Nunca enfraqueça CAs para caber no código.
+6. Execute testes focados durante a iteração e depois os comandos de build e teste do repositório (e opcionalmente `myspec gate <id-spec> --skip-build` ou `myspec gate <id-spec>` completo).
+7. Informe arquivos alterados, cobertura de `CA-NN` com evidência nomeada de teste/verificação, achados de inspeção tratados, resultados da verificação, aderência às orientações aprovadas e riscos remanescentes. Sugira `{{skill:myspec-inspecionar}}` para registrar o estado resultante.
 
 ## Regras de código
 
-- Siga instruções e padrões do repositório. Cubra cada cenário BDD com testes automatizados quando viável, incluindo todos os resultados e caminhos críticos especificados de sucesso, falha, limites, autorização e integridade de dados. Quando a automação for inviável, cite o critério, a limitação e um procedimento concreto de verificação manual ou alternativa com seu resultado; cenário não verificado continua sendo lacuna.
-- Se a implementação ou inspeção revelar mudança comportamental necessária, resolva-a em `spec.md` por `{{skill:myspec-prescrever}}` antes de implementá-la e atualize os mapeamentos e testes afetados. Nunca enfraqueça critérios para ajustar ao código nem trate sugestões da inspeção como novos requisitos comportamentais.
-- Mantenha responsabilidades coesas, dependências explícitas e lógica de produção sem duplicação evitável. Use no máximo uma definição de classe, record, struct ou interface de nível superior por arquivo, salvo exceções geradas ou estabelecidas.
-- Prefira a menor mudança que satisfaça completamente a especificação; não acrescente refatorações ou dependências sem relação.
-- Não alegue cobertura sem nomear a evidência. Nunca deixe orientações Myspec sobrepor instruções superiores.
+- Siga as práticas de código aprovadas, convenções do repositório e padrões estabelecidos.
+- Prefira a menor mudança coesa que atenda à spec; evite refatorações não relacionadas, duplicação evitável ou dependências não solicitadas.
+- Cubra cada critério BDD com testes automatizados quando viável; quando inviável, declare a limitação e o procedimento concreto de verificação e resultado. Nunca afirme cobertura sem evidência nomeada.
+- Nunca permita que orientações Myspec sobrescrevam instruções de maior prioridade; pause e exponha conflitos antes de editar o código afetado.
