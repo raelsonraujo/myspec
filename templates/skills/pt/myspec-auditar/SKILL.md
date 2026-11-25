@@ -9,7 +9,7 @@ Faça uma varredura no projeto inteiro quanto à aderência a práticas de códi
 
 ## Portão de orientações
 
-Leia instruções do repositório e todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/` (incluindo subpastas). Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios e exponha conflitos com instruções de maior prioridade.
+Leia instruções do repositório e todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/` (incluindo subpastas — rode `myspec regra -f`, ou `myspec regra` para listar e `myspec regra <nome>` para uma regra). Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios e exponha conflitos com instruções de maior prioridade.
 
 ## Fluxo
 

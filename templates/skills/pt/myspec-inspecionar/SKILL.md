@@ -9,11 +9,11 @@ Avalie a implementação de uma spec ativa contra seu contrato explícito, regra
 
 > **Avaliação em contexto limpo:** Sempre que a plataforma oferecer subagentes ou sessões isoladas, execute esta inspeção em um contexto limpo baseado em `spec.md`, `arvore-de-arquivos.md`, regras aprovadas, `git diff` e saída do `myspec gate`, em vez da memória do chat de implementação.
 
-> **Comandos da CLI:** cada comando tem dois nomes válidos: o em inglês responde em inglês, e o em português responde em português. `gate` ou `portao`, `finish` ou `finalizar`, `activate` ou `ativar`, `approve` ou `aprovar`, `check-patch` ou `conferir-correcao`.
+> **Comandos da CLI:** cada comando tem dois nomes válidos: o em inglês responde em inglês, e o em português responde em português. `gate` ou `portao`, `finish` ou `finalizar`, `activate` ou `ativar`, `approve` ou `aprovar`, `check-patch` ou `conferir-correcao`, `read` ou `ler`, `inspection` ou `inspecao`, `rule` ou `regra`, `metric` ou `metrica`.
 
 ## Portões de orientações e ciclo de vida
 
-1. Leia todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios; exponha conflitos com instruções de maior prioridade.
+1. Leia toda regra em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/` (rode `myspec regra -f`). Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios; exponha conflitos com instruções de maior prioridade.
 2. Leia `minhas-specs/specs/manifesto.json`. Se estiver ausente ou inconsistente, reconcilie via `{{skill:myspec-configurar}}` primeiro.
 3. Apenas specs `ativa` podem ser inspecionadas para conclusão:
    - `proposta`: implementação não começou; reconcilie via configuração se já houver código.
@@ -23,7 +23,7 @@ Avalie a implementação de uma spec ativa contra seu contrato explícito, regra
 
 ## Fluxo
 
-1. Leia `minhas-specs/specs/<id-spec>/spec.md`, `arvore-de-arquivos.md` (quando existir), `minhas-specs/metricas/` (quando existir) e a inspeção mais recente em `inspecoes/` (se houver).
+1. Leia a spec (`myspec <id-spec> ler`; use `myspec <id-spec> ler -s` para só a seção de smoke), `arvore-de-arquivos.md` (quando existir), `minhas-specs/metricas/` (quando existir, via `myspec metrica -f`) e a inspeção mais recente (se houver, via `myspec <id-spec> inspecao`; use `myspec <id-spec> inspecao -s` quando precisar só do veredito).
 2. Execute **`myspec <id-spec> gate`** (avaliação determinística), completo, sem `--skip-run` nem `--skip-build`, e com o código commitado: o `myspec finish` só aceita o resultado do portão mais recente da spec, aprovado e no mesmo commit da inspeção.
    - Executa qualquer contrato de verificação aprovado em `orientacoes-gerais/*.md` e `praticas-de-codigo/*.md` (`"kind": "verify"`) e cada contrato de métrica aprovado em `metricas/*.md` (`"kind": "metric"`) uma única vez, eliminando repetições compartilhadas.
    - Lê relatórios estruturados (`cobertura`, `sarif`, `trx`, `stryker`, `json`), isola código alterado via `commitBase` / `arvore-de-arquivos.md`, julga os `gates` declarados e verifica **desvio da árvore** (edições não planejadas ou arquivos intocados).

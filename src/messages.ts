@@ -21,6 +21,8 @@ const en = {
 
   // approve
   documentNotFound: (path: string) => `Contract document not found: ${path}`,
+  documentAmbiguous: (target: string, matches: string[]) =>
+    `Contract document "${target}" is ambiguous: ${matches.join(', ')}. Use the folder prefix.`,
   documentOutsideWorkspace: (dir: string, path: string) => `Document must live inside ${dir}/: ${path}`,
   onlyContractDocuments: (folders: string[]) => `Only Markdown documents under ${folders.join(', ')} can be approved.`,
   gitIdentityRequired: () => 'git user.name and user.email are required, or pass --by "Name <email>".',
@@ -163,6 +165,20 @@ const en = {
   criterionNotFound: (value: string, id: string, available: string[]) =>
     `Spec ${id} has no criterion ${value}. Available: ${available.join(', ')}.`,
 
+  // read / inspection
+  noSmokeSection: (path: string) => `No smoke section found in ${path}.`,
+  noSpecInspections: (id: string) => `No inspections found for spec "${id}".`,
+
+  // rule / metric
+  noRulesFound: (folders: string[]) => `No rules found under ${folders.join(' or ')}.`,
+  noMetricsFound: (folder: string) => `No metrics found under ${folder}.`,
+  ruleNotFound: (name: string, available: string[]) => `Rule "${name}" not found. Available: ${available.join(', ')}.`,
+  metricNotFound: (name: string, available: string[]) => `Metric "${name}" not found. Available: ${available.join(', ')}.`,
+  ruleNameAmbiguous: (name: string, matches: string[]) =>
+    `Rule "${name}" is ambiguous: ${matches.join(', ')}. Use the folder prefix.`,
+  metricNameAmbiguous: (name: string, matches: string[]) =>
+    `Metric "${name}" is ambiguous: ${matches.join(', ')}. Use the full relative path.`,
+
   // CLI
   unexpectedArgument: (arg: string) => `Unexpected argument "${arg}".`,
   usage: (line: string) => `Usage: ${line}`,
@@ -199,6 +215,8 @@ const pt: Messages = {
   registerWith: (setupSkill, prescribeSkill) => `Registre-a com ${setupSkill} ou ${prescribeSkill}.`,
 
   documentNotFound: (path) => `Documento do contrato não encontrado: ${path}`,
+  documentAmbiguous: (target, matches) =>
+    `O documento "${target}" é ambíguo: ${matches.join(', ')}. Informe o prefixo da pasta.`,
   documentOutsideWorkspace: (dir, path) => `O documento precisa ficar dentro de ${dir}/: ${path}`,
   onlyContractDocuments: (folders) => `Só documentos Markdown em ${folders.join(', ')} podem ser aprovados.`,
   gitIdentityRequired: () => 'É preciso definir git user.name e user.email, ou passar --by "Nome <email>".',
@@ -326,6 +344,18 @@ const pt: Messages = {
   invalidCriterionNumber: (value) => `Número de critério inválido: "${value}". Informe o número exato, como 5 ou 05.`,
   criterionNotFound: (value, id, available) =>
     `A spec ${id} não tem o critério ${value}. Disponíveis: ${available.join(', ')}.`,
+
+  noSmokeSection: (path) => `Nenhuma seção de smoke encontrada em ${path}.`,
+  noSpecInspections: (id) => `Nenhuma inspeção encontrada para a spec "${id}".`,
+
+  noRulesFound: (folders) => `Nenhuma regra encontrada em ${folders.join(' ou ')}.`,
+  noMetricsFound: (folder) => `Nenhuma métrica encontrada em ${folder}.`,
+  ruleNotFound: (name, available) => `Regra "${name}" não encontrada. Disponíveis: ${available.join(', ')}.`,
+  metricNotFound: (name, available) => `Métrica "${name}" não encontrada. Disponíveis: ${available.join(', ')}.`,
+  ruleNameAmbiguous: (name, matches) =>
+    `A regra "${name}" é ambígua: ${matches.join(', ')}. Informe o prefixo da pasta.`,
+  metricNameAmbiguous: (name, matches) =>
+    `A métrica "${name}" é ambígua: ${matches.join(', ')}. Informe o caminho relativo completo.`,
 
   unexpectedArgument: (arg) => `Argumento inesperado: "${arg}".`,
   usage: (line) => `Uso: ${line}`,

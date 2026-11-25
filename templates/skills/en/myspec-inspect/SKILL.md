@@ -11,7 +11,7 @@ Evaluate an active spec implementation against its explicit contract, approved r
 
 ## Guidance & Lifecycle Gates
 
-1. Read every Markdown file under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat applicable `Status: Approved` documents as mandatory; surface conflicts with higher-priority instructions.
+1. Read every rule under `my-specs/coding-practices/` and `my-specs/general-guidelines/` (run `myspec rule -f`). Treat applicable `Status: Approved` documents as mandatory; surface conflicts with higher-priority instructions.
 2. Read `my-specs/specs/manifest.json`. If missing or inconsistent, reconcile via `{{skill:myspec-setup}}` first.
 3. Only `active` specs can be inspected for completion:
    - `proposed`: implementation has not started; reconcile via setup if code already exists.
@@ -21,7 +21,7 @@ Evaluate an active spec implementation against its explicit contract, approved r
 
 ## Workflow
 
-1. Read `my-specs/specs/<spec-id>/spec.md`, `file-tree.md` (when present), `my-specs/metrics/` (when present), and the highest-numbered file in `inspections/` (if any).
+1. Read the spec (`myspec <spec-id> read`; use `myspec <spec-id> read -s` for just the smoke section), `file-tree.md` (when present), `my-specs/metrics/` (when present, via `myspec metric -f`), and the latest inspection (if any, via `myspec <spec-id> inspection`; use `myspec <spec-id> inspection -s` when only its verdict is needed).
 2. Run **`myspec <spec-id> gate`** (deterministic evaluation) in full, without `--skip-run` or `--skip-build`, with the code committed: `myspec finish` only accepts the spec's latest gate result when it passed on the inspected commit.
    - Executes any approved `general-guidelines/*.md` and `coding-practices/*.md` verification contract (`"kind": "verify"`) and each approved `metrics/*.md` contract (`"kind": "metric"`) once, deduplicating shared runs.
    - Parses structured reports (`cobertura`, `sarif`, `trx`, `stryker`, `json`), isolates changed code via `baseCommit` / `file-tree.md`, evaluates declared `gates`, and checks **file-tree drift** (unplanned/untouched edits).

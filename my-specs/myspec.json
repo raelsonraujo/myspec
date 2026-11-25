@@ -1,0 +1,27 @@
+{
+  "version": "0.7.22",
+  "language": "en",
+  "providers": [
+    "gemini"
+  ],
+  "files": [
+    ".agents/skills/myspec-audit/assets/compliance-report-template.md",
+    ".agents/skills/myspec-audit/SKILL.md",
+    ".agents/skills/myspec-implement/assets/file-tree-template.md",
+    ".agents/skills/myspec-implement/SKILL.md",
+    ".agents/skills/myspec-inspect/assets/inspection-template.md",
+    ".agents/skills/myspec-inspect/SKILL.md",
+    ".agents/skills/myspec-patch/SKILL.md",
+    ".agents/skills/myspec-prescribe/assets/spec-template.md",
+    ".agents/skills/myspec-prescribe/SKILL.md",
+    ".agents/skills/myspec-quantify/assets/quality-report-template.md",
+    ".agents/skills/myspec-quantify/SKILL.md",
+    ".agents/skills/myspec-setup/assets/coding-practice-template.md",
+    ".agents/skills/myspec-setup/assets/general-guideline-template.md",
+    ".agents/skills/myspec-setup/assets/metric-template.md",
+    ".agents/skills/myspec-setup/assets/spec-manifest-template.json",
+    ".agents/skills/myspec-setup/SKILL.md"
+  ],
+  "tooling": [],
+  "installedAt": "2026-11-25T22:24:10.687Z"
+}

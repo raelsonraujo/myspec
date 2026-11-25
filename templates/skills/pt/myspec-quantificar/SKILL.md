@@ -7,15 +7,15 @@ description: Mede as métricas de qualidade definidas pelos arquivos de métrica
 
 Meça as métricas de qualidade aprovadas no projeto inteiro e transforme as áreas mais fracas em oportunidades priorizadas de melhoria. (`{{skill:myspec-inspecionar}}` avalia uma spec; `{{skill:myspec-auditar}}` revisa conformidade com práticas e orientações.)
 
-> **Comandos da CLI:** cada comando tem dois nomes válidos: o em inglês responde em inglês, e o em português responde em português. `gate` ou `portao`, `finish` ou `finalizar`, `activate` ou `ativar`, `approve` ou `aprovar`, `check-patch` ou `conferir-correcao`.
+> **Comandos da CLI:** cada comando tem dois nomes válidos: o em inglês responde em inglês, e o em português responde em português. `gate` ou `portao`, `finish` ou `finalizar`, `activate` ou `ativar`, `approve` ou `aprovar`, `check-patch` ou `conferir-correcao`, `rule` ou `regra`, `metric` ou `metrica`.
 
 ## Portão de orientações
 
-Leia todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios; exponha conflitos com instruções de maior prioridade.
+Leia toda regra em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/` (rode `myspec regra -f`). Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios; exponha conflitos com instruções de maior prioridade.
 
 ## Fluxo
 
-1. Leia todo arquivo em `minhas-specs/metricas/`. Apenas arquivos com `Status: Aprovado` e definição completa são medidos; nunca invente ou adote métricas não definidas. Se não houver nenhuma aprovada (ou existir apenas o legado `minhas-specs/ferramentas.md`), pare e recomende `{{skill:myspec-configurar}}`.
+1. Leia toda métrica em `minhas-specs/metricas/` (rode `myspec metrica -f`, ou `myspec metrica` / `myspec metrica <nome>`). Apenas arquivos com `Status: Aprovado` e definição completa são medidos; nunca invente ou adote métricas não definidas. Se não houver nenhuma aprovada (ou existir apenas o legado `minhas-specs/ferramentas.md`), pare e recomende `{{skill:myspec-configurar}}`.
 2. Execute **`myspec gate --project`** para rodar de forma determinística os comandos aprovados de build/teste e as métricas no projeto inteiro, julgar `## Portões` aplicáveis ao projeto e ler relatórios estruturados (Cobertura XML, SARIF, TRX, Stryker JSON, JSON genérico). Para métricas aprovadas com relatório personalizado (como benchmarks), execute o comando documentado uma vez e leia o caminho do resultado diretamente.
 3. Trate testes falhos ou ignorados como achados; nunca apresente execuções falhas como verificação limpa. Nunca instale, chute ou substitua ferramentas indisponíveis — marque seções incompletas com clareza.
 4. Mapeie pontos críticos às specs em `minhas-specs/specs/` cuja `arvore-de-arquivos.md` cubra o código (quando houver) e compare totais com `minhas-specs/relatorios/relatorio-de-qualidade.md` anterior (se existir).

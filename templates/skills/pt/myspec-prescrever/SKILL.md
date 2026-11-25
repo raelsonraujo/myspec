@@ -9,7 +9,7 @@ Transforme uma solicitação de mudança em um contrato enxuto e testável para 
 
 ## Portões de orientações e ciclo de vida
 
-1. Leia todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios; exponha conflitos com instruções de maior prioridade.
+1. Leia toda regra em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/` (rode `myspec regra -f`). Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios; exponha conflitos com instruções de maior prioridade.
 2. Leia `minhas-specs/specs/manifesto.json` antes de criar ou revisar specs. Se estiver ausente ou inconsistente, reconcilie via `{{skill:myspec-configurar}}` primeiro.
 3. Nunca revise uma spec `finalizada` ou `descartada`, sua árvore, inspeções ou entrada de conclusão. Qualquer mudança que possa impactar uma spec finalizada — inclusive correção ou refatoração que preserve critérios — exige nova spec numerada; retomar o assunto de uma spec descartada também exige nova spec.
 4. Para cada spec criada, acrescente `{"identificador":"<pasta>","situacao":"proposta","inspecaoDeConclusao":null}` ao `manifesto.json` na mesma tarefa (relendo antes de gravar e preservando demais entradas e campos). Revisar spec `proposta` ou `ativa` preserva sua situação.
@@ -25,7 +25,7 @@ Escreva toda spec `proposta` ou `ativa` como descrição autônoma e no estado a
 
 ## Fluxo
 
-1. Leia a solicitação, o contexto relevante do repositório, as orientações aprovadas e `minhas-specs/metricas/` (quando existir) para conhecer os portões aplicáveis. Para conferir sobreposição com specs existentes, percorra os critérios delas com `myspec <id-spec> criterio` (um critério completo com `myspec <id-spec> criterio <N>`) em vez de ler as specs inteiras.
+1. Leia a solicitação, o contexto relevante do repositório, as orientações aprovadas e `minhas-specs/metricas/` (quando existir, via `myspec metrica -f`) para conhecer os portões aplicáveis. Para conferir sobreposição com specs existentes, percorra os critérios delas com `myspec <id-spec> criterio` (um critério completo com `myspec <id-spec> criterio <N>`, ou a spec inteira com `myspec <id-spec> ler`) em vez de navegar pelas pastas manualmente.
 2. Faça perguntas objetivas somente para ambiguidades relevantes que alterem escopo ou comportamento observável; nos demais casos, registre suposições conservadoras.
 3. Sugira um nome curto em kebab-case e atribua o próximo prefixo de três dígitos (`001`, `002`, ...) não usado por nenhuma pasta em `minhas-specs/specs/` nem entrada em `manifesto.json`.
 4. Salve `minhas-specs/specs/<NNN>-<nome>/spec.md` com [assets/modelo-de-spec.md](assets/modelo-de-spec.md). Nunca deixe a spec apenas no chat.
