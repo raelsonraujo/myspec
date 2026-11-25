@@ -5,6 +5,8 @@ import { parseArgs } from 'node:util';
 import { resolve } from 'node:path';
 import { formatGateMarkdown, runGate } from './gate.js';
 import { install, type InstallResult } from './install.js';
+import { openSpec } from './open.js';
+import { formatCriteria, readCriteria } from './criteria.js';
 import { LANGUAGES, parseLanguage, type LanguageId } from './languages.js';
 import { activateSpec, approveContractDocument, checkPatch, finishSpec } from './lifecycle.js';
 import { readManifest } from './manifest.js';
@@ -26,10 +28,12 @@ const help = () => `myspec ${VERSION} - spec-driven development skills and deter
 Usage:
   myspec install -p <provider> -l <language> [-t <tooling>] [-d <dir>]
   myspec approve <path> [-c <context>] [--by <identity>] [-d <dir>]
-  myspec activate <spec> [-d <dir>]
-  myspec gate [<spec>] [--project] [--skip-run] [--skip-build] [--json] [-d <dir>]
-  myspec finish <spec> [--inspection <NNN>] [--force] [-d <dir>]
+  myspec <spec> activate [-d <dir>]
+  myspec [<spec>] gate [--project] [--skip-run] [--skip-build] [--json] [-d <dir>]
+  myspec <spec> finish [--inspection <NNN>] [--force] [-d <dir>]
   myspec check-patch [--limit <N>] [--base <ref>] [--json] [-d <dir>]
+  myspec <spec> open [--file-tree | -ft] [-d <dir>]
+  myspec <spec> criteria [<N>] [-d <dir>]
 
 Commands:
   install            Install the Myspec skills and the workspace (my-specs, or minhas-specs in pt)
@@ -38,9 +42,14 @@ Commands:
   gate               Run build/tests and approved metrics, check file-tree drift, and evaluate thresholds
   finish             Finalize an active spec after verifying its latest passing inspection and git baseline
   check-patch        Check whether current git changes are eligible for patching (limit & finished specs)
+  open               Open a spec's spec.md (or its file tree with --file-tree) in VS Code
+  criteria           List a spec's acceptance criteria (ID and title), or show criterion <N> in full
 
-  Portuguese names: aprovar (approve), ativar (activate), portao or portão (gate), finalizar (finish);
+  Portuguese names: aprovar (approve), ativar (activate), portao or portão (gate), finalizar (finish),
+  conferir-correcao (check-patch), abre or abrir (open), criterio or critério (criteria);
   called by these names, the commands answer in Portuguese.
+
+  The spec always comes before the command: myspec 1 gate, never myspec gate 1.
 
 Install options:
   -p, --provider     codex, claude, gemini, or a comma-separated list (codex,claude,gemini). Repeatable.
@@ -51,7 +60,7 @@ Install options:
   -v, --version      Show the version
 
 Workflow options:
-  <spec>             Spec folder name (001-cancel-order) or just its number (1 or 001)
+  <spec>             Spec folder name (001-cancel-order) or just its number (1 or 001), before the command
   -c, --context      Approval context message for \`approve\`
   --by               Override approver identity ("Name <email>") for \`approve\`
   --inspection       Expected latest 3-digit inspection sequence for \`finish\`
@@ -62,6 +71,9 @@ Workflow options:
   --limit            Maximum changed file count for \`check-patch\` (default: 5)
   --base             Base git ref for \`check-patch\`
   --json             Output machine-readable JSON for \`gate\` or \`check-patch\`
+  -ft, --file-tree   In \`open\`, open the spec's file tree instead of spec.md
+                     (\`open\` runs \`code\`; set MYSPEC_EDITOR to use another editor command)
+  <N>                In \`criteria\`, the exact criterion number to show in full (5, 05, or AC-05)
 
 When the repository already has a Myspec workspace, -p and -l default to the installed values.
 Switching languages renames the workspace folders and files to the new language.
@@ -76,54 +88,98 @@ Examples:
   myspec install -p gemini -l en
   myspec install -p codex,claude,gemini -l en -d ../my-repo
   myspec approve my-specs/metrics/crap-score.md -c "Initial approval"
-  myspec activate 001-cancel-order
-  myspec gate 001-cancel-order
-  myspec finish 001-cancel-order
+  myspec 001-cancel-order activate
+  myspec 1 gate
+  myspec gate --project
+  myspec 1 finish
   myspec check-patch
-  myspec ativar 1
-  myspec portao 1
-  myspec finalizar 1
+  myspec 1 open
+  myspec 1 open -ft
+  myspec 1 criteria
+  myspec 1 criteria 5
+  myspec 1 ativar
+  myspec 1 portao
+  myspec 1 finalizar
+  myspec 1 criterio 5
 `;
 
-/** Portuguese names accepted for the workflow commands. */
+/** Portuguese names accepted for the workflow commands; called by them, the commands answer in Portuguese. */
 const COMMAND_ALIASES: Record<string, string> = {
   aprovar: 'approve',
   ativar: 'activate',
   portao: 'gate',
   'portão': 'gate',
   finalizar: 'finish',
+  'conferir-correcao': 'check-patch',
+  'conferir-correção': 'check-patch',
+  abre: 'open',
+  abrir: 'open',
+  criterio: 'criteria',
+  'critério': 'criteria',
+  criterios: 'criteria',
+  'critérios': 'criteria',
 };
+
+/** English names besides the canonical ones. */
+const ENGLISH_ALIASES: Record<string, string> = {
+  criterion: 'criteria',
+};
+
+/** Commands that take a spec, written before them: `myspec 1 gate`. */
+const SPEC_COMMANDS = new Set(['activate', 'gate', 'finish', 'open', 'criteria']);
+const COMMANDS = new Set([...SPEC_COMMANDS, 'install', 'approve', 'check-patch']);
+
+function commandOf(word: string | undefined): string | undefined {
+  if (word === undefined) return undefined;
+  const lower = word.toLowerCase();
+  const id = COMMAND_ALIASES[lower] ?? ENGLISH_ALIASES[lower] ?? lower;
+  return COMMANDS.has(id) ? id : undefined;
+}
+
+/** Multi-letter short flags that `parseArgs` would split into single letters (`-ft` -> `-f -t`). */
+const FLAG_ALIASES: Record<string, string> = {
+  '-ft': '--file-tree',
+};
+
+const OPTIONS = {
+  provider: { type: 'string', short: 'p', multiple: true },
+  language: { type: 'string', short: 'l' },
+  tooling: { type: 'string', short: 't', multiple: true },
+  dir: { type: 'string', short: 'd' },
+  context: { type: 'string', short: 'c' },
+  by: { type: 'string' },
+  inspection: { type: 'string' },
+  force: { type: 'boolean' },
+  project: { type: 'boolean' },
+  'skip-run': { type: 'boolean' },
+  'skip-build': { type: 'boolean' },
+  limit: { type: 'string' },
+  base: { type: 'string' },
+  json: { type: 'boolean' },
+  'file-tree': { type: 'boolean' },
+  help: { type: 'boolean', short: 'h' },
+  version: { type: 'boolean', short: 'v' },
+} as const;
 
 async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parseArgs({
-    args: argv,
+    args: argv.map((arg) => FLAG_ALIASES[arg] ?? arg),
     allowPositionals: true,
-    options: {
-      provider: { type: 'string', short: 'p', multiple: true },
-      language: { type: 'string', short: 'l' },
-      tooling: { type: 'string', short: 't', multiple: true },
-      dir: { type: 'string', short: 'd' },
-      context: { type: 'string', short: 'c' },
-      by: { type: 'string' },
-      inspection: { type: 'string' },
-      force: { type: 'boolean' },
-      project: { type: 'boolean' },
-      'skip-run': { type: 'boolean' },
-      'skip-build': { type: 'boolean' },
-      limit: { type: 'string' },
-      base: { type: 'string' },
-      json: { type: 'boolean' },
-      help: { type: 'boolean', short: 'h' },
-      version: { type: 'boolean', short: 'v' },
-    },
+    options: OPTIONS,
   });
 
   if (values.version) {
     console.log(VERSION);
     return 0;
   }
-  const [typedCommand, ...rest] = positionals;
-  const command = typedCommand && (COMMAND_ALIASES[typedCommand.toLowerCase()] ?? typedCommand);
+  let [typedCommand, ...rest] = positionals;
+  // `myspec <spec> <command>`: the spec always comes before a spec command.
+  let spec: string | undefined;
+  if (typedCommand && !commandOf(typedCommand) && SPEC_COMMANDS.has(commandOf(rest[0]) ?? '')) {
+    spec = typedCommand;
+    [typedCommand, ...rest] = rest;
+  }
+  const command = typedCommand && (commandOf(typedCommand) ?? typedCommand);
   if (values.help || !command) {
     console.log(help());
     return command || values.help ? 0 : 2;
@@ -152,6 +208,7 @@ async function main(argv: string[]): Promise<number> {
   const language: MessageLanguage = COMMAND_ALIASES[typedCommand.toLowerCase()] ? 'pt' : 'en';
   const t = messages(language);
   const usage = (options: string) => new UsageError(t.usage(`myspec ${typedCommand} ${options}`));
+  const specUsage = (options: string) => new UsageError(t.usage(`myspec <spec> ${typedCommand} ${options}`));
 
   if (command === 'approve') {
     if (rest.length !== 1) throw usage('<path> [-c <context>] [--by <identity>] [-d <dir>]');
@@ -170,8 +227,8 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'activate') {
-    if (rest.length !== 1) throw usage('<spec> [-d <dir>]');
-    const result = activateSpec(root, rest[0], language);
+    if (!spec || rest.length > 0) throw specUsage('[-d <dir>]');
+    const result = activateSpec(root, spec, language);
     console.log(result.alreadyActive ? t.alreadyActive(result.specId) : t.activated(result.specId, result.status));
     console.log(t.manifestLine(result.manifestPath));
     if (result.baseCommit) console.log(t.baseCommitLine(result.baseCommit));
@@ -179,10 +236,10 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'finish') {
-    if (rest.length !== 1) throw usage('<spec> [--inspection <NNN>] [--force] [-d <dir>]');
+    if (!spec || rest.length > 0) throw specUsage('[--inspection <NNN>] [--force] [-d <dir>]');
     const result = finishSpec({
       root,
-      specId: rest[0],
+      specId: spec,
       inspection: values.inspection,
       force: values.force,
       language,
@@ -198,13 +255,13 @@ async function main(argv: string[]): Promise<number> {
   if (command === 'check-patch') {
     if (rest.length > 0) throw new UsageError(`Unexpected argument "${rest[0]}".`);
     const limit = values.limit !== undefined ? Number(values.limit) : undefined;
-    const result = checkPatch({ root, limit, base: values.base });
+    const result = checkPatch({ root, limit, base: values.base, language });
     if (values.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {
-      console.log(`Patch eligibility: ${result.eligible ? 'ELIGIBLE' : 'BLOCKED'} (${result.changedFiles.length}/${result.limit} files)`);
+      console.log(t.patchEligibility(result.eligible, result.changedFiles.length, result.limit));
       if (result.changedFiles.length > 0) {
-        console.log(`  Changed files: ${result.changedFiles.join(', ')}`);
+        console.log(t.patchChangedFiles(result.changedFiles.join(', ')));
       }
       for (const reason of result.reasons) console.log(`  ! ${reason}`);
     }
@@ -212,10 +269,12 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'gate') {
-    if (rest.length > 1) throw new UsageError(t.unexpectedArgument(rest[1]));
+    if (rest.length > 0) {
+      throw new UsageError(t.usage(`myspec [<spec>] ${typedCommand} [--project] [--skip-run] [--skip-build] [--json] [-d <dir>]`));
+    }
     const result = runGate({
       root,
-      specId: rest[0],
+      specId: spec,
       project: values.project,
       skipRun: values['skip-run'],
       skipBuild: values['skip-build'],
@@ -227,6 +286,21 @@ async function main(argv: string[]): Promise<number> {
       process.stdout.write(formatGateMarkdown(result, language));
     }
     return result.passed ? 0 : 1;
+  }
+
+  if (command === 'open') {
+    if (!spec || rest.length > 0) throw specUsage('[--file-tree | -ft] [-d <dir>]');
+    const result = openSpec({ root, specId: spec, fileTree: values['file-tree'], language });
+    console.log(t.opened(result.path));
+    return 0;
+  }
+
+  if (command === 'criteria') {
+    if (!spec) throw specUsage('[<N>] [-d <dir>]');
+    if (rest.length > 1) throw new UsageError(t.unexpectedArgument(rest[1]));
+    const result = readCriteria({ root, specId: spec, criterion: rest[0], language });
+    process.stdout.write(formatCriteria(result, language));
+    return 0;
   }
 
   throw new UsageError(`Unknown command "${command}".`);

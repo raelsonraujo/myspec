@@ -20,6 +20,7 @@ import {
   migrateWorkspace,
   localizeSpecManifest,
   relocateLegacyMeasurement,
+  relocateLegacyReports,
   renameLegacyMetrics,
   retireProductDirectives,
   scaffoldWorkspace,
@@ -129,6 +130,7 @@ export function install(options: InstallOptions): InstallResult {
   addMigration(result, renameLegacyMetrics(root, options.language));
   addMigration(result, relocateLegacyMeasurement(root, options.language, previous?.tooling ?? [], getVariables));
   addMigration(result, retireProductDirectives(root, options.language));
+  addMigration(result, relocateLegacyReports(root, options.language));
 
   // Tooling runs before the workspace scaffold so folders that receive a document get no .gitkeep.
   const tooling = options.tooling ?? [];

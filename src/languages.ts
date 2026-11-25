@@ -30,6 +30,9 @@ export interface WorkspaceLayout {
   legacyProductDirectives: string;
   /** Folder with the scripts and settings a tooling template generates to measure its metrics. */
   measurement: string;
+  /** Folder with the project-wide reports; up to 0.7.15 they sat at the workspace root. */
+  reports: string;
+  /** File names inside `reports`. */
   qualityReport: string;
   complianceReport: string;
   /** Inside each spec folder. */
@@ -78,6 +81,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       legacyTooling: 'tooling.md',
       legacyProductDirectives: 'product-directives',
       measurement: 'measurement',
+      reports: 'reports',
       qualityReport: 'quality-report.md',
       complianceReport: 'compliance-report.md',
       fileTree: 'file-tree.md',
@@ -115,6 +119,7 @@ export const LANGUAGES: Record<LanguageId, Language> = {
       legacyTooling: 'ferramentas.md',
       legacyProductDirectives: 'diretrizes-de-produto',
       measurement: 'medicao',
+      reports: 'relatorios',
       qualityReport: 'relatorio-de-qualidade.md',
       complianceReport: 'relatorio-de-conformidade.md',
       fileTree: 'arvore-de-arquivos.md',

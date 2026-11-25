@@ -53,15 +53,15 @@ const en = {
   dirtyOutsideWorkspace: (dir: string, files: string[]) => `uncommitted changes exist outside ${dir}/ (${files.join(', ')})`,
   baselineChanged: (id: string, reasons: string[]) =>
     `Cannot finish "${id}": ${reasons.join('; ')}. Re-run inspect on the current baseline (or pass --force to override).`,
-  gateResultMissing: (id: string) => `No gate result for "${id}". Run \`myspec gate ${id}\` before finishing.`,
+  gateResultMissing: (id: string) => `No gate result for "${id}". Run \`myspec ${id} gate\` before finishing.`,
   gateResultPartial: (id: string, path: string) =>
-    `The latest gate of "${id}" ran with --skip-run or --skip-build (${path}). Run the full \`myspec gate ${id}\` before finishing.`,
+    `The latest gate of "${id}" ran with --skip-run or --skip-build (${path}). Run the full \`myspec ${id} gate\` before finishing.`,
   gateResultBlocked: (id: string, path: string, failures: string[]) =>
     `Cannot finish "${id}": its latest gate is blocked (${path})${failures.length ? `: ${failures.join('; ')}` : ''}.`,
   gateResultStale: (id: string, gateCommit: string, head: string) =>
-    `The latest gate of "${id}" ran on commit ${gateCommit}, and the current commit is ${head}. Run \`myspec gate ${id}\` again.`,
+    `The latest gate of "${id}" ran on commit ${gateCommit}, and the current commit is ${head}. Run \`myspec ${id} gate\` again.`,
   gateResultDirty: (id: string, files: string[]) =>
-    `The latest gate of "${id}" ran with uncommitted changes (${files.join(', ')}). Commit them and run \`myspec gate ${id}\` again.`,
+    `The latest gate of "${id}" ran with uncommitted changes (${files.join(', ')}). Commit them and run \`myspec ${id} gate\` again.`,
   gateVerified: (path: string) => `  Gate: passed on this commit (${path})`,
   finished: (id: string, status: string) => `Finished spec ${id} (${status})`,
   inspectionLine: (path: string, verdict: string) => `  Inspection: ${path} (${verdict})`,
@@ -72,6 +72,22 @@ const en = {
   blockNotObject: (path: string) => `Invalid \`json myspec\` block in ${path}: expected a JSON object.`,
   invalidCommandSpec: (context: string) => `Invalid command specification in ${context}. Expected a string or { win32, posix }.`,
   verifyCommandsEmpty: (path: string) => `Invalid verify contract in ${path}: "commands" must be a non-empty array.`,
+  metricCommandsInvalid: (path: string) => `Invalid metric contract in ${path}: use either "command" or a non-empty "commands" array, not both.`,
+  metricRunOnGateInvalid: (path: string) => `Invalid metric contract in ${path}: "runOnGate" must be true or false.`,
+  contractLabelInvalid: (path: string) => `Invalid contract in ${path}: "label" must be a non-empty text.`,
+  patchEligibility: (eligible: boolean, count: number, limit: number) => `Patch eligibility: ${eligible ? 'ELIGIBLE' : 'BLOCKED'} (${count}/${limit} files)`,
+  patchChangedFiles: (files: string) => `  Changed files: ${files}`,
+  patchLimitInvalid: (limit: string) => `Invalid file limit "${limit}". Expected a positive integer.`,
+  patchLimitExceeded: (count: number, limit: number) => `Changed file count (${count}) exceeds patch limit (${limit}).`,
+  patchTouchesFinished: (specId: string, files: string) => `Touches finished spec "${specId}" (${files}); create a new spec instead.`,
+  patchTouchesProposed: (specId: string, files: string) => `Touches proposed spec "${specId}" (${files}); use implement instead of patch.`,
+  testResultsInvalid: (path: string) => `Invalid contract in ${path}: "testResults" needs "format": "trx", a non-empty "paths" list and, optionally, "skipped": "attention" or "blocking".`,
+  testStepFailed: (source: string) => `A step that produces the test results of ${source} failed.`,
+  testResultsMissing: (source: string, paths: string) => `No test results of ${source} found in ${paths}.`,
+  testsFailed: (source: string, failed: number, total: number) => `${failed} of ${total} tests failed (${source}).`,
+  testsSkipped: (source: string, skipped: number, total: number) => `${skipped} of ${total} tests were skipped (${source}).`,
+  testResultsLine: (source: string, passed: number, total: number, failed: number, skipped: number, status: string) =>
+    `- Tests: ${passed}/${total} passed, ${failed} failed, ${skipped} skipped \`${status}\` (${source})`,
   metricKindInvalid: (path: string) => `Invalid metric contract in ${path}: "kind" must be "metric".`,
   metricFormatInvalid: (path: string, formats: string[]) =>
     `Invalid metric contract in ${path}: "format" must be one of ${formats.join(', ')}.`,
@@ -122,7 +138,7 @@ const en = {
   driftHeading: () => '## File-Tree Drift',
   driftSkippedNotActive: (status: string) =>
     `Not compared: the spec is \`${status}\`; only an active spec is compared with the changes since its baseCommit.`,
-  driftSkippedNoBase: () => 'Not compared: the active spec has no baseCommit; record it with `myspec activate <spec>`.',
+  driftSkippedNoBase: () => 'Not compared: the active spec has no baseCommit; record it with `myspec <spec> activate`.',
   plannedFiles: (count: number) => `- Planned files: ${count}`,
   changedFiles: (count: number) => `- Changed files: ${count}`,
   unplannedEdits: (files: string) => `- Unplanned edits: ${files}`,
@@ -133,6 +149,19 @@ const en = {
   blockingHeading: () => '## Blocking Failures',
   attentionHeading: () => '## Attention',
   statusLabel: (status: string) => status,
+
+  // open
+  fileTreeNotFound: (path: string) => `File tree not found: ${path}`,
+  editorFailed: (path: string, editor: string) =>
+    `Could not open ${path} with \`${editor}\`. Make sure the VS Code \`code\` command is on PATH, or set MYSPEC_EDITOR.`,
+  opened: (path: string) => `Opened ${path}`,
+
+  // criteria
+  criteriaHeading: (id: string, path: string) => `Spec ${id} (${path})`,
+  noCriteria: (path: string) => `No acceptance criteria (### AC-01: <title>) found in ${path}.`,
+  invalidCriterionNumber: (value: string) => `Invalid criterion number "${value}". Pass the exact number, such as 5 or 05.`,
+  criterionNotFound: (value: string, id: string, available: string[]) =>
+    `Spec ${id} has no criterion ${value}. Available: ${available.join(', ')}.`,
 
   // CLI
   unexpectedArgument: (arg: string) => `Unexpected argument "${arg}".`,
@@ -152,6 +181,7 @@ const STATUS_PT: Record<string, string> = {
   ok: 'ok',
   failed: 'falhou',
   skipped: 'pulado',
+  missing: 'sem resultado',
   not_configured: 'não configurado',
 };
 
@@ -196,15 +226,15 @@ const pt: Messages = {
   dirtyOutsideWorkspace: (dir, files) => `há alterações não commitadas fora de ${dir}/ (${files.join(', ')})`,
   baselineChanged: (id, reasons) =>
     `Não é possível finalizar "${id}": ${reasons.join('; ')}. Inspecione de novo o código atual (ou use --force para ignorar).`,
-  gateResultMissing: (id) => `Nenhum resultado de portão para "${id}". Rode \`myspec portao ${id}\` antes de finalizar.`,
+  gateResultMissing: (id) => `Nenhum resultado de portão para "${id}". Rode \`myspec ${id} portao\` antes de finalizar.`,
   gateResultPartial: (id, path) =>
-    `O portão mais recente de "${id}" rodou com --skip-run ou --skip-build (${path}). Rode o \`myspec portao ${id}\` completo antes de finalizar.`,
+    `O portão mais recente de "${id}" rodou com --skip-run ou --skip-build (${path}). Rode o \`myspec ${id} portao\` completo antes de finalizar.`,
   gateResultBlocked: (id, path, failures) =>
     `Não é possível finalizar "${id}": o portão mais recente está bloqueado (${path})${failures.length ? `: ${failures.join('; ')}` : ''}.`,
   gateResultStale: (id, gateCommit, head) =>
-    `O portão mais recente de "${id}" rodou no commit ${gateCommit}, e o commit atual é ${head}. Rode o \`myspec portao ${id}\` de novo.`,
+    `O portão mais recente de "${id}" rodou no commit ${gateCommit}, e o commit atual é ${head}. Rode o \`myspec ${id} portao\` de novo.`,
   gateResultDirty: (id, files) =>
-    `O portão mais recente de "${id}" rodou com alterações não commitadas (${files.join(', ')}). Commite e rode o \`myspec portao ${id}\` de novo.`,
+    `O portão mais recente de "${id}" rodou com alterações não commitadas (${files.join(', ')}). Commite e rode o \`myspec ${id} portao\` de novo.`,
   gateVerified: (path) => `  Portão: aprovado neste commit (${path})`,
   finished: (id, status) => `Spec ${id} finalizada (${status})`,
   inspectionLine: (path, verdict) => `  Inspeção: ${path} (${verdict})`,
@@ -214,6 +244,22 @@ const pt: Messages = {
   blockNotObject: (path) => `Bloco \`json myspec\` inválido em ${path}: era esperado um objeto JSON.`,
   invalidCommandSpec: (context) => `Comando inválido em ${context}. Era esperado um texto ou { win32, posix }.`,
   verifyCommandsEmpty: (path) => `Contrato de verificação inválido em ${path}: "commands" precisa ser uma lista não vazia.`,
+  metricCommandsInvalid: (path) => `Contrato de métrica inválido em ${path}: use "command" ou uma lista não vazia em "commands", não os dois.`,
+  metricRunOnGateInvalid: (path) => `Contrato de métrica inválido em ${path}: "runOnGate" precisa ser true ou false.`,
+  contractLabelInvalid: (path) => `Contrato inválido em ${path}: "label" precisa ser um texto não vazio.`,
+  patchEligibility: (eligible, count, limit) => `Elegibilidade da correção: ${eligible ? 'ELEGÍVEL' : 'BLOQUEADA'} (${count}/${limit} arquivos)`,
+  patchChangedFiles: (files) => `  Arquivos alterados: ${files}`,
+  patchLimitInvalid: (limit) => `Limite de arquivos inválido "${limit}". Era esperado um inteiro positivo.`,
+  patchLimitExceeded: (count, limit) => `A quantidade de arquivos alterados (${count}) passa do limite da correção (${limit}).`,
+  patchTouchesFinished: (specId, files) => `Toca a spec finalizada "${specId}" (${files}); abra uma spec nova.`,
+  patchTouchesProposed: (specId, files) => `Toca a spec proposta "${specId}" (${files}); use a implementação, não a correção.`,
+  testResultsInvalid: (path) => `Contrato inválido em ${path}: "testResults" precisa de "format": "trx", de uma lista não vazia em "paths" e, se quiser, de "skipped": "attention" ou "blocking".`,
+  testStepFailed: (source) => `Falhou um passo que produz os resultados de teste de ${source}.`,
+  testResultsMissing: (source, paths) => `Nenhum resultado de teste de ${source} em ${paths}.`,
+  testsFailed: (source, failed, total) => `${failed} de ${total} testes reprovados (${source}).`,
+  testsSkipped: (source, skipped, total) => `${skipped} de ${total} testes ignorados (${source}).`,
+  testResultsLine: (source, passed, total, failed, skipped, status) =>
+    `- Testes: ${passed}/${total} aprovados, ${failed} reprovados, ${skipped} ignorados \`${STATUS_PT[status] ?? status}\` (${source})`,
   metricKindInvalid: (path) => `Contrato de métrica inválido em ${path}: "kind" precisa ser "metric".`,
   metricFormatInvalid: (path, formats) => `Contrato de métrica inválido em ${path}: "format" precisa ser um destes: ${formats.join(', ')}.`,
   metricFieldNotStringArray: (path, field) => `Contrato de métrica inválido em ${path}: "${field}" precisa ser uma lista de textos.`,
@@ -258,7 +304,7 @@ const pt: Messages = {
   driftHeading: () => '## Arquivos fora da árvore',
   driftSkippedNotActive: (status) =>
     `Comparação não feita: a spec está \`${status}\`; só uma spec ativa é comparada com o que mudou desde o commitBase.`,
-  driftSkippedNoBase: () => 'Comparação não feita: a spec ativa não tem commitBase; registre-o com `myspec ativar <spec>`.',
+  driftSkippedNoBase: () => 'Comparação não feita: a spec ativa não tem commitBase; registre-o com `myspec <spec> ativar`.',
   plannedFiles: (count) => `- Arquivos previstos: ${count}`,
   changedFiles: (count) => `- Arquivos alterados: ${count}`,
   unplannedEdits: (files) => `- Alterados sem estar na árvore: ${files}`,
@@ -269,6 +315,17 @@ const pt: Messages = {
   blockingHeading: () => '## Bloqueios',
   attentionHeading: () => '## Atenção',
   statusLabel: (status) => STATUS_PT[status] ?? status,
+
+  fileTreeNotFound: (path) => `Árvore de arquivos não encontrada: ${path}`,
+  editorFailed: (path, editor) =>
+    `Não foi possível abrir ${path} com \`${editor}\`. Confira se o comando \`code\` do VS Code está no PATH, ou defina MYSPEC_EDITOR.`,
+  opened: (path) => `Aberto: ${path}`,
+
+  criteriaHeading: (id, path) => `Spec ${id} (${path})`,
+  noCriteria: (path) => `Nenhum critério de aceitação (### CA-01: <título>) encontrado em ${path}.`,
+  invalidCriterionNumber: (value) => `Número de critério inválido: "${value}". Informe o número exato, como 5 ou 05.`,
+  criterionNotFound: (value, id, available) =>
+    `A spec ${id} não tem o critério ${value}. Disponíveis: ${available.join(', ')}.`,
 
   unexpectedArgument: (arg) => `Argumento inesperado: "${arg}".`,
   usage: (line) => `Uso: ${line}`,

@@ -169,8 +169,9 @@ describe('myspec install', () => {
 
     const result = installOk(dir, '-l', 'pt');
 
+    // Neither report is overwritten: the localized one moves into the reports folder, the other stays for a manual merge.
     assert.equal(read(dir, 'minhas-specs/compliance-report.md'), '# English findings\n');
-    assert.equal(read(dir, 'minhas-specs/relatorio-de-conformidade.md'), '# Achados em português\n');
+    assert.equal(read(dir, 'minhas-specs/relatorios/relatorio-de-conformidade.md'), '# Achados em português\n');
     assert.match(result.stdout, /Both minhas-specs\/compliance-report.md and minhas-specs\/relatorio-de-conformidade.md exist/);
   });
 
@@ -236,9 +237,17 @@ describe('myspec install', () => {
     assert.equal(read(dir, 'minhas-specs/specs/001-cancel/spec.md'), '# Cancel\n');
     assert.equal(read(dir, 'minhas-specs/specs/001-cancel/arvore-de-arquivos.md'), 'Status: Proposto\n');
     assert.ok(existsSync(join(dir, 'minhas-specs/specs/001-cancel/inspecoes/inspecao-001.md')));
-    assert.ok(existsSync(join(dir, 'minhas-specs/relatorio-de-qualidade.md')));
-    assert.equal(read(dir, 'minhas-specs/relatorio-de-conformidade.md'), '# Compliance evidence\n');
+    // Reports written at the workspace root by earlier versions move into the reports folder.
+    assert.ok(existsSync(join(dir, 'minhas-specs/relatorios/relatorio-de-qualidade.md')));
+    assert.equal(read(dir, 'minhas-specs/relatorios/relatorio-de-conformidade.md'), '# Compliance evidence\n');
     assert.ok(!existsSync(join(dir, 'minhas-specs/compliance-report.md')));
+    assert.ok(!existsSync(join(dir, 'minhas-specs/relatorio-de-conformidade.md')));
+    // The reports folder ignores itself, so git never sees the reports and the repository .gitignore stays untouched.
+    assert.match(read(dir, 'minhas-specs/relatorios/.gitignore'), /^\*$/m);
+    spawnSync('git', ['init', '-q'], { cwd: dir });
+    const ignored = spawnSync('git', ['check-ignore', 'minhas-specs/relatorios/relatorio-de-qualidade.md'], { cwd: dir, encoding: 'utf8' });
+    assert.equal(ignored.status, 0, 'git ignores the reports');
+    assert.ok(!existsSync(join(dir, '.gitignore')), 'the repository .gitignore is not created');
     assert.match(read(dir, 'minhas-specs/metricas/coverage.md'), /^Status: Aprovado$/m);
     assert.equal(JSON.parse(read(dir, 'minhas-specs/myspec.json')).language, 'pt');
     assert.match(result.stdout, /> my-specs -> minhas-specs/);
@@ -247,8 +256,11 @@ describe('myspec install', () => {
     assert.ok(!existsSync(join(dir, 'minhas-specs')));
     assert.equal(read(dir, 'my-specs/coding-practices/rule.md'), approved);
     assert.equal(read(dir, 'my-specs/metrics/coverage.md'), approved);
-    assert.equal(read(dir, 'my-specs/compliance-report.md'), '# Compliance evidence\n');
-    assert.ok(!existsSync(join(dir, 'my-specs/relatorio-de-conformidade.md')));
+    // The reports folder and its files take the names of the new language.
+    assert.equal(read(dir, 'my-specs/reports/compliance-report.md'), '# Compliance evidence\n');
+    assert.ok(existsSync(join(dir, 'my-specs/reports/quality-report.md')));
+    assert.match(read(dir, 'my-specs/reports/.gitignore'), /^\*$/m);
+    assert.ok(!existsSync(join(dir, 'my-specs/relatorios')));
     assert.ok(existsSync(join(dir, 'my-specs/specs/001-cancel/inspections/inspection-001.md')));
   });
 

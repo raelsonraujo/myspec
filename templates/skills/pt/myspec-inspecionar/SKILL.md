@@ -9,6 +9,8 @@ Avalie a implementação de uma spec ativa contra seu contrato explícito, regra
 
 > **Avaliação em contexto limpo:** Sempre que a plataforma oferecer subagentes ou sessões isoladas, execute esta inspeção em um contexto limpo baseado em `spec.md`, `arvore-de-arquivos.md`, regras aprovadas, `git diff` e saída do `myspec gate`, em vez da memória do chat de implementação.
 
+> **Comandos da CLI:** cada comando tem dois nomes válidos: o em inglês responde em inglês, e o em português responde em português. `gate` ou `portao`, `finish` ou `finalizar`, `activate` ou `ativar`, `approve` ou `aprovar`, `check-patch` ou `conferir-correcao`.
+
 ## Portões de orientações e ciclo de vida
 
 1. Leia todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios; exponha conflitos com instruções de maior prioridade.
@@ -22,12 +24,12 @@ Avalie a implementação de uma spec ativa contra seu contrato explícito, regra
 ## Fluxo
 
 1. Leia `minhas-specs/specs/<id-spec>/spec.md`, `arvore-de-arquivos.md` (quando existir), `minhas-specs/metricas/` (quando existir) e a inspeção mais recente em `inspecoes/` (se houver).
-2. Execute **`myspec gate <id-spec>`** (avaliação determinística), completo, sem `--skip-run` nem `--skip-build`, e com o código commitado: o `myspec finish` só aceita o resultado do portão mais recente da spec, aprovado e no mesmo commit da inspeção.
-   - Executa qualquer contrato de verificação aprovado em `orientacoes-gerais/*.md` (`"kind": "verify"`) e cada contrato de métrica aprovado em `metricas/*.md` (`"kind": "metric"`) uma única vez, eliminando repetições compartilhadas.
+2. Execute **`myspec <id-spec> gate`** (avaliação determinística), completo, sem `--skip-run` nem `--skip-build`, e com o código commitado: o `myspec finish` só aceita o resultado do portão mais recente da spec, aprovado e no mesmo commit da inspeção.
+   - Executa qualquer contrato de verificação aprovado em `orientacoes-gerais/*.md` e `praticas-de-codigo/*.md` (`"kind": "verify"`) e cada contrato de métrica aprovado em `metricas/*.md` (`"kind": "metric"`) uma única vez, eliminando repetições compartilhadas.
    - Lê relatórios estruturados (`cobertura`, `sarif`, `trx`, `stryker`, `json`), isola código alterado via `commitBase` / `arvore-de-arquivos.md`, julga os `gates` declarados e verifica **desvio da árvore** (edições não planejadas ou arquivos intocados).
    - Para métricas aprovadas cujo formato o `myspec gate` não interprete automaticamente (como benchmarks comparados por máquina), execute o comando documentado e leia o resultado diretamente. Nunca invente, estime, instale ou substitua ferramentas; registre métricas indisponíveis/não aprovadas como `Não medida: <motivo>` e sugira `{{skill:myspec-configurar}}`.
-   - Não atualize `minhas-specs/relatorio-de-qualidade.md`; esse relatório pertence a `{{skill:myspec-quantificar}}`.
-3. Verifique cada critério BDD (`CA-NN`) de `spec.md` com evidência concreta de teste ou verificação cobrindo `Dado / Quando / Então / E`:
+   - Não atualize `minhas-specs/relatorios/relatorio-de-qualidade.md`; esse relatório pertence a `{{skill:myspec-quantificar}}`.
+3. Verifique cada critério BDD (`CA-NN`) de `spec.md` com evidência concreta de teste ou verificação cobrindo `Dado / Quando / Então / E` (`myspec <id-spec> criterio` lista os IDs e títulos para a tabela; `myspec <id-spec> criterio <N>` relê um critério):
    - Marque `Atendido` somente quando todos os resultados forem comprovados, `Não atendido` quando contradito ou `Evidência insuficiente` quando ausente/parcial. Nunca omita um CA nem use `Não aplicável`.
    - Práticas de código, orientações gerais e portões de métricas aprovados aplicam-se diretamente de seus documentos; nunca exija CAs duplicados. Registre violações separadamente com `arquivo:linha` e regra de origem.
    - Relate desvios não planejados da árvore apontados pelo `myspec gate` como achado de `Atenção` (ou `Não atendido` se violarem escopo/regras).
@@ -41,8 +43,8 @@ Avalie a implementação de uma spec ativa contra seu contrato explícito, regra
 
 ## Finalização
 
-- Após salvar uma inspeção `Apta` ou `Apta com ressalvas`, apresente caminho, veredito e achados principais. Peça ao desenvolvedor que finalize executando **`myspec finish <id-spec>`** (que valida de forma determinística a inspeção apta, a base Git inalterada e o portão mais recente aprovado no mesmo commit) ou confirmando explicitamente no chat.
-- Em confirmação explícita no chat (sem mudanças no código desde a inspeção revisada), execute `myspec finish <id-spec>` sem criar nova inspeção. Não altere o manifesto à mão para finalizar: é o `myspec finish` que confere o portão. Se o código mudou após a inspeção, inspecione a nova base antes.
+- Após salvar uma inspeção `Apta` ou `Apta com ressalvas`, apresente caminho, veredito e achados principais. Peça ao desenvolvedor que finalize executando **`myspec <id-spec> finish`** (que valida de forma determinística a inspeção apta, a base Git inalterada e o portão mais recente aprovado no mesmo commit) ou confirmando explicitamente no chat.
+- Em confirmação explícita no chat (sem mudanças no código desde a inspeção revisada), execute `myspec <id-spec> finish` sem criar nova inspeção. Não altere o manifesto à mão para finalizar: é o `myspec finish` que confere o portão. Se o código mudou após a inspeção, inspecione a nova base antes.
 
 ## Concisão e limites do registro
 

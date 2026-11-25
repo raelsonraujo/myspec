@@ -14,7 +14,7 @@ Applies to: `<applicable Myspec skills>`
 
 ## Verification
 
-<When this rule applies and the evidence or check that establishes compliance. Enforce the approved rule directly from this document; no per-spec acceptance criterion is required.>
+<When this rule applies and the evidence or check that establishes compliance. Enforce the approved rule directly from this document; no per-spec acceptance criterion is required. When the rule can be checked by a command, add a ```` ```json myspec ```` block with `{"kind":"verify","workingDir":".","commands":[...]}` for `myspec gate` to run.>
 
 ## Guidance Precedence
 

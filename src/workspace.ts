@@ -115,9 +115,13 @@ export function migrateWorkspace(root: string, from: LanguageId, to: LanguageId)
     'legacyTooling',
     'qualityReport',
     'complianceReport',
+    'reports',
     'measurement',
   ];
   for (const key of entries) move(inWorkspace(source[key] as string), inWorkspace(target[key] as string));
+  for (const key of ['qualityReport', 'complianceReport'] as const) {
+    move(inWorkspace(`${target.reports}/${source[key]}`), inWorkspace(`${target.reports}/${target[key]}`));
+  }
 
   const specsDir = join(root, target.dir, target.specs);
   const specs = existsSync(specsDir) ? readdirSync(specsDir, { withFileTypes: true }).filter((entry) => entry.isDirectory()) : [];
@@ -202,6 +206,28 @@ export function renameLegacyMetrics(root: string, language: LanguageId): Workspa
  * Retires the product directives folder of workspaces up to 0.4.2. A folder holding only the scaffold's `.gitkeep` is
  * removed; one with documents is kept and reported, since its rules are the repository's to move elsewhere.
  */
+/**
+ * Moves the project-wide reports that versions up to 0.7.15 wrote at the workspace root into the reports folder.
+ * A report already in the folder is kept, and the one at the root is reported for a manual merge.
+ */
+export function relocateLegacyReports(root: string, language: LanguageId): WorkspaceMigration {
+  const layout = LANGUAGES[language].workspace;
+  const result = emptyMigration();
+  for (const name of [layout.qualityReport, layout.complianceReport]) {
+    const from = `${layout.dir}/${name}`;
+    const to = `${layout.dir}/${layout.reports}/${name}`;
+    if (!existsSync(join(root, from))) continue;
+    if (existsSync(join(root, to))) {
+      result.warnings.push(`Both ${from} and ${to} exist; move the remaining report manually.`);
+      continue;
+    }
+    mkdirSync(join(root, layout.dir, layout.reports), { recursive: true });
+    renameSync(join(root, from), join(root, to));
+    result.moved.push(`${from} -> ${to}`);
+  }
+  return result;
+}
+
 export function retireProductDirectives(root: string, language: LanguageId): WorkspaceMigration {
   const layout = LANGUAGES[language].workspace;
   const path = `${layout.dir}/${layout.legacyProductDirectives}`;
@@ -278,7 +304,7 @@ export function relocateLegacyMeasurement(
 }
 
 /**
- * Points the measurement commands and result paths of metric files and general guidelines at a moved folder,
+ * Points the measurement commands and result paths of metric files, general guidelines and coding practices at a moved folder,
  * renaming what follows the folder with `localize` when the files inside it were renamed too.
  */
 function repointDocuments(
@@ -290,7 +316,7 @@ function repointDocuments(
 ): string[] {
   if (from === to) return [];
   const pattern = new RegExp(`(^|[\\s\`"'(\\[])${escapeRegExp(from)}/([^\\s\`"')\\]]*)`, 'gm');
-  const documents = [layout.metrics, layout.generalGuidelines].flatMap((folder) => {
+  const documents = [layout.metrics, layout.generalGuidelines, layout.codingPractices].flatMap((folder) => {
     const dir = join(root, layout.dir, folder);
     return existsSync(dir) ? listFiles(dir).map((file) => `${layout.dir}/${folder}/${file}`) : [];
   });
@@ -312,6 +338,11 @@ function escapeRegExp(text: string): string {
 }
 
 /** Creates the workspace folders without ever touching documents the repository already has. */
+const REPORTS_GITIGNORE: Record<LanguageId, string> = {
+  en: '# Written by myspec: project-wide reports regenerated locally, kept out of version control.\n*\n',
+  pt: '# Gravado pelo myspec: relatórios do projeto gerados localmente, fora do controle de versão.\n*\n',
+};
+
 export function scaffoldWorkspace(root: string, language: LanguageId): string[] {
   const created: string[] = [];
   const layout = LANGUAGES[language].workspace;
@@ -324,6 +355,15 @@ export function scaffoldWorkspace(root: string, language: LanguageId): string[] 
       writeFileSync(join(dir, '.gitkeep'), '');
       created.push(`${layout.dir}/${folder}/`);
     }
+  }
+
+  // The reports folder ignores itself, like `.myspec/`: reports are regenerated locally and never reach version control,
+  // without the repository's own `.gitignore` having to know about them.
+  const reportsIgnore = join(workspace, layout.reports, '.gitignore');
+  if (!existsSync(reportsIgnore)) {
+    mkdirSync(join(workspace, layout.reports), { recursive: true });
+    writeFileSync(reportsIgnore, REPORTS_GITIGNORE[language]);
+    created.push(`${layout.dir}/${layout.reports}/.gitignore`);
   }
 
   // The README is regenerated only while it still matches a pristine template, so user edits survive.

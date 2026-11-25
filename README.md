@@ -1,227 +1,128 @@
 # myspec
 
-CLI de desenvolvimento orientado a especificações (SDD) para agentes de código, no estilo do [spec-kit](https://github.com/github/spec-kit) e do [OpenSpec](https://github.com/Fission-AI/OpenSpec). Ela instala no repositório um conjunto de skills Myspec e o workspace `my-specs/` (`minhas-specs/` em português), onde o time estabelece e aprova as regras que os agentes devem seguir.
+CLI de desenvolvimento orientado a especificações (SDD) para agentes de código (Codex, Claude Code e Gemini). Ela instala no repositório as skills Myspec, que conduzem o ciclo prescrever → implementar → inspecionar, e o workspace `my-specs/` (`minhas-specs/` em português), onde ficam as specs e as regras que o time aprova para os agentes seguirem. Comandos determinísticos cuidam do que não deve depender do LLM: aprovações, ciclo de vida das specs, build, testes e métricas.
 
 ## Instalação
 
-Você precisa de Node.js 20 ou superior. Baixe o arquivo `myspec-<versão>.tgz` nos [assets da release](https://github.com/raelsonraujo/myspec/releases). Use a tag e o nome do arquivo da versão escolhida nos comandos abaixo.
-
-Na pasta em que salvou o arquivo, verifique sua origem e integridade com a [CLI do GitHub](https://cli.github.com/manual/gh_release_verify-asset).
+Você precisa de Node.js 20 ou superior. Baixe o arquivo `myspec-<versão>.tgz` nos [assets da release](https://github.com/raelsonraujo/myspec/releases) e instale-o com o npm, na pasta em que salvou o arquivo:
 
 ```bash
-gh release verify-asset v0.6.0 ./myspec-0.6.0.tgz --repo raelsonraujo/myspec
-```
-
-Após a verificação, instale o pacote local e confira a versão.
-
-```bash
-npm install -g --offline --ignore-scripts ./myspec-0.6.0.tgz
+npm install -g --ignore-scripts ./myspec-0.7.21.tgz
 myspec --version
 ```
 
-## Desenvolvimento
-
-Na raiz do clone, instale as dependências e vincule a CLI.
+Para conferir a origem e a integridade do arquivo antes de instalar, use a [CLI do GitHub](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-npm ci
-npm link
+gh release verify-asset v0.7.21 ./myspec-0.7.21.tgz --repo raelsonraujo/myspec
 ```
 
-## Publicação de releases
+## Configurando um repositório: `myspec install`
 
-Ative [releases imutáveis](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes) nas configurações do repositório antes da primeira publicação. Use uma tag que corresponda à versão do `package.json`, como `v0.6.0` para a versão `0.6.0`.
-
-Em um checkout limpo da tag, rode os comandos abaixo. `npm test` compila a CLI antes de executar os testes.
+Na raiz do repositório, escolha o agente e o idioma:
 
 ```bash
-npm ci --ignore-scripts
-npm test
-npm pack --ignore-scripts
-```
-
-Com a tag no GitHub, crie o rascunho com o pacote anexado.
-
-```bash
-gh release create v0.6.0 ./myspec-0.6.0.tgz --verify-tag --draft --generate-notes --repo raelsonraujo/myspec
-```
-
-Revise o rascunho no GitHub e publique a release. A publicação bloqueia alterações na tag e no arquivo anexado e gera a atestação usada na instalação.
-
-## Uso
-
-```bash
-myspec install -p codex -l pt
+myspec install -p claude -l pt
 ```
 
 | Opção | Valores | Descrição |
 | --- | --- | --- |
-| `-p, --provider` | `codex`, `claude`, `gemini`, ou combinação (`codex,claude,gemini`) | Agente que receberá os skills. Pode ser repetida. Aceita aliases como `antigravity`, `agy`, `gemini-cli` e `neon` para `gemini`. |
-| `-l, --language` | `en` (`eng`), `pt` | Idioma dos skills. Apenas um idioma é instalado. |
-| `-t, --tooling` | `dotnet-quality` | Template de tooling de qualidade inicial. Pode ser repetida. |
+| `-p, --provider` | `codex`, `claude`, `gemini` ou combinação (`codex,claude`) | Agente que recebe as skills. Pode ser repetida. |
+| `-l, --language` | `en`, `pt` | Idioma das skills e do workspace. |
+| `-t, --tooling` | `dotnet-quality` | Template inicial de medição de qualidade (opcional). |
 | `-d, --dir` | caminho | Repositório de destino (padrão: diretório atual). |
 
-Sem `-p`/`-l` em um terminal interativo, a CLI pergunta os valores. Se o repositório já tiver um workspace Myspec, eles assumem os valores instalados; assim, `myspec install -t dotnet-quality` adiciona o tooling a uma instalação existente.
-
-### Comandos determinísticos do fluxo
-
-Além de `install`, a CLI oferece comandos determinísticos para tirar burocracia e avaliação numérica do LLM (e permitir reuso direto em CI):
-
-| Comando | Função |
-| --- | --- |
-| `myspec approve <caminho> [-c "<contexto>"]` | Aprova um documento em `metrics/`, `coding-practices/` ou `general-guidelines/` usando `git config user.name`/`user.email`, mudando o status para `Approved`/`Aprovado` e acrescentando a entrada no histórico. |
-| `myspec activate <id-spec>` | Transiciona uma spec `proposed`/`proposta` para `active`/`ativa` no manifesto e registra o `HEAD` Git atual em `baseCommit`/`commitBase`. |
-| `myspec gate [<id-spec> \| --project] [--skip-run] [--json]` | Executa os comandos aprovados de build/teste e métricas (deduplicando execuções compartilhadas), interpreta relatórios estruturados (Cobertura XML, SARIF, TRX, Stryker JSON e JSON genérico), verifica desvio da árvore de arquivos (`file-tree.md`) e retorna código de saída não-zero em falhas bloqueantes. Os arquivos previstos vêm do bloco da árvore (a seção de responsabilidades só é lida quando não há bloco), e a comparação só é feita para spec ativa com `baseCommit`/`commitBase`; nos demais casos o relatório diz que a comparação não foi feita e por quê. A saída de cada comando vai para `.myspec/logs/<id-spec>/` (ou `.myspec/logs/project/`, `projeto/` em português), um log por documento, recriado a cada execução, sem limite de tamanho e fora do controle de versão; o relatório mostra a pasta e as últimas linhas dos comandos que falharam. |
-| `myspec finish <id-spec> [--inspection <NNN>] [--force]` | Finaliza uma spec ativa no manifesto após confirmar que a inspeção mais recente está `Ready`/`Apta` (ou com ressalvas), que a base Git não mudou desde a inspeção e que o `myspec gate <id-spec>` mais recente foi completo (sem `--skip-run` nem `--skip-build`), aprovado, no commit atual e sem alterações pendentes. O `gate` de uma spec grava esse resultado em `.myspec/logs/<id-spec>/gate-result.json`. `--force` dispensa só as condições de commit e de alterações pendentes; o portão aprovado continua obrigatório. |
-| `myspec check-patch [--limit <N>] [--base <ref>] [--json]` | Valida se o conjunto de arquivos alterados no Git respeita o limite de arquivos do patch e não toca nenhuma spec `finished`/`finalizada` ou `proposed`/`proposta`. |
-
-Os comandos também aceitam nomes em português: `myspec aprovar` (`approve`), `myspec ativar` (`activate`), `myspec portao` ou `myspec portão` (`gate`) e `myspec finalizar` (`finish`), com as mesmas opções. Chamados pelo nome em português, eles respondem em português: mensagens, erros e o relatório do `portao`. A saída `--json` mantém as chaves e os códigos de situação em inglês nas duas línguas, para scripts e CI.
-
-Em `activate`, `gate` e `finish`, `<id-spec>` aceita o nome completo da pasta (`039-calendario-de-feriados`) ou só o número da spec (`39` ou `039`). O número precisa corresponder a exatamente uma pasta `NNN-<nome>`; número sem pasta ou repetido em duas pastas é recusado, e o nome completo resolve o caso.
-
-## Templates de tooling
-
-Um template de tooling gera, junto com os skills, os artefatos para medir qualidade em `my-specs/measurement/` (`minhas-specs/medicao/`) e uma proposta já preenchida de um arquivo por métrica em `my-specs/metrics/` (`Status: Proposed`; em português, `minhas-specs/metricas/` com `Status: Proposto`). **A CLI não instala dependências**: cada template traz um README com os comandos para o desenvolvedor executar.
-
-Os skills não supõem métricas: cada arquivo em `metrics/` (`metricas/`) é uma métrica, com status e aprovação próprios, e define tudo o que é preciso para medi-la — contexto de execução, comandos pré-requisito, ferramenta, comando, escopo, isolamento do código alterado, valores registrados — e seus portões (`## Gates`/`## Portões`): limite, se vale para o código alterado ou para o projeto, e efeito `Blocking`/`Bloqueante` ou `Attention`/`Atenção`. Os comandos de build e teste ficam na orientação geral `build-and-test-commands.md` (`comandos-de-build-e-teste.md`). Sem template de tooling, o skill de setup pergunta ao desenvolvedor quais métricas medir; um template apenas propõe um conjunto concreto para revisão.
-
-```bash
-myspec install -p claude -l pt -t dotnet-quality
-```
-
-`dotnet-quality` mede em .NET, com um script por grupo de métricas:
-
-- complexidade ciclomática, cobertura de linhas/ramos, CRAP score e tamanho de módulo com Coverlet e ReportGenerator, em uma única execução de testes;
-- acoplamento de tipos e membros com a regra CA1506 dos analisadores do SDK, ativada só nessa compilação;
-- conformidade com as regras de dependência aprovadas, por testes de arquitetura do ArchUnitNET;
-- pontuação de mutação com Stryker.NET, isolável pelos arquivos de uma spec;
-- performance dos caminhos críticos aprovados (bytes alocados e tempo médio por operação) com BenchmarkDotNet.
-
-```text
-minhas-specs/                                      # -l pt (my-specs/ em -l en)
-├── medicao/                                       # measurement/ em -l en, com os nomes em inglês
-│   ├── README.md                                  # instalação das dependências e uso
-│   ├── cobertura.runsettings                      # filtros de cobertura
-│   ├── gerar-relatorio-de-cobertura.ps1/.sh       # restore → build → test → relatório
-│   ├── medir-acoplamento.ps1/.sh                  # build Release com CA1506 → SARIF
-│   ├── acoplamento.targets, .globalconfig         # ativam a CA1506 só nessa compilação
-│   ├── CodeMetricsConfig.txt                      # limites de acoplamento
-│   ├── executar-testes-de-arquitetura.ps1/.sh     # testes de arquitetura → TRX
-│   ├── executar-testes-de-mutacao.ps1/.sh         # Stryker.NET → relatório JSON/HTML
-│   ├── configuracao-do-stryker.json               # exclusões e limites da mutação
-│   ├── executar-benchmarks.ps1/.sh                # benchmarks dos caminhos críticos em Release
-│   ├── .gitignore                                 # ignora cobertura/ e benchmarks/ gerados
-│   └── .gitattributes                             # mantém o .sh com LF
-├── metricas/
-│   ├── complexidade-ciclomatica.md                # portão: CC ≤ 15
-│   ├── cobertura-de-testes.md
-│   ├── crap-score.md                              # portão: CRAP ≤ 30
-│   ├── tamanho-de-modulo.md                       # portões: método ≤ 30 e classe ≤ 300 linhas executáveis
-│   ├── acoplamento.md                             # portões: tipo ≤ 95 e membro ≤ 40 tipos acoplados
-│   ├── conformidade-de-dependencias.md            # portão bloqueante: nenhuma regra violada
-│   ├── pontuacao-de-mutacao.md                    # portão: ≥ 60% no código alterado
-│   └── performance.md                             # portões: orçamentos de alocação/tempo de cada caminho crítico
-├── orientacoes-gerais/comandos-de-build-e-teste.md  # restore, build e testes com a solução detectada na raiz
-├── orientacoes-gerais/regras-de-dependencia.md      # orientação proposta: regras de dependência entre camadas e módulos
-├── orientacoes-gerais/<caminhos críticos>.md      # orientação proposta: caminhos críticos e seus orçamentos
-└── praticas-de-codigo/um-tipo-de-nivel-superior-por-arquivo.md  # prática proposta para C#
-```
-
-A solução `.sln`/`.slnx` da raiz e a identidade `git config user.name`/`user.email` são preenchidas automaticamente; se não forem encontradas, a CLI avisa e deixa um marcador. Arquivos que já existem nunca são sobrescritos. Depois de instalar as dependências, rode o skill de setup (`myspec-setup`/`myspec-configurar`) para revisar e aprovar cada métrica.
-
-## O que é gerado
+O comando gera:
 
 ```text
 <repo>/
-├── .codex/skills/myspec-*/     # -p codex: SKILL.md, assets/ e agents/openai.yaml
-├── .claude/skills/myspec-*/    # -p claude: SKILL.md e assets/
-├── .agents/skills/myspec-*/    # -p gemini: SKILL.md e assets/ (Antigravity / Gemini CLI)
-└── my-specs/                   # minhas-specs/ em -l pt
-    ├── README.md
-    ├── myspec.json             # manifesto mantido pela CLI
-    ├── metrics/                # metricas/: uma métrica por arquivo
-    ├── measurement/            # medicao/: scripts de medição, gerados com -t
-    ├── coding-practices/       # praticas-de-codigo/
-    ├── general-guidelines/     # orientacoes-gerais/
-    └── specs/
-        └── manifest.json      # manifesto.json em pt; ciclo de vida criado pelo setup
+├── .claude/skills/myspec-*/    # .codex/skills/ no Codex, .agents/skills/ no Gemini
+└── minhas-specs/               # my-specs/ em inglês
+    ├── metricas/               # uma métrica de qualidade por arquivo
+    ├── praticas-de-codigo/     # práticas aprovadas pelo time
+    ├── orientacoes-gerais/     # orientações aprovadas pelo time
+    └── specs/                  # uma pasta NNN-<nome>/ por spec, com spec.md, árvore de arquivos e inspeções
 ```
 
-Métricas, práticas de código e orientações gerais são compartilhadas com o time e registram criador e aprovadores com `git config user.name`/`user.email`. As specs (`spec.md`, árvore de arquivos e inspeções) são um auxílio local do desenvolvedor: não registram identidade Git, apenas status e um histórico de revisões datado.
+E instala estas skills:
 
-Na versão `pt`, todo o workspace fica em português: pastas (`metricas/`, `orientacoes-gerais/` etc.), arquivos gerados pelos skills (`relatorio-de-qualidade.md`, `arvore-de-arquivos.md`, `inspecoes/inspecao-NNN.md`), status (`Proposto`/`Aprovado`), metadados (`Criado por`, `Aprovado por`, `Histórico de aprovação`, `Histórico de revisões`), marcadores da árvore (`# adicionar`, `# modificar`, `# excluir`) e IDs (`CA-01`, `A-001`).
-
-| Inglês (`en`) | Português (`pt`) | Função |
+| Inglês | Português | O que faz |
 | --- | --- | --- |
-| `myspec-setup` | `myspec-configurar` | Constrói o manifesto de specs e define as métricas de qualidade escolhidas pelo desenvolvedor e suas ferramentas, práticas e orientações |
-| `myspec-prescribe` | `myspec-prescrever` | Cria uma spec testável em `specs/NNN-<nome>/` e registra como `proposed`/`proposta` |
-| `myspec-implement` | `myspec-implementar` | Propõe/aprova a árvore de arquivos, marca `active`/`ativa` e implementa a spec |
-| `myspec-inspect` | `myspec-inspecionar` | Revisa a implementação contra a spec e as regras aprovadas, mede as métricas definidas em `metrics/` (`metricas/`), julga seus portões e registra em `specs/NNN-<nome>/inspections/` (`inspecoes/`) uma inspeção com veredito e só marca `finished`/`finalizada` após confirmação explícita do desenvolvedor |
-| `myspec-quantify` | `myspec-quantificar` | Julga as métricas de `metrics/` (`metricas/`) no projeto inteiro em `quality-report.md` (`relatorio-de-qualidade.md`) e sugere melhorias que podem virar novas specs |
-| `myspec-audit` | `myspec-auditar` | Varre o projeto contra práticas de código e orientações gerais aprovadas, registra evidências, violações e lacunas em `compliance-report.md` (`relatorio-de-conformidade.md`) e prioriza próximos passos |
-| `myspec-patch` | `myspec-corrigir` | Ajuste pequeno (até 5 arquivos por padrão, com limite substituível por orientação geral aprovada do projeto) sem nova spec, inclusive dentro de uma spec ativa; impactos em finalizadas exigem nova spec |
+| `myspec-setup` | `myspec-configurar` | Define métricas, práticas de código e orientações gerais com o desenvolvedor. |
+| `myspec-prescribe` | `myspec-prescrever` | Escreve uma spec com critérios de aceitação BDD (`CA-01`, `CA-02`...). |
+| `myspec-implement` | `myspec-implementar` | Planeja a árvore de arquivos, ativa a spec e implementa. |
+| `myspec-inspect` | `myspec-inspecionar` | Confere a implementação contra a spec e as regras e registra uma inspeção com veredito. |
+| `myspec-patch` | `myspec-corrigir` | Faz um ajuste pequeno (até 5 arquivos por padrão) sem nova spec. |
+| `myspec-quantify` | `myspec-quantificar` | Mede as métricas no projeto inteiro e sugere melhorias. |
+| `myspec-audit` | `myspec-auditar` | Audita o projeto inteiro contra as práticas e orientações aprovadas. |
 
-Use `$myspec-audit` no Codex ou `/myspec-audit` no Claude Code e no Gemini (`myspec-auditar` em português) para revisar a aderência às regras no projeto inteiro. A auditoria cobre código, testes, configuração, documentação e registros de processo conforme a aplicabilidade de cada regra. Ela distingue violações comprovadas, evidência insuficiente, regras não aplicáveis e conflitos, explicita áreas não revisadas e acompanha achados do relatório anterior. Não exige métricas nem specs e não altera código ou o ciclo de vida das specs. Quantificar continua responsável por métricas; inspecionar, pela aceitação de uma spec.
+Chame uma skill com `$myspec-configurar` no Codex ou `/myspec-configurar` no Claude Code e no Gemini. Depois de instalar, comece pela skill de configuração e, em seguida, prescreva a primeira spec.
 
-`minhas-specs/specs/manifesto.json` rastreia cada spec pelo nome exato da pasta. A configuração o constrói a partir de evidências de implementação e inspeção existentes quando ausente. O ciclo só avança `proposta → ativa → finalizada`: prescrever acrescenta novas specs como `proposta`; implementar muda para `ativa` imediatamente antes de editar a implementação, após aprovação da árvore; inspecionar registra inspeção `Apta` ou `Apta com ressalvas`, apresenta os achados e pergunta se o desenvolvedor deseja finalizar. A spec permanece `ativa` até confirmação explícita; só então inspecionar altera a entrada no manifesto para `finalizada` e registra a inspeção de conclusão. A mudança de situação registra a confirmação, sem criar artefato separado. Planejar ou aprovar árvore não inicia implementação. Inspeção bloqueada mantém a spec ativa. Uma spec `proposta` que o desenvolvedor decide não implementar passa a `descartada`, situação final com `inspecaoDeConclusao: null`; a pasta continua como registro, e `myspec activate`, `myspec gate` e `myspec finish` recusam essa spec. Chaves JSON e valores de situação são escritos em português brasileiro.
+Rodar `myspec install` de novo atualiza as skills sem tocar no conteúdo do workspace. Sem `-p`/`-l`, ele reaproveita os valores já instalados; providers se acumulam, e trocar o idioma renomeia o workspace para o novo idioma. Com `-t dotnet-quality`, a CLI também gera scripts de medição para .NET (cobertura, complexidade, CRAP, acoplamento, mutação e performance) e uma proposta de métricas para revisão; ela não instala dependências, apenas traz um README com os comandos para isso.
 
-```json
-{
-  "versao": 1,
-  "especificacoes": [
-    { "identificador": "001-exemplo", "situacao": "finalizada", "inspecaoDeConclusao": "002" },
-    { "identificador": "002-continuacao", "situacao": "proposta", "inspecaoDeConclusao": null }
-  ]
-}
-```
+## Comandos
 
-`inspecaoDeConclusao` identifica a sequência de três dígitos da inspeção final na pasta `inspecoes/` dessa spec; entradas ainda não finalizadas usam `null`. Specs finalizadas, árvores, inspeções e entradas de conclusão permanecem imutáveis. Toda mudança posterior que possa afetar seu comportamento ou implementação, inclusive correções e refatorações que preservem critérios, exige nova spec. A nova spec pode alterar os mesmos arquivos de código e descrever o comportamento posterior, mantendo a finalizada como histórico. Status nunca retrocede.
+Nos comandos que recebem uma spec, a spec vem primeiro e o comando depois (`myspec 1 portao`). `<spec>` aceita o nome da pasta (`001-cancelar-pedido`) ou só o número (`1` ou `001`). Todos aceitam `-d <dir>` para apontar outro repositório. Chamados pelo nome em português, os comandos respondem em português; a saída `--json` mantém as chaves em inglês, para scripts e CI.
 
-Em inglês, o arquivo é `my-specs/specs/manifest.json`, com `version`, `specs`, `id`, `status`, `completionInspection` e situações `proposed → active → finished`, além de `discarded`. A troca de idioma traduz somente essa representação, preservando identificadores, significado das situações, sequências de inspeção e campos personalizados. A reinstalação também converte o antigo manifesto em inglês de um workspace português.
+### `myspec approve <caminho>` (`aprovar`)
 
-Um ciclo típico é `prescribe > implement (árvore) > implement > inspect (blocked) > implement/patch > inspect (ready) > desenvolvedor confirma > finished > prescribe (próxima spec)`: repita implement ou patch seguido de inspect até obter os resultados desejados. A spec está concluída quando a inspeção mais recente estiver `Ready`/`Apta` ou `Ready with observations`/`Apta com ressalvas` e o desenvolvedor confirmar explicitamente a finalização após revisá-la; só então inspecionar registra `finished`/`finalizada` no manifesto. Depois disso, qualquer mudança que possa impactar essa spec exige uma nova spec, sem reabrir a finalizada. Use implement em vez de patch quando a mudança exceder o limite de arquivos aplicável ao patch ou afetar uma spec cuja árvore nunca foi aprovada.
-
-Os critérios de aceitação de `spec.md` seguem obrigatoriamente BDD: cada cenário tem ID estável (`AC-01`/`CA-01`), precondições `Given`/`Dado`, ação `When`/`Quando` e resultados observáveis `Then`/`Então`, com `And`/`E` quando necessário. Eles são a fonte única da verdade dos comportamentos mensuráveis específicos da mudança em todo o fluxo. Todo resultado obrigatório ou meta específica da mudança ainda não estabelecido por prática ou orientação aprovada aplicável deve constar nesses critérios; resumo, escopo e suposições dão contexto e limites.
-
-Práticas de código, orientações gerais e portões de métricas aprovados são exigidos diretamente de seus documentos, sem depender de AC/CA em cada spec. Os critérios não devem repetir nem parafrasear práticas ou orientações, nem acrescentar critérios genéricos de conformidade. Referencie a origem somente quando precisar de contexto. A ausência de critério duplicado não é lacuna de contrato; a inspeção registra violações contra a regra de origem, separadamente da contagem de ACs/CAs. O setup define aplicabilidade, regra e forma de verificação em cada documento para permitir essa aplicação independente.
-
-Specs propostas e ativas descrevem somente a unidade de trabalho que exigem, no estado atual. Ao criar ou revisar uma spec, a prescrição remove contexto, escopo e critérios obsoletos e reescreve o que continua válido como requisito direto, sem comparações com versões anteriores no corpo. Quando o contexto anterior for necessário, por exemplo ao alterar comportamento entregue por outra spec, ele fica em uma seção opcional `## Revision History`/`## Histórico de revisões` no fim da spec (ou na seção equivalente que o projeto já usa), com o que mudou e por quê. Implementação e inspeção tratam essa seção apenas como contexto, nunca como requisito. Specs finalizadas ficam congeladas.
-
-A árvore de arquivos referencia cada ID e seus locais de produção e verificação. A implementação verifica todos os resultados do cenário e relata evidências por ID; a inspeção avalia esses mesmos cenários e só conta um critério como atendido quando todos os seus resultados tiverem evidência nas condições especificadas. Lacunas ou mudanças de comportamento voltam à prescrição antes da implementação afetada; a inspeção registra lacunas de contrato como bloqueantes. Não é necessário adotar executor Gherkin nem mudar convenções de nomes de teste. A instalação preserva specs existentes; sua adequação ocorre ao revisar o contrato pelo fluxo de prescrição.
-
-Patching (`myspec-patch`/`myspec-corrigir`) é a exceção para trabalho ainda não finalizado ou mudanças que não possam afetar specs finalizadas: um ajuste elegível não precisa de nova spec nem critérios BDD. O limite padrão é de cinco arquivos, incluindo testes; uma orientação geral aplicável do projeto com `Status: Approved`/`Status: Aprovado` em `my-specs/general-guidelines/`/`minhas-specs/orientacoes-gerais/` pode substituir esse limite de arquivos. Mantêm-se os demais portões de escopo e a obrigação de preservar o contrato de qualquer spec já implementada que tocar; mudar esse contrato exige revisar a spec ainda não finalizada ou criar outra quando já finalizada.
-
-As referências entre skills são geradas na sintaxe de cada agente: `$myspec-setup` no Codex e `/myspec-setup` no Claude Code e no Gemini (Antigravity / Gemini CLI).
-
-## Reinstalação
-
-- Rodar `install` de novo atualiza os skills gerenciados e é idempotente.
-- Providers se acumulam: `install -p claude` depois de `install -p codex` mantém os dois.
-- O idioma vale para todos os providers: trocar de `-l en` para `-l pt` remove os skills em inglês (somente os arquivos listados em `myspec.json`).
-- Trocar de idioma renomeia o workspace para o novo idioma (`my-specs/coding-practices/` → `minhas-specs/praticas-de-codigo/`, `file-tree.md` → `arvore-de-arquivos.md` etc.) e traduz apenas as linhas de status e aprovação dos documentos ainda não finalizados, para que aprovações existentes continuem valendo; o corpo dos documentos não é traduzido e o conteúdo de specs `finished` permanece intacto. O manifesto de specs é traduzido para os campos e situações do idioma instalado, preservando seu significado e referências de conclusão. Um caminho cujo destino já existe não é movido. Workspaces `pt` criados em versões anteriores, ainda em `my-specs/`, são migrados da mesma forma na próxima instalação.
-- A pasta `tooling/` (`ferramentas/`) criada na 0.4.0 é renomeada para `metrics/` (`metricas/`), sem alterar seu conteúdo.
-- A pasta `quality/` que um template de tooling gerou na raiz do repositório até a 0.4.1 é movida para `my-specs/measurement/` (`minhas-specs/medicao/`). Scripts e configurações idênticos a uma versão publicada são substituídos pela atual, com os nomes do idioma instalado (`run-coverage-report.sh` vira `gerar-relatorio-de-cobertura.sh` em `pt`), e as pastas de resultados são renomeadas; os customizados são mantidos com o nome antigo e geram um aviso para ajustar caminhos e nome. Os caminhos `quality/` dos arquivos de métrica e das orientações gerais passam a apontar para os novos caminhos. Se as duas pastas existirem, nada é movido e a CLI avisa.
-- Um `tooling.md` (`ferramentas.md`) de versões anteriores é mantido e gera um aviso: rode o skill de setup para dividi-lo em um arquivo por métrica.
-- Os skills não leem mais `product-directives/` (`diretrizes-de-produto/`): a spec é a fonte da verdade do produto. Se a pasta só tiver o `.gitkeep` criado pela CLI até a 0.4.2, ela é removida; se tiver documentos, é mantida e a CLI avisa para movê-los e excluí-la.
-- O conteúdo dos documentos do workspace nunca é sobrescrito. O `README.md` do workspace só é regenerado enquanto não tiver sido editado.
-
-## Desenvolvimento
-
-```text
-src/          código da CLI (TypeScript, sem dependências de runtime)
-templates/
-  skills/en/  skills em inglês
-  skills/pt/  skills em português
-  workspace/  README do workspace por idioma
-  tooling/<id>/
-    template.json  descrição por idioma
-    files/         artefatos comuns a todos os idiomas
-    en/ | pt/      artefatos por idioma (caminhos relativos à raiz do repositório)
-test/         testes end-to-end (node:test)
-```
-
-Nos templates, referências a outro skill usam o token `{{skill:<nome>}}`, trocado pelo prefixo de invocação do provider na instalação. Os nomes de pastas, arquivos e rótulos do workspace de cada idioma ficam em `src/languages.ts`. Para adicionar um provider, inclua uma entrada em `src/providers.ts`. Para adicionar um template de tooling, crie uma pasta em `templates/tooling/`; os artefatos aceitam os marcadores `{{solution}}`, `{{author}}` e `{{date}}`.
+Aprova um documento em `metricas/`, `praticas-de-codigo/` ou `orientacoes-gerais/`: muda o status para `Aprovado` e registra no histórico quem aprovou (pela identidade do `git config`), quando e por quê.
 
 ```bash
-npm test
+myspec aprovar metricas/crap-score.md -c "Aprovação inicial"
 ```
+
+### `myspec <spec> activate` (`ativar`)
+
+Muda a spec de `proposta` para `ativa` no manifesto e registra o commit atual como base. A skill de implementação faz isso antes da primeira edição; a base serve depois para o `gate` comparar o que mudou.
+
+```bash
+myspec 1 ativar
+```
+
+### `myspec [<spec>] gate` (`portao` ou `portão`)
+
+Executa os comandos aprovados de build, testes e métricas, além das verificações automáticas declaradas nas práticas e orientações aprovadas, lê os relatórios gerados (Cobertura, SARIF, TRX, Stryker e JSON) e julga os limites de cada métrica. Para uma spec ativa, também aponta arquivos alterados fora da árvore planejada. Termina com código de erro se houver falha bloqueante, então serve também para CI.
+
+- `--project`: avalia as métricas do projeto inteiro, em vez de uma spec.
+- `--skip-run` / `--skip-build`: reaproveita relatórios existentes ou pula build e testes.
+- `--json`: saída para máquinas.
+
+```bash
+myspec 1 portao
+myspec portao --project
+```
+
+A saída de cada comando fica em `.myspec/logs/`.
+
+### `myspec <spec> finish` (`finalizar`)
+
+Finaliza uma spec ativa depois de confirmar que a inspeção mais recente está `Apta` (ou `Apta com ressalvas`) e que o último `gate` completo passou no commit atual, sem alterações pendentes. `--force` aceita outro commit ou alterações pendentes, mas o `gate` aprovado continua obrigatório. Uma spec finalizada fica congelada: mudanças posteriores pedem uma nova spec.
+
+```bash
+myspec 1 finalizar
+```
+
+### `myspec check-patch` (`conferir-correcao`)
+
+Diz se as alterações atuais no Git podem seguir como correção: no máximo 5 arquivos (`--limit <N>` muda o limite) e sem tocar specs finalizadas ou propostas. É o que a skill de correção usa para decidir se o ajuste precisa de uma spec.
+
+### `myspec <spec> open` (`abre` ou `abrir`)
+
+Abre o `spec.md` da spec no VS Code. Com `-ft` ou `--file-tree`, abre a árvore de arquivos da spec. Para usar outro editor, defina `MYSPEC_EDITOR` (por exemplo, `cursor` ou `code -r`).
+
+```bash
+myspec 7 abre
+myspec 7 abre -ft
+```
+
+### `myspec <spec> criteria [<N>]` (`criterio` ou `critério`)
+
+Mostra no terminal os critérios de aceitação da spec, um por linha, com número e título. Com o número de um critério, mostra só ele, com a descrição completa (Dado/Quando/Então). Serve para achar um critério sem ler a spec inteira, tanto para o desenvolvedor quanto para os agentes.
+
+```bash
+myspec 1 criterio        # CA-01: ..., CA-02: ...
+myspec 1 criterio 5      # CA-05 com a descrição
+```
+
+O número precisa ser exato: `5`, `05` e `CA-05` levam ao mesmo critério.

@@ -66,7 +66,7 @@ export function runLoggedCommand(
   return { ok, exitCode: result.status, logPath, tail: ok ? '' : lastLines(absoluteLog, TAIL_LINES) };
 }
 
-/** Name of the file, inside a spec's log folder, that records the outcome of the latest `myspec gate <spec>`. */
+/** Name of the file, inside a spec's log folder, that records the outcome of the latest `myspec <spec> gate`. */
 export const GATE_RESULT_FILE = 'gate-result.json';
 
 export interface GateResultRecord {

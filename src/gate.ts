@@ -34,10 +34,21 @@ export type MetricFormat = 'cobertura' | 'sarif' | 'trx' | 'stryker' | 'json' | 
 
 export type CommandSpec = string | { win32?: string; posix?: string };
 
+/** Test results a contract produces: the gate reads them, reports the counts and blocks on failed tests. */
+export interface TestResultsSpec {
+  format: 'trx';
+  paths: string[];
+  /** What a skipped test does to the gate; `attention` by default. */
+  skipped: 'attention' | 'blocking';
+}
+
 export interface VerifyContractSpec {
   kind: 'verify';
+  /** Names a shared run: contracts with the same label and working directory run their steps once per gate. */
+  label?: string;
   workingDir?: string;
   commands: CommandSpec[];
+  testResults?: TestResultsSpec;
 }
 
 export interface MetricGateSpec {
@@ -55,8 +66,15 @@ export interface MetricGateSpec {
 
 export interface MetricContractSpec {
   kind: 'metric';
+  /** Names a shared run: contracts with the same label and working directory run their steps once per gate. */
+  label?: string;
   workingDir?: string;
   command?: CommandSpec;
+  /** Measurement steps run in order, stopping at the first failure; alternative to `command`. */
+  commands?: CommandSpec[];
+  /** `false` documents the measurement steps without running them on `myspec gate` (for slow, on-demand runs). */
+  runOnGate?: boolean;
+  testResults?: TestResultsSpec;
   format: MetricFormat;
   resultPaths?: string[];
   /** SARIF ruleId filter (defaults to `CA1506`). */
@@ -68,8 +86,10 @@ export interface MetricContractSpec {
 
 export interface ParsedVerifyContract {
   path: string;
+  label?: string;
   workingDir: string;
   commands: string[];
+  testResults?: TestResultsSpec;
 }
 
 export interface ParsedMetricContract {
@@ -78,7 +98,10 @@ export interface ParsedMetricContract {
   path: string;
   approved: boolean;
   spec?: MetricContractSpec;
+  /** Display form of the measurement: the single command, or the steps joined by ` && `. */
   command?: string;
+  /** Resolved measurement steps for this platform. */
+  commands?: string[];
   workingDir: string;
   parseError?: string;
 }
@@ -137,6 +160,8 @@ export interface GateReport {
     logPath?: string;
   };
   metrics: MetricRunSummary[];
+  /** Test results read from the contracts that declare `testResults`. */
+  testResults: { source: string; status: 'ok' | 'failed' | 'attention' | 'missing'; total: number; passed: number; failed: number; skipped: number; failures: string[] }[];
   blockingFailures: string[];
   attentionItems: string[];
   /** Folder with the output of every command this run executed, one log per contract. */
@@ -209,13 +234,34 @@ function validateCommandSpec(value: unknown, context: string, t: Messages): Comm
   throw new Error(t.invalidCommandSpec(context));
 }
 
+function validateLabel(raw: Record<string, unknown>, filePath: string, t: Messages): string | undefined {
+  if (raw.label === undefined) return undefined;
+  if (typeof raw.label !== 'string' || !raw.label.trim()) throw new Error(t.contractLabelInvalid(filePath));
+  return raw.label.trim();
+}
+
+function validateTestResults(raw: Record<string, unknown>, filePath: string, t: Messages): TestResultsSpec | undefined {
+  const value = raw.testResults;
+  if (value === undefined) return undefined;
+  const spec = value as { format?: unknown; paths?: unknown; skipped?: unknown };
+  if (
+    !value || typeof value !== 'object' || Array.isArray(value) ||
+    spec.format !== 'trx' ||
+    !Array.isArray(spec.paths) || spec.paths.length === 0 || !spec.paths.every((p) => typeof p === 'string' && p.trim()) ||
+    (spec.skipped !== undefined && spec.skipped !== 'attention' && spec.skipped !== 'blocking')
+  ) {
+    throw new Error(t.testResultsInvalid(filePath));
+  }
+  return { format: 'trx', paths: (spec.paths as string[]).map(normalizeRepoPath), skipped: (spec.skipped as 'attention' | 'blocking' | undefined) ?? 'attention' };
+}
+
 function validateVerifySpec(raw: Record<string, unknown>, filePath: string, t: Messages): VerifyContractSpec {
   if (!Array.isArray(raw.commands) || raw.commands.length === 0) {
     throw new Error(t.verifyCommandsEmpty(filePath));
   }
   const commands = raw.commands.map((cmd, idx) => validateCommandSpec(cmd, `${filePath} commands[${idx}]`, t));
   const workingDir = raw.workingDir === undefined ? '.' : String(raw.workingDir);
-  return { kind: 'verify', workingDir, commands };
+  return { kind: 'verify', label: validateLabel(raw, filePath, t), workingDir, commands, testResults: validateTestResults(raw, filePath, t) };
 }
 
 function validateMetricSpec(raw: Record<string, unknown>, filePath: string, t: Messages): MetricContractSpec {
@@ -225,7 +271,16 @@ function validateMetricSpec(raw: Record<string, unknown>, filePath: string, t: M
   if (typeof raw.format !== 'string' || !VALID_FORMATS.has(raw.format as MetricFormat)) {
     throw new Error(t.metricFormatInvalid(filePath, [...VALID_FORMATS]));
   }
+  if (raw.commands !== undefined && (raw.command !== undefined || !Array.isArray(raw.commands) || raw.commands.length === 0)) {
+    throw new Error(t.metricCommandsInvalid(filePath));
+  }
+  if (raw.runOnGate !== undefined && typeof raw.runOnGate !== 'boolean') {
+    throw new Error(t.metricRunOnGateInvalid(filePath));
+  }
   const command = raw.command === undefined ? undefined : validateCommandSpec(raw.command, `${filePath} command`, t);
+  const commands = raw.commands === undefined
+    ? undefined
+    : (raw.commands as unknown[]).map((cmd, idx) => validateCommandSpec(cmd, `${filePath} commands[${idx}]`, t));
   const workingDir = raw.workingDir === undefined ? '.' : String(raw.workingDir);
   const resultPaths = raw.resultPaths === undefined
     ? []
@@ -276,8 +331,12 @@ function validateMetricSpec(raw: Record<string, unknown>, filePath: string, t: M
 
   return {
     kind: 'metric',
+    label: validateLabel(raw, filePath, t),
     workingDir,
     command,
+    commands,
+    runOnGate: raw.runOnGate === undefined ? undefined : raw.runOnGate,
+    testResults: validateTestResults(raw, filePath, t),
     format: raw.format as MetricFormat,
     resultPaths,
     ruleId: typeof raw.ruleId === 'string' ? raw.ruleId : undefined,
@@ -298,13 +357,17 @@ export function parseMetricDocument(filePath: string, content: string, t: Messag
       return { id, title, path: filePath, approved, workingDir: '.' };
     }
     const spec = validateMetricSpec(raw, filePath, t);
+    const steps = (spec.commands ?? (spec.command === undefined ? [] : [spec.command]))
+      .map((cmd) => resolveCommandSpec(cmd))
+      .filter((cmd): cmd is string => Boolean(cmd));
     return {
       id,
       title,
       path: filePath,
       approved,
       spec,
-      command: resolveCommandSpec(spec.command),
+      command: steps.length > 0 ? steps.join(' && ') : undefined,
+      commands: steps.length > 0 ? steps : undefined,
       workingDir: spec.workingDir ?? '.',
     };
   } catch (error) {
@@ -320,21 +383,26 @@ export function parseMetricDocument(filePath: string, content: string, t: Messag
 }
 
 /**
- * Discovers all approved `general-guidelines/*.md` (or `orientacoes-gerais/*.md`) documents
- * declaring a structured `json myspec` block with `"kind": "verify"`.
+ * Discovers all approved `general-guidelines/*.md` and `coding-practices/*.md` (or `orientacoes-gerais/*.md` and
+ * `praticas-de-codigo/*.md`) documents declaring a structured `json myspec` block with `"kind": "verify"`.
+ * Guidelines run first, then practices, each folder in file-name order.
  */
 export function discoverVerifyContracts(
   ws: WorkspaceContext,
   t: Messages = messages(),
 ): { contracts: ParsedVerifyContract[]; errors: string[] } {
-  const dir = join(ws.workspaceDir, ws.layout.generalGuidelines);
-  if (!existsSync(dir)) return { contracts: [], errors: [] };
-
   const contracts: ParsedVerifyContract[] = [];
   const errors: string[] = [];
-  for (const name of readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
-    const rel = `${ws.layout.dir}/${ws.layout.generalGuidelines}/${name}`;
-    const content = readFileSync(join(dir, name), 'utf8');
+  const documents = [ws.layout.generalGuidelines, ws.layout.codingPractices].flatMap((folder) => {
+    const dir = join(ws.workspaceDir, folder);
+    if (!existsSync(dir)) return [];
+    return readdirSync(dir)
+      .filter((f) => f.endsWith('.md'))
+      .sort()
+      .map((name) => ({ rel: `${ws.layout.dir}/${folder}/${name}`, absolute: join(dir, name) }));
+  });
+  for (const { rel, absolute } of documents) {
+    const content = readFileSync(absolute, 'utf8');
     const approved = /^Status:\s*(Approved|Aprovado)\s*$/m.test(content);
     if (!approved) continue;
 
@@ -356,7 +424,7 @@ export function discoverVerifyContracts(
         errors.push(t.unresolvedSolution(rel));
         continue;
       }
-      contracts.push({ path: rel, workingDir: spec.workingDir ?? '.', commands: resolvedCommands });
+      contracts.push({ path: rel, label: spec.label, workingDir: spec.workingDir ?? '.', commands: resolvedCommands, testResults: spec.testResults });
     } catch (error) {
       errors.push(error instanceof Error ? error.message : String(error));
     }
@@ -629,6 +697,69 @@ export function runGate(options: GateOptions): GateReport {
   // An active spec without baseCommit cannot be inspected against its tree; a finished one simply has nothing to compare.
   if (fileTreeDriftSkipped && isActive) attentionItems.push(fileTreeDriftSkipped.reason);
 
+  // A contract with a label shares its run: every verify or metric contract with the same label and working directory
+  // reuses the outcome of the first one, whose log is named after it. Without a label, each contract runs its own steps.
+  type RunOutcome = { status: 'ok' | 'failed'; error?: string; logPath: string; failedCommand?: string };
+  const sharedRuns = new Map<string, RunOutcome>();
+  const runSteps = (logName: string, steps: string[], workingDir: string): RunOutcome => {
+    let outcome: RunOutcome | undefined;
+    for (const step of steps) {
+      const run = runLoggedCommand(commandLogs(), logName, step, resolve(ws.root, workingDir), headCommit);
+      outcome = run.ok
+        ? { status: 'ok', logPath: run.logPath }
+        : { status: 'failed', error: run.tail, logPath: run.logPath, failedCommand: step };
+      if (!run.ok) {
+        failedOutputs.push({ logPath: run.logPath, tail: run.tail });
+        break;
+      }
+    }
+    return outcome!;
+  };
+  const runShared = (label: string | undefined, workingDir: string, logName: string, steps: string[]): RunOutcome => {
+    if (!label) return runSteps(logName, steps, workingDir);
+    const key = `${workingDir}::${label}`;
+    let outcome = sharedRuns.get(key);
+    if (!outcome) {
+      outcome = runSteps(logName, steps, workingDir);
+      sharedRuns.set(key, outcome);
+    }
+    return outcome;
+  };
+
+  // Test results are part of every gate: a contract that declares them has its failed tests block the gate, its skipped
+  // tests block or call for attention as it declares, and its missing results block when its steps ran.
+  const testSummaries: GateReport['testResults'] = [];
+  const evaluateTests = (source: string, spec: TestResultsSpec, ran: boolean, stepFailed: boolean) => {
+    if (stepFailed) blockingFailures.push(t.testStepFailed(source));
+    const files = resolveResultFiles(ws.root, spec.paths).filter((f) => f.toLowerCase().endsWith('.trx'));
+    if (files.length === 0) {
+      const msg = t.testResultsMissing(source, spec.paths.join(', '));
+      (ran ? blockingFailures : attentionItems).push(msg);
+      testSummaries.push({ source, status: 'missing', total: 0, passed: 0, failed: 0, skipped: 0, failures: [] });
+      return;
+    }
+    const parsed = parseTrxXml(files.map((f) => readFileSync(f, 'utf8')));
+    let status: GateReport['testResults'][number]['status'] = stepFailed ? 'failed' : 'ok';
+    if (parsed.failed > 0) {
+      blockingFailures.push(t.testsFailed(source, parsed.failed, parsed.total));
+      status = 'failed';
+    }
+    if (parsed.skipped > 0) {
+      const msg = t.testsSkipped(source, parsed.skipped, parsed.total);
+      if (spec.skipped === 'blocking') {
+        blockingFailures.push(msg);
+        status = 'failed';
+      } else {
+        attentionItems.push(msg);
+        if (status === 'ok') status = 'attention';
+      }
+    }
+    testSummaries.push({
+      source, status, total: parsed.total, passed: parsed.passed, failed: parsed.failed, skipped: parsed.skipped,
+      failures: parsed.failures.slice(0, 20).map((f) => f.testName),
+    });
+  };
+
   // 1. Structured verify contracts from any approved general-guidelines/*.md
   const verify = discoverVerifyContracts(ws, t);
   for (const err of verify.errors) blockingFailures.push(err);
@@ -646,19 +777,15 @@ export function runGate(options: GateOptions): GateReport {
     error: verify.errors.length > 0 ? verify.errors.join('; ') : undefined,
   };
   if (buildAndTest.status === 'ok') {
-    outer: for (const vc of verify.contracts) {
-      const cwd = resolve(ws.root, vc.workingDir);
-      const logName = basename(vc.path, '.md');
-      for (const cmd of vc.commands) {
-        const run = runLoggedCommand(commandLogs(), logName, cmd, cwd, headCommit);
-        buildAndTest.logPath = run.logPath;
-        if (!run.ok) {
-          buildAndTest.status = 'failed';
-          buildAndTest.error = run.tail;
-          blockingFailures.push(t.verifyCommandFailed(vc.path, cmd, run.logPath));
-          failedOutputs.push({ logPath: run.logPath, tail: run.tail });
-          break outer;
-        }
+    for (const vc of verify.contracts) {
+      const outcome = runShared(vc.label, vc.workingDir, basename(vc.path, '.md'), vc.commands);
+      buildAndTest.logPath = outcome.logPath;
+      if (vc.testResults) evaluateTests(vc.path, vc.testResults, true, false);
+      if (outcome.status === 'failed') {
+        buildAndTest.status = 'failed';
+        buildAndTest.error = outcome.error;
+        blockingFailures.push(t.verifyCommandFailed(vc.path, outcome.failedCommand ?? vc.commands.join(' && '), outcome.logPath));
+        break;
       }
     }
   }
@@ -673,7 +800,6 @@ export function runGate(options: GateOptions): GateReport {
     return parseMetricDocument(rel, readFileSync(join(metricsDir, file), 'utf8'), t);
   });
 
-  const commandResults = new Map<string, { status: 'ok' | 'failed'; error?: string; logPath: string }>();
   const coberturaCache = new Map<string, CoberturaReport>();
 
   const metricSummaries: MetricRunSummary[] = [];
@@ -750,24 +876,19 @@ export function runGate(options: GateOptions): GateReport {
         });
         continue;
       }
-      if (options.skipRun) {
+      if (options.skipRun || spec.runOnGate === false) {
         commandStatus = 'skipped';
       } else {
-        const key = `${contract.workingDir}::${contract.command}`;
-        let cached = commandResults.get(key);
-        if (!cached) {
-          // A command shared by several metrics runs once; its log is named after the first metric that uses it.
-          const run = runLoggedCommand(commandLogs(), contract.id, contract.command, resolve(ws.root, contract.workingDir), headCommit);
-          cached = run.ok
-            ? { status: 'ok', logPath: run.logPath }
-            : { status: 'failed', error: run.tail, logPath: run.logPath };
-          if (!run.ok) failedOutputs.push({ logPath: run.logPath, tail: run.tail });
-          commandResults.set(key, cached);
-        }
-        commandStatus = cached.status;
-        commandError = cached.error;
-        commandLogPath = cached.logPath;
+        // The steps run in order into the same log and stop at the first failure.
+        const outcome = runShared(spec.label, contract.workingDir, contract.id, contract.commands ?? [contract.command]);
+        commandStatus = outcome.status;
+        commandError = outcome.error;
+        commandLogPath = outcome.logPath;
       }
+    }
+
+    if (spec.testResults) {
+      evaluateTests(contract.path, spec.testResults, commandStatus === 'ok' || commandStatus === 'failed', commandStatus === 'failed');
     }
 
     if (commandStatus === 'failed') {
@@ -1001,6 +1122,7 @@ export function runGate(options: GateOptions): GateReport {
     fileTreeDriftSkipped,
     buildAndTest,
     metrics: metricSummaries,
+    testResults: testSummaries,
     blockingFailures,
     attentionItems,
     logDir: logFolder?.path,
@@ -1032,6 +1154,9 @@ export function formatGateMarkdown(report: GateReport, language?: MessageLanguag
     );
   }
   if (report.logDir) lines.push(t.logsLine(report.logDir));
+  for (const tests of report.testResults) {
+    lines.push(t.testResultsLine(tests.source, tests.passed, tests.total, tests.failed, tests.skipped, tests.status));
+  }
 
   if (report.fileTreeDriftSkipped) {
     lines.push('', t.driftHeading(), '');

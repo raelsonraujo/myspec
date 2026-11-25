@@ -14,7 +14,7 @@ Aplica-se a: implementação com `{{skill:myspec-implementar}}` e `{{skill:myspe
 
 ## Verificação
 
-<Quando a regra se aplica e a evidência ou verificação que comprova conformidade. Exija a regra aprovada diretamente deste documento; não é necessário critério de aceitação em cada spec.>
+<Quando a regra se aplica e a evidência ou verificação que comprova conformidade. Exija a regra aprovada diretamente deste documento; não é necessário critério de aceitação em cada spec. Quando a regra for conferível por comando, inclua um bloco ```` ```json myspec ```` com `{"kind":"verify","workingDir":".","commands":[...]}`, que o `myspec gate` executa.>
 
 ## Histórico de aprovação
 

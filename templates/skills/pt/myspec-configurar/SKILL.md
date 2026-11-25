@@ -7,6 +7,8 @@ description: Inicializa ou reconcilia o manifesto do ciclo de vida das specs, ou
 
 Estabeleça um contrato reproduzível e aprovado pelo desenvolvedor para o workspace Myspec (`minhas-specs/`, relativo à raiz do repositório).
 
+> **Comandos da CLI:** cada comando tem dois nomes válidos: o em inglês responde em inglês, e o em português responde em português. `gate` ou `portao`, `finish` ou `finalizar`, `activate` ou `ativar`, `approve` ou `aprovar`, `check-patch` ou `conferir-correcao`.
+
 ## Portão de orientações
 
 Leia todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Trate cada documento aplicável com `Status: Aprovado` como obrigatório e exponha conflitos com instruções de maior prioridade. Arquivos não aprovados, pastas ausentes ou seções `Nenhum` não criam restrição.
@@ -17,8 +19,8 @@ Inicialize ou reconcilie `minhas-specs/specs/manifesto.json` primeiro quando est
 
 1. Inspecione manifestos do repositório, projetos de teste, ferramentas locais, scripts de build e CI sem instalar ou alterar dependências.
 2. Leia todo arquivo Markdown em `minhas-specs/metricas/`. Se existir o legado `minhas-specs/ferramentas.md`, proponha dividi-lo (veja [Contrato legado de ferramentas](#contrato-legado-de-ferramentas)).
-3. Peça ao desenvolvedor os comandos exatos de build e teste e registre-os em uma orientação geral (como `minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md`) com um bloco ```` ```json myspec ```` (`{"kind":"verify","workingDir":".","commands":[...]}`) para execução determinística no `myspec gate`. Em seguida, pergunte quais métricas de qualidade medir. Nunca suponha, infira ou adote métrica por padrão; sugira candidatas apenas quando solicitado. Não definir métricas é válido.
-4. Para cada métrica escolhida, registre: definição (unidade e granularidade), diretório de trabalho, comandos de restauração/pré-requisito, ferramenta e versão fixada, comando exato de medição, formato estruturado e caminho do resultado, escopo/exclusões, isolamento do código alterado, valores registrados, `## Portões` explícitos e o bloco ```` ```json myspec ```` correspondente (`"kind":"metric"`, formatos `cobertura`, `sarif`, `trx`, `stryker`, `json` ou `manual`) para avaliação determinística no `myspec gate`.
+3. Peça ao desenvolvedor os comandos exatos de build e teste e registre-os em uma orientação geral (como `minhas-specs/orientacoes-gerais/comandos-de-build-e-teste.md`) com um bloco ```` ```json myspec ```` (`{"kind":"verify","workingDir":".","commands":[...]}`) para execução determinística no `myspec gate`. No bloco que executa os testes, seja `verify` ou de métrica, declare em `testResults` onde ficam os resultados (`{"format":"trx","paths":[...],"skipped":"attention"}` ou `"blocking"`): o `myspec gate` os lê em toda execução, mostra a contagem e bloqueia com teste reprovado, com passo que falhou ou com resultado ausente. Qualquer orientação geral ou prática de código aprovada pode trazer o próprio bloco `verify` quando sua regra for conferível por comando que termine com código diferente de zero na violação; o `myspec gate` executa as orientações e depois as práticas, cada pasta em ordem de nome, e qualquer falha bloqueia. Em seguida, pergunte quais métricas de qualidade medir. Nunca suponha, infira ou adote métrica por padrão; sugira candidatas apenas quando solicitado. Não definir métricas é válido.
+4. Para cada métrica escolhida, registre: definição (unidade e granularidade), diretório de trabalho, comandos de restauração/pré-requisito, ferramenta e versão fixada, comando exato de medição, formato estruturado e caminho do resultado, escopo/exclusões, isolamento do código alterado, valores registrados, `## Portões` explícitos e o bloco ```` ```json myspec ```` correspondente (`"kind":"metric"`, com os passos da medição em `commands`, formatos `cobertura`, `sarif`, `trx`, `stryker`, `json` ou `manual`) para avaliação determinística no `myspec gate`.
 5. Pergunte se deseja adicionar práticas de código em `minhas-specs/praticas-de-codigo/` e orientações gerais em `minhas-specs/orientacoes-gerais/` (por exemplo, substituir o limite de arquivos de correção ou autorizar implementação automática após gerar `arvore-de-arquivos.md`).
 6. Crie ou atualize documentos do contrato com `Status: Proposto`, usando `git config user.name` e `git config user.email` em `Criado por` e `Criado em` imutáveis:
    - métricas: um arquivo por métrica com [assets/modelo-de-metrica.md](assets/modelo-de-metrica.md)
@@ -34,8 +36,8 @@ Mantenha `minhas-specs/specs/manifesto.json` (separado do `minhas-specs/myspec.j
 
 O ciclo só avança `proposta → ativa → finalizada`, e uma spec `proposta` pode terminar em `descartada`:
 - `proposta`: implementação não começou (criar `arvore-de-arquivos.md` não ativa a spec).
-- `ativa`: implementação iniciada (`myspec activate <id>` registra `commitBase` imediatamente antes da primeira edição de código/teste).
-- `finalizada`: concluída via `myspec finish <id>` ou confirmação explícita do desenvolvedor após inspeção `Apta` ou `Apta com ressalvas` (`Ready` ou `Ready with observations` em registros migrados); `inspecaoDeConclusao` guarda a sequência de três dígitos (`"002"`), ou `null` nos demais estados.
+- `ativa`: implementação iniciada (`myspec <id> activate` registra `commitBase` imediatamente antes da primeira edição de código/teste).
+- `finalizada`: concluída via `myspec <id> finish` ou confirmação explícita do desenvolvedor após inspeção `Apta` ou `Apta com ressalvas` (`Ready` ou `Ready with observations` em registros migrados); `inspecaoDeConclusao` guarda a sequência de três dígitos (`"002"`), ou `null` nos demais estados.
 - `descartada`: o desenvolvedor decidiu explicitamente não implementar uma spec `proposta`. É situação final, com `inspecaoDeConclusao: null`; a pasta e o `spec.md` ficam como registro, e o identificador não é reutilizado.
 
 Ao reconciliar manifesto ausente ou specs não rastreadas:

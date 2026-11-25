@@ -25,7 +25,7 @@ Escreva toda spec `proposta` ou `ativa` como descrição autônoma e no estado a
 
 ## Fluxo
 
-1. Leia a solicitação, o contexto relevante do repositório, as orientações aprovadas e `minhas-specs/metricas/` (quando existir) para conhecer os portões aplicáveis.
+1. Leia a solicitação, o contexto relevante do repositório, as orientações aprovadas e `minhas-specs/metricas/` (quando existir) para conhecer os portões aplicáveis. Para conferir sobreposição com specs existentes, percorra os critérios delas com `myspec <id-spec> criterio` (um critério completo com `myspec <id-spec> criterio <N>`) em vez de ler as specs inteiras.
 2. Faça perguntas objetivas somente para ambiguidades relevantes que alterem escopo ou comportamento observável; nos demais casos, registre suposições conservadoras.
 3. Sugira um nome curto em kebab-case e atribua o próximo prefixo de três dígitos (`001`, `002`, ...) não usado por nenhuma pasta em `minhas-specs/specs/` nem entrada em `manifesto.json`.
 4. Salve `minhas-specs/specs/<NNN>-<nome>/spec.md` com [assets/modelo-de-spec.md](assets/modelo-de-spec.md). Nunca deixe a spec apenas no chat.
