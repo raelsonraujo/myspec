@@ -1,5 +1,7 @@
 # myspec
 
+**Português** · [English](README.en.md)
+
 CLI de desenvolvimento orientado a especificações (SDD) para agentes de código (Codex, Claude Code e Gemini). Ela instala no repositório as skills Myspec, que conduzem o ciclo prescrever → implementar → inspecionar, e o workspace `my-specs/` (`minhas-specs/` em português), onde ficam as specs e as regras que o time aprova para os agentes seguirem. Comandos determinísticos cuidam do que não deve depender do LLM: aprovações, ciclo de vida das specs, build, testes e métricas.
 
 ## Instalação
