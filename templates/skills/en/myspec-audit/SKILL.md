@@ -9,7 +9,7 @@ Sweep the whole project for adherence to approved coding practices and general g
 
 ## Guidance Gate
 
-Read repository instructions and every Markdown file under `my-specs/coding-practices/` and `my-specs/general-guidelines/` (including nested folders). Treat applicable `Status: Approved` documents as mandatory and surface conflicts with higher-priority instructions.
+Read repository instructions and every Markdown file under `my-specs/coding-practices/` and `my-specs/general-guidelines/` (including nested folders — run `myspec rule -f`, or `myspec rule` to list and `myspec rule <name>` for one). Treat applicable `Status: Approved` documents as mandatory and surface conflicts with higher-priority instructions.
 
 ## Workflow
 

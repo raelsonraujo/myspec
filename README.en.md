@@ -9,14 +9,14 @@ A spec-driven development (SDD) CLI for coding agents (Codex, Claude Code, and G
 You need Node.js 20 or later. Download the `myspec-<version>.tgz` file from the [release assets](https://github.com/raelsonraujo/myspec/releases) and install it with npm, from the folder where you saved it:
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.21.tgz
+npm install -g --ignore-scripts ./myspec-0.7.23.tgz
 myspec --version
 ```
 
 To check the file's origin and integrity before installing, use the [GitHub CLI](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.21 ./myspec-0.7.21.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.23 ./myspec-0.7.23.tgz --repo raelsonraujo/myspec
 ```
 
 ## Setting up a repository: `myspec install`
@@ -128,3 +128,41 @@ myspec 1 criteria 5      # AC-05 with its description
 ```
 
 The number must be exact: `5`, `05`, and `AC-05` all point to the same criterion.
+
+### `myspec <spec> read [--smoke | -s]` (`ler`)
+
+Prints the spec's `spec.md` directly in the terminal, so agents and developers can read it without navigating the workspace folders. With `--smoke` (or `-s`), prints only the spec's smoke section.
+
+```bash
+myspec 1 read
+myspec 1 read -s
+```
+
+### `myspec <spec> inspection [--status | -s]` (`inspecao` or `inspeção`)
+
+Prints the spec's latest inspection in the terminal without having to look up the highest-numbered file in `inspections/`. With `--status` (or `-s`), prints only its verdict (`Ready`, `Ready with observations`, `Blocked`, etc.).
+
+```bash
+myspec 1 inspection
+myspec 1 inspection -s
+```
+
+### `myspec rule [<name>] [--full | -f]` (`regra`)
+
+Lists every rule file under `coding-practices/` and `general-guidelines/`. Pass a rule name (or relative path) to print its Markdown content, or `--full` (`-f`) to print every coding practice and general guideline in full.
+
+```bash
+myspec rule
+myspec rule clean-code
+myspec rule -f
+```
+
+### `myspec metric [<name>] [--full | -f]` (`metrica` or `métrica`)
+
+Lists every metric file under `metrics/`. Pass a metric name (or relative path) to print its Markdown content, or `--full` (`-f`) to print every metric in full.
+
+```bash
+myspec metric
+myspec metric crap-score
+myspec metric -f
+```

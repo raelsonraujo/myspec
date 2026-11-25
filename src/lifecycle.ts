@@ -7,6 +7,7 @@ import { readGateResult } from './command-log.js';
 import { messages, type MessageLanguage, type Messages } from './messages.js';
 import { UsageError } from './providers.js';
 import { parseSpecManifest } from './spec-manifest.js';
+import { listFiles } from './templates.js';
 
 export interface WorkspaceContext {
   root: string;
@@ -276,18 +277,90 @@ export interface ApproveResult {
   newStatus: string;
 }
 
+export interface ContractDoc {
+  /** Workspace-relative path with forward slashes (e.g. `coding-practices/clean-code.md`). */
+  relPath: string;
+  /** Repository-relative path with forward slashes (e.g. `my-specs/coding-practices/clean-code.md`). */
+  path: string;
+  /** File name without directory (e.g. `clean-code.md`). */
+  fileName: string;
+  /** File name without `.md` extension (e.g. `clean-code`). */
+  stem: string;
+  absolute: string;
+}
+
+export function collectContractDocs(ws: WorkspaceContext, folders: string[]): ContractDoc[] {
+  const docs: ContractDoc[] = [];
+  for (const folder of folders) {
+    const dir = join(ws.workspaceDir, folder);
+    if (!existsSync(dir)) continue;
+    for (const file of listFiles(dir)) {
+      if (!file.toLowerCase().endsWith('.md')) continue;
+      const relPath = `${folder}/${file}`;
+      const fileName = file.split('/').at(-1)!;
+      docs.push({
+        relPath,
+        path: `${ws.layout.dir}/${relPath}`,
+        fileName,
+        stem: fileName.slice(0, -3),
+        absolute: join(dir, file),
+      });
+    }
+  }
+  return docs;
+}
+
+export function matchContractDoc(docs: ContractDoc[], input: string): ContractDoc[] {
+  const normalized = normalizeRepoPath(input.trim());
+  const lower = normalized.toLowerCase();
+  const withoutMd = lower.endsWith('.md') ? lower.slice(0, -3) : lower;
+
+  const exact = docs.filter(
+    (doc) =>
+      doc.path === normalized ||
+      doc.relPath === normalized ||
+      doc.fileName === normalized ||
+      doc.stem === normalized ||
+      doc.relPath.slice(0, -3) === normalized ||
+      doc.path.slice(0, -3) === normalized,
+  );
+  if (exact.length > 0) return exact;
+
+  return docs.filter((doc) => {
+    const relNoMd = doc.relPath.slice(0, -3).toLowerCase();
+    const pathNoMd = doc.path.slice(0, -3).toLowerCase();
+    return (
+      doc.path.toLowerCase() === lower ||
+      doc.relPath.toLowerCase() === lower ||
+      doc.fileName.toLowerCase() === lower ||
+      doc.stem.toLowerCase() === withoutMd ||
+      relNoMd === withoutMd ||
+      pathNoMd === withoutMd
+    );
+  });
+}
+
 export function approveContractDocument(options: ApproveOptions): ApproveResult {
   const t = messages(options.language);
   const ws = resolveWorkspace(options.root, t);
   const allowedFolders = [ws.layout.metrics, ws.layout.codingPractices, ws.layout.generalGuidelines];
 
-  // Accept repo-relative or workspace-relative paths.
-  const normalizedTarget = normalizeRepoPath(options.targetPath);
+  // Accept absolute paths, repo-relative paths, workspace-relative paths, or bare contract file names.
+  const trimmedTarget = options.targetPath.trim();
+  const normalizedTarget = normalizeRepoPath(trimmedTarget);
   const candidates = [
+    ...(isAbsolute(trimmedTarget) ? [resolve(trimmedTarget)] : []),
     resolve(ws.root, normalizedTarget),
     resolve(ws.workspaceDir, normalizedTarget),
   ];
-  const absolute = candidates.find((p) => existsSync(p) && statSync(p).isFile());
+  let absolute = candidates.find((p) => existsSync(p) && statSync(p).isFile());
+  if (!absolute && !isAbsolute(trimmedTarget)) {
+    const matches = matchContractDoc(collectContractDocs(ws, allowedFolders), trimmedTarget);
+    if (matches.length > 1) {
+      throw new UsageError(t.documentAmbiguous(options.targetPath, matches.map((doc) => doc.relPath)));
+    }
+    absolute = matches[0]?.absolute;
+  }
   if (!absolute) {
     throw new UsageError(t.documentNotFound(options.targetPath));
   }

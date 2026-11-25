@@ -69,6 +69,22 @@ describe('deterministic lifecycle CLI commands', () => {
     assert.match(second, /Ada Lovelace <ada@example\.com>/);
     assert.match(second, /Grace Hopper <grace@example\.com>/);
 
+    // Approving works with just the file name (with or without .md) and with an absolute path.
+    assert.match(runOk('approve', '-d', dir, 'crap-score.md', '-c', 'By file name').stdout, /Approved my-specs\/metrics\/crap-score\.md/);
+    assert.match(runOk('approve', '-d', dir, 'crap-score', '-c', 'By stem').stdout, /Approved my-specs\/metrics\/crap-score\.md/);
+    assert.match(
+      runOk('approve', '-d', dir, join(dir, 'my-specs/metrics/crap-score.md'), '-c', 'By absolute path').stdout,
+      /Approved my-specs\/metrics\/crap-score\.md/,
+    );
+
+    // Ambiguous bare file name across contract folders is rejected with a clear hint.
+    writeFileSync(join(dir, 'my-specs/coding-practices/shared.md'), '# Shared\n\nStatus: Proposed\n\n## Approval History\n\n- None yet.\n');
+    writeFileSync(join(dir, 'my-specs/general-guidelines/shared.md'), '# Shared\n\nStatus: Proposed\n\n## Approval History\n\n- None yet.\n');
+    const ambiguous = run('approve', '-d', dir, 'shared.md');
+    assert.equal(ambiguous.status, 2);
+    assert.match(ambiguous.stderr, /Contract document "shared\.md" is ambiguous: .*coding-practices\/shared\.md.*general-guidelines\/shared\.md/);
+    assert.match(runOk('approve', '-d', dir, 'coding-practices/shared.md', '-c', 'Disambiguated').stdout, /Approved my-specs\/coding-practices\/shared\.md/);
+
     // Spec files cannot be approved with `myspec approve`.
     mkdirSync(join(dir, 'my-specs/specs/001-order'), { recursive: true });
     writeFileSync(join(dir, 'my-specs/specs/001-order/spec.md'), '# Order\n');
@@ -507,6 +523,202 @@ describe('myspec criteria', () => {
     const empty = run('2', 'criteria', '-d', dir);
     assert.equal(empty.status, 2);
     assert.match(empty.stderr, /No acceptance criteria .* found in minhas-specs\/specs\/002-vazia\/spec\.md/);
+  });
+});
+
+describe('myspec read and inspection', () => {
+  it('prints a spec or its smoke section to stdout with `myspec <spec> read [--smoke|-s]` and `ler`', () => {
+    const dir = gitRepo();
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'en');
+    const specContent = [
+      '# Cancel order',
+      '',
+      '### AC-01: Cancels pending order',
+      '',
+      '- Given a pending order',
+      '- When cancelled',
+      '- Then status is cancelled',
+      '',
+      '```md',
+      '## Smoke',
+      'Ignored inside fenced code block',
+      '```',
+      '',
+      '## Smoke Tests',
+      '',
+      '### Happy path',
+      '- POST /orders/1/cancel returns 200',
+      '',
+      '## Assumptions',
+      '',
+      '- Auth is handled upstream',
+      '',
+    ].join('\n');
+    mkdirSync(join(dir, 'my-specs/specs/001-cancel-order'), { recursive: true });
+    writeFileSync(join(dir, 'my-specs/specs/001-cancel-order/spec.md'), specContent);
+
+    assert.equal(runOk('1', 'read', '-d', dir).stdout, specContent);
+    assert.equal(runOk('001', 'read', '-d', dir).stdout, specContent);
+    assert.equal(runOk('001-cancel-order', 'read', '-d', dir).stdout, specContent);
+    assert.equal(runOk('1', 'ler', '-d', dir).stdout, specContent);
+
+    const expectedSmoke = '## Smoke Tests\n\n### Happy path\n- POST /orders/1/cancel returns 200\n';
+    assert.equal(runOk('1', 'read', '--smoke', '-d', dir).stdout, expectedSmoke);
+    assert.equal(runOk('1', 'read', '-s', '-d', dir).stdout, expectedSmoke);
+    assert.equal(runOk('1', 'ler', '-s', '-d', dir).stdout, expectedSmoke);
+
+    // Ensures a trailing newline when the file does not end with one, and reports missing smoke section.
+    mkdirSync(join(dir, 'my-specs/specs/002-no-newline'), { recursive: true });
+    writeFileSync(join(dir, 'my-specs/specs/002-no-newline/spec.md'), '# Short');
+    assert.equal(runOk('2', 'read', '-d', dir).stdout, '# Short\n');
+    const noSmokeEn = run('2', 'read', '-s', '-d', dir);
+    assert.equal(noSmokeEn.status, 2);
+    assert.match(noSmokeEn.stderr, /No smoke section found in my-specs\/specs\/002-no-newline\/spec\.md/);
+    const noSmokePt = run('2', 'ler', '--smoke', '-d', dir);
+    assert.equal(noSmokePt.status, 2);
+    assert.match(noSmokePt.stderr, /Nenhuma seção de smoke encontrada em my-specs\/specs\/002-no-newline\/spec\.md/);
+
+    // Portuguese smoke heading (`Testes de fumaça`) is also recognized.
+    mkdirSync(join(dir, 'my-specs/specs/003-pt-smoke'), { recursive: true });
+    writeFileSync(join(dir, 'my-specs/specs/003-pt-smoke/spec.md'), '# Spec\n\n## Testes de fumaça\n\n- Verificar endpoint /health\n');
+    assert.equal(runOk('3', 'ler', '-s', '-d', dir).stdout, '## Testes de fumaça\n\n- Verificar endpoint /health\n');
+
+    // Errors and usage messages follow command language and spec-first order.
+    const unknownEn = run('99', 'read', '-d', dir);
+    assert.equal(unknownEn.status, 2);
+    assert.match(unknownEn.stderr, /No spec folder numbered 099/);
+    const unknownPt = run('99', 'ler', '-d', dir);
+    assert.equal(unknownPt.status, 2);
+    assert.match(unknownPt.stderr, /Nenhuma pasta de spec com o número 099/);
+    assert.match(run('read', '1', '-d', dir).stderr, /Usage: myspec <spec> read \[--smoke \| -s\]/);
+    assert.match(run('ler', '1', '-d', dir).stderr, /Uso: myspec <spec> ler \[--smoke \| -s\]/);
+  });
+
+  it('prints the latest inspection or its status with `myspec <spec> inspection [--status|-s]`', () => {
+    const dir = gitRepo();
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'en');
+    mkdirSync(join(dir, 'my-specs/specs/001-cancel-order/inspections'), { recursive: true });
+    writeFileSync(join(dir, 'my-specs/specs/001-cancel-order/spec.md'), '# Cancel order\n');
+
+    // Spec with no inspections yet reports a usage error.
+    const none = run('1', 'inspection', '-d', dir);
+    assert.equal(none.status, 2);
+    assert.match(none.stderr, /No inspections found for spec "001-cancel-order"/);
+
+    // Non-existent spec reports spec not found.
+    const missingSpec = run('999-missing', 'inspection', '-d', dir);
+    assert.equal(missingSpec.status, 2);
+    assert.match(missingSpec.stderr, /Spec not found: my-specs\/specs\/999-missing\/spec\.md/);
+
+    const inspection1 = '# Inspection 001\n\n`2026-11-23` · Baseline `abc1234` · Previous `None`\n\n## Verdict\n\n**Blocked** — Missing test.\n';
+    const inspection2 = '# Inspection 002\n\n`2026-11-24` · Baseline `def5678` · Previous `001`\n\n## Verdict\n\n**Ready with observations** — Minor note.\n';
+    writeFileSync(join(dir, 'my-specs/specs/001-cancel-order/inspections/inspection-001.md'), inspection1);
+    assert.equal(runOk('1', 'inspection', '-d', dir).stdout, inspection1);
+    assert.equal(runOk('1', 'inspection', '-s', '-d', dir).stdout, 'Blocked\n');
+
+    writeFileSync(join(dir, 'my-specs/specs/001-cancel-order/inspections/inspection-002.md'), inspection2);
+    assert.equal(runOk('1', 'inspection', '-d', dir).stdout, inspection2);
+    assert.equal(runOk('001-cancel-order', 'inspection', '--status', '-d', dir).stdout, 'Ready with observations\n');
+    assert.equal(runOk('001', 'inspection', '-s', '-d', dir).stdout, 'Ready with observations\n');
+
+    // Inspection without a parseable verdict fails when --status is requested, but full output still works.
+    const noVerdict = '# Inspection 003\n\nNo verdict section here.\n';
+    writeFileSync(join(dir, 'my-specs/specs/001-cancel-order/inspections/inspection-003.md'), noVerdict);
+    assert.equal(runOk('1', 'inspection', '-d', dir).stdout, noVerdict);
+    const badStatus = run('1', 'inspection', '-s', '-d', dir);
+    assert.equal(badStatus.status, 1);
+    assert.match(badStatus.stderr, /Could not determine verdict from my-specs\/specs\/001-cancel-order\/inspections\/inspection-003\.md/);
+
+    // Wrong order is rejected with usage.
+    assert.match(run('inspection', '1', '-d', dir).stderr, /Usage: myspec <spec> inspection \[--status \| -s\]/);
+
+    // Portuguese workspace and Portuguese aliases (`inspecao` / `inspeção`).
+    runOk('install', '-d', dir, '-l', 'pt');
+    const ptInspection = '# Inspeção 004\n\n`2026-11-25` · Base `1112223` · Anterior `003`\n\n## Parecer\n\n**Apta** — Tudo conferido.\n';
+    writeFileSync(join(dir, 'minhas-specs/specs/001-cancel-order/inspecoes/inspecao-004.md'), ptInspection);
+    assert.equal(runOk('1', 'inspecao', '-d', dir).stdout, ptInspection);
+    assert.equal(runOk('1', 'inspeção', '-s', '-d', dir).stdout, 'Apta\n');
+    assert.match(run('inspecao', '1', '-d', dir).stderr, /Uso: myspec <spec> inspecao \[--status \| -s\]/);
+    mkdirSync(join(dir, 'minhas-specs/specs/002-sem-inspecao'), { recursive: true });
+    writeFileSync(join(dir, 'minhas-specs/specs/002-sem-inspecao/spec.md'), '# Sem inspeção\n');
+    assert.match(run('2', 'inspecao', '-d', dir).stderr, /Nenhuma inspeção encontrada para a spec "002-sem-inspecao"/);
+  });
+
+  it('lists, reads, and dumps rules and metrics with `myspec rule` and `myspec metric`', () => {
+    const dir = gitRepo();
+    runOk('install', '-d', dir, '-p', 'gemini', '-l', 'en');
+
+    // Empty folders report a usage error.
+    assert.equal(run('rule', '-d', dir).status, 2);
+    assert.match(run('rule', '-d', dir).stderr, /No rules found under my-specs\/coding-practices\/ or my-specs\/general-guidelines\//);
+    assert.equal(run('metric', '-d', dir).status, 2);
+    assert.match(run('metric', '-d', dir).stderr, /No metrics found under my-specs\/metrics\//);
+
+    const practiceDoc = '# Clean Code\n\nKeep functions small.\n';
+    const guidelineDoc = '# Build and Test\n\nRun npm test.\n';
+    const metricA = '# Coverage\n\nTarget: 80%.\n';
+    const metricB = '# CRAP Score\n\nTarget: <= 30.\n';
+    writeFileSync(join(dir, 'my-specs/coding-practices/clean-code.md'), practiceDoc);
+    writeFileSync(join(dir, 'my-specs/general-guidelines/build-and-test.md'), guidelineDoc);
+    writeFileSync(join(dir, 'my-specs/metrics/coverage.md'), metricA);
+    writeFileSync(join(dir, 'my-specs/metrics/crap-score.md'), metricB);
+
+    // Listing prints workspace-relative paths.
+    assert.equal(
+      runOk('rule', '-d', dir).stdout,
+      'coding-practices/clean-code.md\ngeneral-guidelines/build-and-test.md\n',
+    );
+    assert.equal(runOk('rules', '-d', dir).stdout, runOk('rule', '-d', dir).stdout);
+    assert.equal(runOk('metric', '-d', dir).stdout, 'metrics/coverage.md\nmetrics/crap-score.md\n');
+    assert.equal(runOk('metrics', '-d', dir).stdout, runOk('metric', '-d', dir).stdout);
+
+    // Reading a single rule or metric accepts stem, filename, or relative path.
+    assert.equal(runOk('rule', 'clean-code', '-d', dir).stdout, practiceDoc);
+    assert.equal(runOk('rule', 'clean-code.md', '-d', dir).stdout, practiceDoc);
+    assert.equal(runOk('rule', 'general-guidelines/build-and-test.md', '-d', dir).stdout, guidelineDoc);
+    assert.equal(runOk('metric', 'crap-score', '-d', dir).stdout, metricB);
+    assert.equal(runOk('metric', 'metrics/coverage.md', '-d', dir).stdout, metricA);
+
+    // -f / --full prints every matching document with file headers.
+    const fullRules = runOk('rule', '-f', '-d', dir).stdout;
+    assert.equal(
+      fullRules,
+      '<!-- my-specs/coding-practices/clean-code.md -->\n# Clean Code\n\nKeep functions small.\n\n' +
+        '<!-- my-specs/general-guidelines/build-and-test.md -->\n# Build and Test\n\nRun npm test.\n',
+    );
+    assert.equal(runOk('rule', '--full', '-d', dir).stdout, fullRules);
+    const fullMetrics = runOk('metric', '-f', '-d', dir).stdout;
+    assert.equal(
+      fullMetrics,
+      '<!-- my-specs/metrics/coverage.md -->\n# Coverage\n\nTarget: 80%.\n\n' +
+        '<!-- my-specs/metrics/crap-score.md -->\n# CRAP Score\n\nTarget: <= 30.\n',
+    );
+    assert.equal(runOk('metric', '--full', '-d', dir).stdout, fullMetrics);
+
+    // Ambiguous bare name across coding-practices and general-guidelines asks for folder prefix.
+    writeFileSync(join(dir, 'my-specs/coding-practices/testing.md'), '# Practice Testing\n');
+    writeFileSync(join(dir, 'my-specs/general-guidelines/testing.md'), '# Guideline Testing\n');
+    const ambiguous = run('rule', 'testing', '-d', dir);
+    assert.equal(ambiguous.status, 2);
+    assert.match(ambiguous.stderr, /Rule "testing" is ambiguous: coding-practices\/testing\.md, general-guidelines\/testing\.md/);
+    assert.equal(runOk('rule', 'coding-practices/testing', '-d', dir).stdout, '# Practice Testing\n');
+
+    // Unknown name and invalid combinations fail with exit code 2.
+    assert.equal(run('rule', 'unknown', '-d', dir).status, 2);
+    assert.match(run('rule', 'unknown', '-d', dir).stderr, /Rule "unknown" not found/);
+    assert.equal(run('metric', 'unknown', '-d', dir).status, 2);
+    assert.match(run('metric', 'unknown', '-d', dir).stderr, /Metric "unknown" not found/);
+    assert.equal(run('rule', 'clean-code', '-f', '-d', dir).status, 2);
+
+    // Portuguese workspace and aliases (`regra`, `metrica`, `métrica`).
+    runOk('install', '-d', dir, '-l', 'pt');
+    assert.equal(
+      runOk('regra', '-d', dir).stdout,
+      'praticas-de-codigo/clean-code.md\npraticas-de-codigo/testing.md\norientacoes-gerais/build-and-test.md\norientacoes-gerais/testing.md\n',
+    );
+    assert.equal(runOk('métrica', 'coverage', '-d', dir).stdout, metricA);
+    assert.match(run('regra', 'inexistente', '-d', dir).stderr, /Regra "inexistente" não encontrada/);
+    assert.match(run('metrica', 'inexistente', '-d', dir).stderr, /Métrica "inexistente" não encontrada/);
   });
 });
 

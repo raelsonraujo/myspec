@@ -9,7 +9,7 @@ Turn a change request into a compact, testable contract for implementation and Q
 
 ## Guidance & Lifecycle Gates
 
-1. Read every Markdown file under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat applicable `Status: Approved` documents as mandatory; surface conflicts with higher-priority instructions.
+1. Read every rule under `my-specs/coding-practices/` and `my-specs/general-guidelines/` (run `myspec rule -f`). Treat applicable `Status: Approved` documents as mandatory; surface conflicts with higher-priority instructions.
 2. Read `my-specs/specs/manifest.json` before creating or revising specs. If missing or inconsistent, reconcile it via `{{skill:myspec-setup}}` first.
 3. Never revise a `finished` or `discarded` spec, its tree, inspections, or completion entry. Any change that can impact a finished spec—even a bugfix or behavior-preserving refactor—requires a new numbered spec; resuming the subject of a discarded spec also requires a new spec.
 4. For every newly saved spec, append `{"id":"<folder>","status":"proposed","completionInspection":null}` to `manifest.json` in the same task (re-reading before writing and preserving all other entries/fields). Revising a `proposed` or `active` spec preserves its status.
@@ -25,7 +25,7 @@ Write every `proposed` or `active` spec as a standalone, as-is description of th
 
 ## Workflow
 
-1. Read the request, relevant repository context, approved guidance, and `my-specs/metrics/` (when present) to know applicable gates. To check overlap with existing specs, scan their criteria with `myspec <spec-id> criteria` (one criterion in full with `myspec <spec-id> criteria <N>`) instead of reading whole specs.
+1. Read the request, relevant repository context, approved guidance, and `my-specs/metrics/` (when present, via `myspec metric -f`) to know applicable gates. To check overlap with existing specs, scan their criteria with `myspec <spec-id> criteria` (one criterion in full with `myspec <spec-id> criteria <N>`, or the full spec with `myspec <spec-id> read`) instead of navigating spec folders manually.
 2. Ask focused questions only for material ambiguities that substantially alter scope or observable behavior; otherwise record conservative assumptions.
 3. Choose a concise kebab-case name and assign the next zero-padded three-digit prefix (`001`, `002`, ...) not used by any folder in `my-specs/specs/` or entry in `manifest.json`.
 4. Save `my-specs/specs/<NNN>-<name>/spec.md` using [assets/spec-template.md](assets/spec-template.md). Never leave a spec only in chat.

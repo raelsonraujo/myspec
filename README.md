@@ -9,14 +9,14 @@ CLI de desenvolvimento orientado a especificações (SDD) para agentes de códig
 Você precisa de Node.js 20 ou superior. Baixe o arquivo `myspec-<versão>.tgz` nos [assets da release](https://github.com/raelsonraujo/myspec/releases) e instale-o com o npm, na pasta em que salvou o arquivo:
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.21.tgz
+npm install -g --ignore-scripts ./myspec-0.7.23.tgz
 myspec --version
 ```
 
 Para conferir a origem e a integridade do arquivo antes de instalar, use a [CLI do GitHub](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.21 ./myspec-0.7.21.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.23 ./myspec-0.7.23.tgz --repo raelsonraujo/myspec
 ```
 
 ## Configurando um repositório: `myspec install`
@@ -128,3 +128,41 @@ myspec 1 criterio 5      # CA-05 com a descrição
 ```
 
 O número precisa ser exato: `5`, `05` e `CA-05` levam ao mesmo critério.
+
+### `myspec <spec> read [--smoke | -s]` (`ler`)
+
+Imprime o `spec.md` da spec direto no terminal, para agentes e desenvolvedores lerem a especificação sem navegar pelas pastas do workspace. Com `--smoke` (ou `-s`), imprime apenas a seção de smoke da spec.
+
+```bash
+myspec 1 ler
+myspec 1 ler -s
+```
+
+### `myspec <spec> inspection [--status | -s]` (`inspecao` ou `inspeção`)
+
+Imprime no terminal a inspeção mais recente da spec sem precisar procurar o maior número em `inspecoes/`. Com `--status` (ou `-s`), retorna apenas o veredito (`Apta`, `Apta com ressalvas`, `Bloqueada`, etc.).
+
+```bash
+myspec 1 inspecao
+myspec 1 inspecao -s
+```
+
+### `myspec rule [<nome>] [--full | -f]` (`regra`)
+
+Lista todos os arquivos de regra em `praticas-de-codigo/` e `orientacoes-gerais/`. Passe o nome (ou caminho relativo) de uma regra para imprimir seu conteúdo Markdown, ou `--full` (`-f`) para imprimir todas as práticas de código e orientações gerais.
+
+```bash
+myspec regra
+myspec regra codigo-limpo
+myspec regra -f
+```
+
+### `myspec metric [<nome>] [--full | -f]` (`metrica` ou `métrica`)
+
+Lista todos os arquivos de métrica em `metricas/`. Passe o nome (ou caminho relativo) de uma métrica para imprimir seu conteúdo Markdown, ou `--full` (`-f`) para imprimir todas as métricas.
+
+```bash
+myspec metrica
+myspec metrica crap-score
+myspec metrica -f
+```

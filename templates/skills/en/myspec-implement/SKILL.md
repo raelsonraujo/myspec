@@ -9,10 +9,10 @@ Implement an unfinished spec from `my-specs/specs/<spec-id>/spec.md` using an ex
 
 ## Guidance & Lifecycle Gates
 
-1. Read every Markdown file under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat applicable `Status: Approved` documents as mandatory and surface conflicts with higher-priority instructions.
+1. Read every rule under `my-specs/coding-practices/` and `my-specs/general-guidelines/` (run `myspec rule -f`, or `myspec rule` / `myspec rule <name>`). Treat applicable `Status: Approved` documents as mandatory and surface conflicts with higher-priority instructions.
 2. Read `my-specs/specs/manifest.json` and the spec's entry. If missing or inconsistent, reconcile via `{{skill:myspec-setup}}` first.
 3. A `finished` or `discarded` spec is immutable: never implement, modify, or reopen it; recommend `{{skill:myspec-prescribe}}` for any follow-up change.
-4. Read `spec.md` and verify its BDD acceptance criteria (`AC-NN`) are complete, unambiguous, and verifiable. Approved practices, guidelines, and metric gates apply directly from their own documents without duplicate ACs. If required change-specific criteria are missing, non-BDD, or contradictory, pause and recommend `{{skill:myspec-prescribe}}` instead of guessing. Treat any `## Revision History` section as context only.
+4. Read `spec.md` (run `myspec <spec-id> read`, or `myspec <spec-id> read -s` for just the smoke section) and verify its BDD acceptance criteria (`AC-NN`) are complete, unambiguous, and verifiable. Approved practices, guidelines, and metric gates apply directly from their own documents without duplicate ACs. If required change-specific criteria are missing, non-BDD, or contradictory, pause and recommend `{{skill:myspec-prescribe}}` instead of guessing. Treat any `## Revision History` section as context only.
 
 ## File-Tree Blueprint
 
@@ -32,7 +32,7 @@ Always establish `my-specs/specs/<spec-id>/file-tree.md` as an as-is implementat
 ## Activation & Implementation
 
 1. Immediately before the first production or test edit on a `proposed` spec, activate it by running `myspec <spec-id> activate` (or updating only this entry in `manifest.json` from `proposed` to `active` with `completionInspection: null` and current git HEAD as `baseCommit`). Never activate while only writing `file-tree.md`.
-2. Read `my-specs/metrics/` (when present) to know applicable quality gates, and read the highest-numbered file in `inspections/` (when present) to address open findings.
+2. Read `my-specs/metrics/` (when present, via `myspec metric -f`) to know applicable quality gates, and read the latest inspection (when present, via `myspec <spec-id> inspection`) to address open findings.
 3. Implement in clean, cohesive, reviewable slices covering every `AC-NN` (`Given / When / Then / And`) and critical failure, boundary, authorization, and data-integrity paths. To revisit one criterion, run `myspec <spec-id> criteria <N>` instead of rereading `spec.md`.
 4. The checked `file-tree.md` governs the whole implementation. If implementation invalidates it (needs a file the tree does not list, no longer needs a listed file, changes a listed file's target or name, or shows that a recorded structural decision does not hold, including test or configuration files and small changes), stop before the next source or test edit, without finishing the increment in progress:
    - present in chat the evidence (`file:line`), the proposed revision, and the viable alternative, state which files already changed and which depend on it, and end the invocation awaiting the developer's decision; do not revert edits already made on your own;

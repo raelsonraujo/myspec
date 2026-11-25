@@ -7,14 +7,14 @@ description: Implementa uma especificação ainda não finalizada, criando seu p
 
 Implemente uma spec ainda não finalizada de `minhas-specs/specs/<id-spec>/spec.md` usando um plano explícito de árvore de arquivos e verificação com evidências.
 
-> **Comandos da CLI:** cada comando tem dois nomes válidos: o em inglês responde em inglês, e o em português responde em português. `gate` ou `portao`, `finish` ou `finalizar`, `activate` ou `ativar`, `approve` ou `aprovar`, `check-patch` ou `conferir-correcao`.
+> **Comandos da CLI:** cada comando tem dois nomes válidos: o em inglês responde em inglês, e o em português responde em português. `gate` ou `portao`, `finish` ou `finalizar`, `activate` ou `ativar`, `approve` ou `aprovar`, `check-patch` ou `conferir-correcao`, `read` ou `ler`, `inspection` ou `inspecao`, `rule` ou `regra`, `metric` ou `metrica`.
 
 ## Portões de orientações e ciclo de vida
 
-1. Leia todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios e exponha conflitos com instruções de maior prioridade.
+1. Leia toda regra em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/` (rode `myspec regra -f`, ou `myspec regra` / `myspec regra <nome>`). Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios e exponha conflitos com instruções de maior prioridade.
 2. Leia `minhas-specs/specs/manifesto.json` e a entrada da spec. Se estiver ausente ou inconsistente, reconcilie via `{{skill:myspec-configurar}}` primeiro.
 3. Uma spec `finalizada` ou `descartada` é imutável: nunca a implemente, altere ou reabra; recomende `{{skill:myspec-prescrever}}` para qualquer trabalho posterior.
-4. Leia `spec.md` e confirme que seus critérios BDD (`CA-NN`) estão completos, claros e verificáveis. Práticas, orientações e portões de métricas aprovados aplicam-se diretamente de seus documentos, sem CAs duplicados. Se faltarem critérios específicos da mudança ou houver contradição, pause e recomende `{{skill:myspec-prescrever}}` em vez de adivinhar. Trate `## Histórico de revisões` apenas como contexto.
+4. Leia `spec.md` (rode `myspec <id-spec> ler`, ou `myspec <id-spec> ler -s` para só a seção de smoke) e confirme que seus critérios BDD (`CA-NN`) estão completos, claros e verificáveis. Práticas, orientações e portões de métricas aprovados aplicam-se diretamente de seus documentos, sem CAs duplicados. Se faltarem critérios específicos da mudança ou houver contradição, pause e recomende `{{skill:myspec-prescrever}}` em vez de adivinhar. Trate `## Histórico de revisões` apenas como contexto.
 
 ## Plano de árvore de arquivos
 
@@ -34,7 +34,7 @@ Estabeleça sempre `minhas-specs/specs/<id-spec>/arvore-de-arquivos.md` no estad
 ## Ativação e implementação
 
 1. Imediatamente antes da primeira edição de código ou teste em uma spec `proposta`, ative-a executando `myspec <id-spec> activate` (ou alterando somente essa entrada no `manifesto.json` de `proposta` para `ativa`, com `inspecaoDeConclusao: null` e o HEAD Git atual em `commitBase`). Nunca ative apenas ao criar `arvore-de-arquivos.md`.
-2. Leia `minhas-specs/metricas/` (quando existir) para conhecer os portões de qualidade aplicáveis e leia a inspeção mais recente em `inspecoes/` (quando existir) para tratar achados abertos.
+2. Leia `minhas-specs/metricas/` (quando existir, via `myspec metrica -f`) para conhecer os portões de qualidade aplicáveis e leia a inspeção mais recente (quando existir, via `myspec <id-spec> inspecao`) para tratar achados abertos.
 3. Implemente em fatias limpas, coesas e revisáveis, cobrindo cada `CA-NN` (`Dado / Quando / Então / E`) e caminhos críticos de falha, fronteira, autorização e integridade de dados. Para rever um critério, rode `myspec <id-spec> criterio <N>` em vez de reler o `spec.md`.
 4. A `arvore-de-arquivos.md` conferida vale durante toda a implementação. Se a implementação a invalidar (precisar de um arquivo que ela não lista, deixar de precisar de um que ela lista, trocar o alvo ou o nome de um arquivo listado ou mostrar que uma decisão estrutural registrada não se sustenta, inclusive em testes ou configuração e em mudança pequena), pare antes da próxima edição de código ou teste, sem terminar o incremento em andamento:
    - apresente no chat a evidência (`arquivo:linha`), a revisão proposta e a alternativa viável, informe quais arquivos já mudaram e quais dependem dela, e encerre a invocação aguardando a decisão do desenvolvedor; não desfaça por conta própria o que já foi editado;

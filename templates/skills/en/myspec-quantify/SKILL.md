@@ -9,11 +9,11 @@ Measure approved quality metrics across the whole project and turn the weakest a
 
 ## Guidance Gate
 
-Read every Markdown file under `my-specs/coding-practices/` and `my-specs/general-guidelines/`. Treat applicable `Status: Approved` documents as mandatory; surface conflicts with higher-priority instructions.
+Read every rule under `my-specs/coding-practices/` and `my-specs/general-guidelines/` (run `myspec rule -f`). Treat applicable `Status: Approved` documents as mandatory; surface conflicts with higher-priority instructions.
 
 ## Workflow
 
-1. Read every file under `my-specs/metrics/`. Only `Status: Approved`, complete metric files are measured; never invent or default to undefined metrics. If none are approved (or only legacy `my-specs/tooling.md` exists), stop and recommend `{{skill:myspec-setup}}`.
+1. Read every metric under `my-specs/metrics/` (run `myspec metric -f`, or `myspec metric` / `myspec metric <name>`). Only `Status: Approved`, complete metric files are measured; never invent or default to undefined metrics. If none are approved (or only legacy `my-specs/tooling.md` exists), stop and recommend `{{skill:myspec-setup}}`.
 2. Run **`myspec gate --project`** to deterministically execute approved build/test commands and project-wide metrics, evaluate `## Gates` applicable to the project, and parse structured reports (Cobertura XML, SARIF, TRX, Stryker JSON, generic JSON). For any approved metric requiring a custom/non-parsed report (such as benchmarks), run its documented command once and read its result path directly.
 3. Treat failed or skipped tests as findings; never present failing runs as clean verification. Never install, guess, or substitute unavailable tools—report incomplete sections clearly.
 4. Map hotspots to specs under `my-specs/specs/` whose `file-tree.md` covers that code (when any exist) and compare totals against the previous `my-specs/reports/quality-report.md` (if present).

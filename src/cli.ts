@@ -7,6 +7,9 @@ import { formatGateMarkdown, runGate } from './gate.js';
 import { install, type InstallResult } from './install.js';
 import { openSpec } from './open.js';
 import { formatCriteria, readCriteria } from './criteria.js';
+import { readSpec } from './read.js';
+import { readLatestInspection } from './inspection.js';
+import { formatContractDocs, readContractDocs } from './contract.js';
 import { LANGUAGES, parseLanguage, type LanguageId } from './languages.js';
 import { activateSpec, approveContractDocument, checkPatch, finishSpec } from './lifecycle.js';
 import { readManifest } from './manifest.js';
@@ -34,6 +37,10 @@ Usage:
   myspec check-patch [--limit <N>] [--base <ref>] [--json] [-d <dir>]
   myspec <spec> open [--file-tree | -ft] [-d <dir>]
   myspec <spec> criteria [<N>] [-d <dir>]
+  myspec <spec> read [--smoke | -s] [-d <dir>]
+  myspec <spec> inspection [--status | -s] [-d <dir>]
+  myspec rule [<name>] [--full | -f] [-d <dir>]
+  myspec metric [<name>] [--full | -f] [-d <dir>]
 
 Commands:
   install            Install the Myspec skills and the workspace (my-specs, or minhas-specs in pt)
@@ -44,9 +51,14 @@ Commands:
   check-patch        Check whether current git changes are eligible for patching (limit & finished specs)
   open               Open a spec's spec.md (or its file tree with --file-tree) in VS Code
   criteria           List a spec's acceptance criteria (ID and title), or show criterion <N> in full
+  read               Print a spec's spec.md to the terminal (or only its smoke section with --smoke)
+  inspection         Print a spec's latest inspection to the terminal (or only its status with --status)
+  rule               List rule files (coding practices & general guidelines), show one, or print all (--full)
+  metric             List metric files, show one, or print all (--full)
 
   Portuguese names: aprovar (approve), ativar (activate), portao or portão (gate), finalizar (finish),
-  conferir-correcao (check-patch), abre or abrir (open), criterio or critério (criteria);
+  conferir-correcao (check-patch), abre or abrir (open), criterio or critério (criteria), ler (read),
+  inspecao or inspeção (inspection), regra (rule), metrica or métrica (metric);
   called by these names, the commands answer in Portuguese.
 
   The spec always comes before the command: myspec 1 gate, never myspec gate 1.
@@ -74,6 +86,9 @@ Workflow options:
   -ft, --file-tree   In \`open\`, open the spec's file tree instead of spec.md
                      (\`open\` runs \`code\`; set MYSPEC_EDITOR to use another editor command)
   <N>                In \`criteria\`, the exact criterion number to show in full (5, 05, or AC-05)
+  -s, --smoke        In \`read\`, print only the smoke section of spec.md
+  -s, --status       In \`inspection\`, print only the status/verdict of the latest inspection
+  -f, --full         In \`rule\` or \`metric\`, print the full content of every matching document
 
 When the repository already has a Myspec workspace, -p and -l default to the installed values.
 Switching languages renames the workspace folders and files to the new language.
@@ -97,10 +112,19 @@ Examples:
   myspec 1 open -ft
   myspec 1 criteria
   myspec 1 criteria 5
+  myspec 1 read
+  myspec 1 read -s
+  myspec 1 inspection
+  myspec 1 inspection -s
+  myspec rule
+  myspec rule -f
+  myspec metric crap-score
   myspec 1 ativar
   myspec 1 portao
   myspec 1 finalizar
   myspec 1 criterio 5
+  myspec 1 ler
+  myspec 1 inspecao -s
 `;
 
 /** Portuguese names accepted for the workflow commands; called by them, the commands answer in Portuguese. */
@@ -118,16 +142,29 @@ const COMMAND_ALIASES: Record<string, string> = {
   'critério': 'criteria',
   criterios: 'criteria',
   'critérios': 'criteria',
+  ler: 'read',
+  le: 'read',
+  'lê': 'read',
+  inspecao: 'inspection',
+  'inspeção': 'inspection',
+  regra: 'rule',
+  regras: 'rule',
+  metrica: 'metric',
+  'métrica': 'metric',
+  metricas: 'metric',
+  'métricas': 'metric',
 };
 
 /** English names besides the canonical ones. */
 const ENGLISH_ALIASES: Record<string, string> = {
   criterion: 'criteria',
+  rules: 'rule',
+  metrics: 'metric',
 };
 
 /** Commands that take a spec, written before them: `myspec 1 gate`. */
-const SPEC_COMMANDS = new Set(['activate', 'gate', 'finish', 'open', 'criteria']);
-const COMMANDS = new Set([...SPEC_COMMANDS, 'install', 'approve', 'check-patch']);
+const SPEC_COMMANDS = new Set(['activate', 'gate', 'finish', 'open', 'criteria', 'read', 'inspection']);
+const COMMANDS = new Set([...SPEC_COMMANDS, 'install', 'approve', 'check-patch', 'rule', 'metric']);
 
 function commandOf(word: string | undefined): string | undefined {
   if (word === undefined) return undefined;
@@ -136,9 +173,10 @@ function commandOf(word: string | undefined): string | undefined {
   return COMMANDS.has(id) ? id : undefined;
 }
 
-/** Multi-letter short flags that `parseArgs` would split into single letters (`-ft` -> `-f -t`). */
+/** Short flags rewritten before `parseArgs` (`-ft` would split into `-f -t`; `-s` is shared by `--smoke` and `--status`). */
 const FLAG_ALIASES: Record<string, string> = {
   '-ft': '--file-tree',
+  '-s': '--_short-s',
 };
 
 const OPTIONS = {
@@ -157,6 +195,10 @@ const OPTIONS = {
   base: { type: 'string' },
   json: { type: 'boolean' },
   'file-tree': { type: 'boolean' },
+  smoke: { type: 'boolean' },
+  status: { type: 'boolean' },
+  full: { type: 'boolean', short: 'f' },
+  '_short-s': { type: 'boolean' },
   help: { type: 'boolean', short: 'h' },
   version: { type: 'boolean', short: 'v' },
 } as const;
@@ -300,6 +342,33 @@ async function main(argv: string[]): Promise<number> {
     if (rest.length > 1) throw new UsageError(t.unexpectedArgument(rest[1]));
     const result = readCriteria({ root, specId: spec, criterion: rest[0], language });
     process.stdout.write(formatCriteria(result, language));
+    return 0;
+  }
+
+  if (command === 'read') {
+    if (!spec || rest.length > 0) throw specUsage('[--smoke | -s] [-d <dir>]');
+    const result = readSpec({ root, specId: spec, smoke: Boolean(values.smoke || values['_short-s']), language });
+    process.stdout.write(result.content.endsWith('\n') ? result.content : `${result.content}\n`);
+    return 0;
+  }
+
+  if (command === 'inspection') {
+    if (!spec || rest.length > 0) throw specUsage('[--status | -s] [-d <dir>]');
+    const result = readLatestInspection({ root, specId: spec, language });
+    if (values.status || values['_short-s']) {
+      if (!result.verdict) throw new Error(t.verdictUnknown(result.path));
+      console.log(result.verdict);
+    } else {
+      process.stdout.write(result.content.endsWith('\n') ? result.content : `${result.content}\n`);
+    }
+    return 0;
+  }
+
+  if (command === 'rule' || command === 'metric') {
+    if (rest.length > 1) throw new UsageError(t.unexpectedArgument(rest[1]));
+    if (values.full && rest.length > 0) throw usage('[<name>] [--full | -f] [-d <dir>]');
+    const result = readContractDocs({ root, kind: command, name: rest[0], language });
+    process.stdout.write(formatContractDocs(result, values.full));
     return 0;
   }
 
