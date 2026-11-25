@@ -7,10 +7,12 @@ description: Faz um ajuste de código pequeno e delimitado, de no máximo cinco 
 
 Faça um ajuste pequeno e delimitado sem criar nova spec ou árvore de arquivos, desde que não possa impactar nenhuma spec `finalizada`.
 
+> **Comandos da CLI:** cada comando tem dois nomes válidos: o em inglês responde em inglês, e o em português responde em português. `gate` ou `portao`, `finish` ou `finalizar`, `activate` ou `ativar`, `approve` ou `aprovar`, `check-patch` ou `conferir-correcao`.
+
 ## Portões de orientações e escopo
 
 1. Leia todo arquivo Markdown em `minhas-specs/praticas-de-codigo/` e `minhas-specs/orientacoes-gerais/`. Trate documentos aplicáveis com `Status: Aprovado` como obrigatórios e verifique se alguma orientação geral aprovada substitui o limite padrão de 5 arquivos.
-2. Leia `minhas-specs/specs/manifesto.json` (reconcilie via `{{skill:myspec-configurar}}` se ausente/inconsistente) e inspecione specs afetadas (`spec.md`, `arvore-de-arquivos.md`, última inspeção).
+2. Leia `minhas-specs/specs/manifesto.json` (reconcilie via `{{skill:myspec-configurar}}` se ausente/inconsistente) e inspecione specs afetadas (`spec.md`, `arvore-de-arquivos.md`, última inspeção). Percorra os critérios de uma spec com `myspec <id-spec> criterio` e leia só os relevantes com `myspec <id-spec> criterio <N>` antes de abrir o `spec.md` inteiro.
 3. Valide a elegibilidade antes de editar (e confirme ao final com **`myspec check-patch`** — passe `--limit <N>` se uma orientação aprovada substituir 5):
    - **Fronteira de spec finalizada:** Se a mudança puder impactar o comportamento ou implementação de qualquer spec `finalizada` — mesmo correção ou refatoração pequena — pare e recomende `{{skill:myspec-prescrever}}` para abrir nova spec.
    - **Limite de arquivos:** Se exceder o limite aplicável (5 por padrão, incluindo testes), recomende `{{skill:myspec-implementar}}` (se coberto por spec ativa) ou recomende `{{skill:myspec-prescrever}}`.

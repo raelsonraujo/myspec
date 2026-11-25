@@ -229,6 +229,27 @@ export function resolveSpecId(ws: WorkspaceContext, input: string, t: Messages =
   throw new UsageError(t.specNumberAmbiguous(prefix.slice(0, -1), matches));
 }
 
+/**
+ * Resolves a spec (folder name or number) and the path of one of its files, without checking that the file exists.
+ * `path` is repository-relative with forward slashes, for messages.
+ */
+export function resolveSpecFile(
+  ws: WorkspaceContext,
+  input: string,
+  fileName: string,
+  t: Messages = messages(),
+): { specId: string; path: string; absolute: string } {
+  const specId = resolveSpecId(ws, input, t);
+  if (!specId || /[/\\]/.test(specId) || specId === '.' || specId === '..') {
+    throw new UsageError(t.invalidSpecId(specId));
+  }
+  return {
+    specId,
+    path: `${ws.layout.dir}/${ws.layout.specs}/${specId}/${fileName}`,
+    absolute: join(ws.workspaceDir, ws.layout.specs, specId, fileName),
+  };
+}
+
 /** Extracts stable BDD acceptance criterion IDs (`AC-01`, `CA-01`, etc.) from `spec.md`. */
 export function parseSpecCriteria(content: string): string[] {
   const ids = new Set<string>();
@@ -447,7 +468,8 @@ export function listSpecInspections(ws: WorkspaceContext, specId: string): { seq
 }
 
 export function parseInspectionSummary(content: string): { verdict?: string; passing: boolean; baselineCommit?: string } {
-  const verdictSection = content.match(/^##\s+(?:Verdict|Veredito)\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/m);
+  // `Parecer` is accepted beside `Veredito` for Portuguese inspections written with that heading.
+  const verdictSection = content.match(/^##\s+(?:Verdict|Veredito|Parecer)\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/m);
   let verdict: string | undefined;
   if (verdictSection) {
     const bold = verdictSection[1].match(/\*\*([^*]+)\*\*/);
@@ -573,6 +595,7 @@ export interface CheckPatchOptions {
   root: string;
   limit?: number;
   base?: string;
+  language?: MessageLanguage;
 }
 
 export interface SpecOverlap {
@@ -591,10 +614,11 @@ export interface CheckPatchResult {
 }
 
 export function checkPatch(options: CheckPatchOptions): CheckPatchResult {
-  const ws = resolveWorkspace(options.root);
+  const t = messages(options.language);
+  const ws = resolveWorkspace(options.root, t);
   const limit = options.limit ?? 5;
   if (!Number.isInteger(limit) || limit < 1) {
-    throw new UsageError(`Invalid file limit "${limit}". Expected a positive integer.`);
+    throw new UsageError(t.patchLimitInvalid(String(limit)));
   }
 
   const changedFiles = gitChangedFiles(ws.root, options.base).filter((file) => !isMyspecManagedFile(ws, file));
@@ -623,13 +647,13 @@ export function checkPatch(options: CheckPatchOptions): CheckPatchResult {
 
   const reasons: string[] = [];
   if (changedFiles.length > limit) {
-    reasons.push(`Changed file count (${changedFiles.length}) exceeds patch limit (${limit}).`);
+    reasons.push(t.patchLimitExceeded(changedFiles.length, limit));
   }
   for (const item of finishedOverlaps) {
-    reasons.push(`Touches finished spec "${item.specId}" (${item.files.join(', ')}); create a new spec instead.`);
+    reasons.push(t.patchTouchesFinished(item.specId, item.files.join(', ')));
   }
   for (const item of proposedOverlaps) {
-    reasons.push(`Touches proposed spec "${item.specId}" (${item.files.join(', ')}); use implement instead of patch.`);
+    reasons.push(t.patchTouchesProposed(item.specId, item.files.join(', ')));
   }
 
   return {

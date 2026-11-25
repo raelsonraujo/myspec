@@ -22,12 +22,12 @@ Evaluate an active spec implementation against its explicit contract, approved r
 ## Workflow
 
 1. Read `my-specs/specs/<spec-id>/spec.md`, `file-tree.md` (when present), `my-specs/metrics/` (when present), and the highest-numbered file in `inspections/` (if any).
-2. Run **`myspec gate <spec-id>`** (deterministic evaluation) in full, without `--skip-run` or `--skip-build`, with the code committed: `myspec finish` only accepts the spec's latest gate result when it passed on the inspected commit.
-   - Executes any approved `general-guidelines/*.md` verification contract (`"kind": "verify"`) and each approved `metrics/*.md` contract (`"kind": "metric"`) once, deduplicating shared runs.
+2. Run **`myspec <spec-id> gate`** (deterministic evaluation) in full, without `--skip-run` or `--skip-build`, with the code committed: `myspec finish` only accepts the spec's latest gate result when it passed on the inspected commit.
+   - Executes any approved `general-guidelines/*.md` and `coding-practices/*.md` verification contract (`"kind": "verify"`) and each approved `metrics/*.md` contract (`"kind": "metric"`) once, deduplicating shared runs.
    - Parses structured reports (`cobertura`, `sarif`, `trx`, `stryker`, `json`), isolates changed code via `baseCommit` / `file-tree.md`, evaluates declared `gates`, and checks **file-tree drift** (unplanned/untouched edits).
    - For any approved metric whose output format `myspec gate` cannot parse automatically (for example, benchmarks with machine-compared budgets), run its exact documented command and read its result path directly. Never invent, estimate, install, or substitute tools; record unavailable/unapproved metrics as `Not measured: <reason>` and suggest `{{skill:myspec-setup}}`.
-   - Do not update `my-specs/quality-report.md` (that belongs to `{{skill:myspec-quantify}}`).
-3. Verify every BDD acceptance criterion (`AC-NN`) in `spec.md` against concrete test or verification evidence covering its `Given / When / Then / And` outcomes:
+   - Do not update `my-specs/reports/quality-report.md` (that belongs to `{{skill:myspec-quantify}}`).
+3. Verify every BDD acceptance criterion (`AC-NN`) in `spec.md` against concrete test or verification evidence covering its `Given / When / Then / And` outcomes (`myspec <spec-id> criteria` lists the IDs and titles for the table; `myspec <spec-id> criteria <N>` re-reads one criterion):
    - Mark `Met` only when all outcomes are verified, `Not met` when contradicted, or `Insufficient evidence` when missing/partial. Never omit an AC or mark it `Not applicable`.
    - Approved coding practices, general guidelines, and metric gates are enforced directly from their own documents; never demand duplicate compliance ACs. Report rule violations separately with exact `file:line` and source rule.
    - Report any unplanned file-tree drift from `myspec gate` as an `Attention` finding (or `Not met` if it breaks scope/rules).
@@ -41,8 +41,8 @@ Evaluate an active spec implementation against its explicit contract, approved r
 
 ## Finalization
 
-- After saving a `Ready` or `Ready with observations` inspection, present its path, verdict, and key findings. Ask the developer to finalize it by running **`myspec finish <spec-id>`** (which deterministically verifies the passing inspection, the unchanged git baseline, and a passing latest gate on the same commit) or by explicitly confirming finalization in chat.
-- On explicit confirmation in chat (without code changes since the reviewed inspection), run `myspec finish <spec-id>` without creating a new inspection. Never edit the manifest by hand to finish a spec: `myspec finish` is what checks the gate. If code changed after the inspection, inspect the new baseline first.
+- After saving a `Ready` or `Ready with observations` inspection, present its path, verdict, and key findings. Ask the developer to finalize it by running **`myspec <spec-id> finish`** (which deterministically verifies the passing inspection, the unchanged git baseline, and a passing latest gate on the same commit) or by explicitly confirming finalization in chat.
+- On explicit confirmation in chat (without code changes since the reviewed inspection), run `myspec <spec-id> finish` without creating a new inspection. Never edit the manifest by hand to finish a spec: `myspec finish` is what checks the gate. If code changed after the inspection, inspect the new baseline first.
 
 ## Record Brevity & Boundaries
 

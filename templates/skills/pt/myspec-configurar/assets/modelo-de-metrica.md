@@ -49,11 +49,13 @@ Criado em: `<data>`
 
 ## Contrato estruturado
 
+Liste em `commands` cada passo da medição (limpeza, restauração, build, execução da ferramenta), em ordem, para que o bloco mostre como a métrica é medida. O `myspec gate` executa os passos em ordem e para no primeiro erro. Para várias métricas medidas pela mesma execução, dê a todas o mesmo `"label"`: o gate executa os passos da primeira e as demais reaproveitam o resultado, inclusive um bloco `verify` com o mesmo label. Sem label, cada bloco executa os próprios passos. Se os passos executam os testes, declare `testResults` com o formato e o caminho dos resultados, para o gate cobrar teste reprovado. Um único passo também pode ir em `command`. Para medição lenta, executada só quando a mudança a afeta (como benchmarks), use `"runOnGate": false`: o bloco continua mostrando os passos, e o `myspec gate` não os executa.
+
 ```json myspec
 {
   "kind": "metric",
   "workingDir": ".",
-  "command": "<comando exato ou { \"win32\": \"...\", \"posix\": \"...\" }>",
+  "commands": ["<cada passo da medição, em ordem: comando exato ou { \"win32\": \"...\", \"posix\": \"...\" }>"],
   "format": "<formato suportado pelo parser ou manual>",
   "resultPaths": ["<caminho relativo ao repositório ou glob>"],
   "gates": [

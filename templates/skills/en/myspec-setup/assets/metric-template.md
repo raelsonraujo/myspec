@@ -50,11 +50,13 @@ Created on: `<date>`
 
 ## Machine Contract
 
+List each measurement step (cleanup, restore, build, tool run) in order under `commands`, so the block shows how the metric is measured. `myspec gate` runs the steps in order and stops at the first failure. For several metrics measured by the same run, give them all the same `"label"`: the gate runs the steps of the first one and the others reuse its outcome, including a `verify` block with the same label. Without a label, each block runs its own steps. When the steps run the tests, declare `testResults` with the result format and paths, so the gate enforces passing tests. A single step may use `command` instead. For a slow measurement run only when a change affects it (such as benchmarks), set `"runOnGate": false`: the block still shows the steps, and `myspec gate` does not run them.
+
 ```json myspec
 {
   "kind": "metric",
   "workingDir": ".",
-  "command": "<exact command or { \"win32\": \"...\", \"posix\": \"...\" }>",
+  "commands": ["<each measurement step, in order: exact command or { \"win32\": \"...\", \"posix\": \"...\" }>"],
   "format": "<supported parser format or manual>",
   "resultPaths": ["<repository-relative path or glob>"],
   "gates": [

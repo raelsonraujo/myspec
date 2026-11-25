@@ -31,14 +31,14 @@ Always establish `my-specs/specs/<spec-id>/file-tree.md` as an as-is implementat
 
 ## Activation & Implementation
 
-1. Immediately before the first production or test edit on a `proposed` spec, activate it by running `myspec activate <spec-id>` (or updating only this entry in `manifest.json` from `proposed` to `active` with `completionInspection: null` and current git HEAD as `baseCommit`). Never activate while only writing `file-tree.md`.
+1. Immediately before the first production or test edit on a `proposed` spec, activate it by running `myspec <spec-id> activate` (or updating only this entry in `manifest.json` from `proposed` to `active` with `completionInspection: null` and current git HEAD as `baseCommit`). Never activate while only writing `file-tree.md`.
 2. Read `my-specs/metrics/` (when present) to know applicable quality gates, and read the highest-numbered file in `inspections/` (when present) to address open findings.
-3. Implement in clean, cohesive, reviewable slices covering every `AC-NN` (`Given / When / Then / And`) and critical failure, boundary, authorization, and data-integrity paths.
+3. Implement in clean, cohesive, reviewable slices covering every `AC-NN` (`Given / When / Then / And`) and critical failure, boundary, authorization, and data-integrity paths. To revisit one criterion, run `myspec <spec-id> criteria <N>` instead of rereading `spec.md`.
 4. The checked `file-tree.md` governs the whole implementation. If implementation invalidates it (needs a file the tree does not list, no longer needs a listed file, changes a listed file's target or name, or shows that a recorded structural decision does not hold, including test or configuration files and small changes), stop before the next source or test edit, without finishing the increment in progress:
    - present in chat the evidence (`file:line`), the proposed revision, and the viable alternative, state which files already changed and which depend on it, and end the invocation awaiting the developer's decision; do not revert edits already made on your own;
    - after explicit confirmation, update the tree to portray the decided target implementation and only then resume. Confirmation given before the revision, code already written, a general instruction not to interrupt, or enabled automatic implementation do not replace it.
 5. If implementation uncovers a required behavioral change, pause and resolve it in `spec.md` via `{{skill:myspec-prescribe}}` before coding it. Never weaken ACs to fit code.
-6. Run focused tests while iterating, then the repository's build and test commands (and optionally `myspec gate <spec-id> --skip-build` or full `myspec gate <spec-id>`).
+6. Run focused tests while iterating, then the repository's build and test commands (and optionally `myspec <spec-id> gate --skip-build` or full `myspec <spec-id> gate`).
 7. Report changed files, `AC-NN` coverage with named test/verification evidence, inspection findings addressed, file-tree revisions made during the invocation (and any file edited before their confirmation), verification results, approved guidance compliance, and remaining risks. Suggest `{{skill:myspec-inspect}}` to record the resulting state.
 
 ## Coding Rules

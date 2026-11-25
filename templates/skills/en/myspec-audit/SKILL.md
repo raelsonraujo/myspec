@@ -5,7 +5,7 @@ description: Review the whole project's compliance with developer-approved codin
 
 # Myspec Audit
 
-Sweep the whole project for adherence to approved coding practices and general guidelines and save `my-specs/compliance-report.md`. No spec or metric definition is required.
+Sweep the whole project for adherence to approved coding practices and general guidelines and save `my-specs/reports/compliance-report.md`. No spec or metric definition is required.
 
 ## Guidance Gate
 
@@ -13,7 +13,7 @@ Read repository instructions and every Markdown file under `my-specs/coding-prac
 
 ## Workflow
 
-1. Read any existing `my-specs/compliance-report.md` before replacing it. Record the current git commit/baseline, local changes, and review date.
+1. Read any existing `my-specs/reports/compliance-report.md` before replacing it. Record the current git commit/baseline, local changes, and review date.
 2. Inventory every guidance document and its approval state. Extract distinct verifiable rules from each approved document (source path, heading, scope, exclusions, verification method). Ignore unapproved drafts and personal preferences.
 3. Review the full applicable scope across code, tests, config, docs, and workflow records—never silently restrict the sweep to recent commits or one spec. Disclose unreviewed areas explicitly if scope prevents complete coverage.
 4. Run existing approved local verification commands only where needed to verify a rule, reusing shared runs. Never install tools, modify config, or edit source/specs/manifests.
@@ -25,4 +25,4 @@ Read repository instructions and every Markdown file under `my-specs/coding-prac
    - `Baseline conflict`: approved rules contradict one another without precedence resolution.
 6. Re-examine previously open findings, keeping their IDs (`Resolved`, `Open`, `Superseded`, or `Not verified` with reason). Number new findings after the highest earlier ID starting at `F-001`.
 7. Set overall result: `Deviations found` (any `Not met`), `Incomplete` (conflict, insufficient evidence, material review gap, or no approved rules), or `No deviations found` (all rules `Met` or `Not applicable` with no material gap).
-8. Save `my-specs/compliance-report.md` from [assets/compliance-report-template.md](assets/compliance-report-template.md) and return the path, overall result, key findings, review gaps, and bounded next-skill recommendations (`{{skill:myspec-setup}}`, `{{skill:myspec-prescribe}}`, `{{skill:myspec-patch}}` only when eligible, `{{skill:myspec-inspect}}`, or `{{skill:myspec-quantify}}`).
+8. Save `my-specs/reports/compliance-report.md` from [assets/compliance-report-template.md](assets/compliance-report-template.md) and return the path, overall result, key findings, review gaps, and bounded next-skill recommendations (`{{skill:myspec-setup}}`, `{{skill:myspec-prescribe}}`, `{{skill:myspec-patch}}` only when eligible, `{{skill:myspec-inspect}}`, or `{{skill:myspec-quantify}}`).

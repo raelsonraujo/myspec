@@ -25,7 +25,7 @@ Write every `proposed` or `active` spec as a standalone, as-is description of th
 
 ## Workflow
 
-1. Read the request, relevant repository context, approved guidance, and `my-specs/metrics/` (when present) to know applicable gates.
+1. Read the request, relevant repository context, approved guidance, and `my-specs/metrics/` (when present) to know applicable gates. To check overlap with existing specs, scan their criteria with `myspec <spec-id> criteria` (one criterion in full with `myspec <spec-id> criteria <N>`) instead of reading whole specs.
 2. Ask focused questions only for material ambiguities that substantially alter scope or observable behavior; otherwise record conservative assumptions.
 3. Choose a concise kebab-case name and assign the next zero-padded three-digit prefix (`001`, `002`, ...) not used by any folder in `my-specs/specs/` or entry in `manifest.json`.
 4. Save `my-specs/specs/<NNN>-<name>/spec.md` using [assets/spec-template.md](assets/spec-template.md). Never leave a spec only in chat.
