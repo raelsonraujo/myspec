@@ -1,6 +1,6 @@
 {
   "name": "myspec",
-  "version": "0.7.26",
+  "version": "0.7.27",
   "private": true,
   "description": "Spec-driven development skills for AI coding agents (Codex, Claude Code, Gemini).",
   "type": "module",

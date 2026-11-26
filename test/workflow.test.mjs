@@ -537,6 +537,7 @@ it('lists numbered specs by title across workspace languages and lifecycle statu
     ['003-auth', '```md\n# Exemplo de título\n```\n\n# Revisar autenticação ##\n'],
     ['011-old-flow', '## Contexto de uma spec sem título principal\n'],
     ['005-draft', '# Alertas de estoque\n'],
+    ['008-local', '# Rascunho local\n'],
     ['notes', '# Not a numbered spec\n'],
   ]) {
     mkdirSync(join(specsDir, folder));
@@ -544,20 +545,43 @@ it('lists numbered specs by title across workspace languages and lifecycle statu
   }
   mkdirSync(join(specsDir, '002-empty'));
   mkdirSync(join(specsDir, '012-directory/spec.md'), { recursive: true });
-  writeFileSync(join(specsDir, 'manifest.json'), JSON.stringify({
+  assert.match(runOk('list', '-d', dir).stdout, /^003 - Revisar autenticação \[unregistered\]/m);
+  const manifest = JSON.stringify({
     version: 1,
     specs: [
       { id: '003-auth', status: 'active', completionInspection: null },
+      { id: '005-draft', status: 'proposed', completionInspection: null },
       { id: '020-orders', status: 'finished', completionInspection: '001' },
       { id: '011-old-flow', status: 'discarded', completionInspection: null },
     ],
-  }));
+  });
+  writeFileSync(join(specsDir, 'manifest.json'), manifest);
 
-  const expected = '003 - Revisar autenticação\n005 - Alertas de estoque\n011 - old flow\n020 - Cancelar pedidos\n';
-  assert.equal(runOk('list', '-d', dir).stdout, expected);
+  const expectedEn = [
+    '003 - Revisar autenticação [active]',
+    '005 - Alertas de estoque [proposed]',
+    '008 - Rascunho local [unregistered]',
+    '011 - old flow [discarded]',
+    '020 - Cancelar pedidos [finished]',
+  ].join('\n') + '\n';
+  const expectedPt = [
+    '003 - Revisar autenticação [ativa]',
+    '005 - Alertas de estoque [proposta]',
+    '008 - Rascunho local [sem registro]',
+    '011 - old flow [descartada]',
+    '020 - Cancelar pedidos [finalizada]',
+  ].join('\n') + '\n';
+  assert.equal(runOk('list', '-d', dir).stdout, expectedEn);
+  assert.equal(runOk('listar', '-d', dir).stdout, expectedPt);
   assert.equal(run('list', '1', '-d', dir).status, 2);
   runOk('install', '-d', dir, '-l', 'pt');
-  assert.equal(runOk('listar', '-d', dir).stdout, expected);
+  assert.equal(runOk('list', '-d', dir).stdout, expectedEn);
+  assert.equal(runOk('listar', '-d', dir).stdout, expectedPt);
+
+  const ptSpecsDir = join(dir, 'minhas-specs/specs');
+  rmSync(join(ptSpecsDir, 'manifesto.json'));
+  writeFileSync(join(ptSpecsDir, 'manifest.json'), manifest);
+  assert.equal(runOk('listar', '-d', dir).stdout, expectedPt);
 });
 
 describe('myspec read and inspection', () => {

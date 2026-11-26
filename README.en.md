@@ -6,17 +6,17 @@ A spec-driven development (SDD) CLI for coding agents (Codex, Claude Code, and G
 
 ## Installation
 
-You need Node.js 20 or later. Download the 0.7.26 package and run the commands below from the folder where you saved it. [Download myspec-0.7.26.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.26/myspec-0.7.26.tgz)
+You need Node.js 20 or later. Download the 0.7.27 package and run the commands below from the folder where you saved it. [Download myspec-0.7.27.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.27/myspec-0.7.27.tgz)
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.26.tgz
+npm install -g --ignore-scripts ./myspec-0.7.27.tgz
 myspec --version
 ```
 
 To check the file's origin and integrity before installing, use the [GitHub CLI](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.26 ./myspec-0.7.26.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.27 ./myspec-0.7.27.tgz --repo raelsonraujo/myspec
 ```
 
 ## Setting up a repository: `myspec install`
@@ -70,7 +70,7 @@ In commands that take a spec, the spec comes first and the command after it (`my
 
 ### `myspec list` (`listar`)
 
-Lists all specs in numeric order, one per line as `NNN - title`. It uses the title from `spec.md` or falls back to the folder name without its numeric prefix.
+Lists all specs in numeric order, one per line as `NNN - title [status]`. It uses the title from `spec.md` or falls back to the folder name without its numeric prefix. The status comes from the lifecycle manifest. Specs without a manifest entry appear as `unregistered`.
 
 ### `myspec approve <path>` (`aprovar`)
 

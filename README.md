@@ -6,17 +6,17 @@ CLI de desenvolvimento orientado a especificações (SDD) para agentes de códig
 
 ## Instalação
 
-Você precisa de Node.js 20 ou superior. Baixe o pacote da versão 0.7.26 e rode os comandos abaixo na pasta onde salvou o arquivo. [Baixar myspec-0.7.26.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.26/myspec-0.7.26.tgz)
+Você precisa de Node.js 20 ou superior. Baixe o pacote da versão 0.7.27 e rode os comandos abaixo na pasta onde salvou o arquivo. [Baixar myspec-0.7.27.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.27/myspec-0.7.27.tgz)
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.26.tgz
+npm install -g --ignore-scripts ./myspec-0.7.27.tgz
 myspec --version
 ```
 
 Para conferir a origem e a integridade do arquivo antes de instalar, use a [CLI do GitHub](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.26 ./myspec-0.7.26.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.27 ./myspec-0.7.27.tgz --repo raelsonraujo/myspec
 ```
 
 ## Configurando um repositório: `myspec install`
@@ -70,7 +70,7 @@ Nos comandos que recebem uma spec, a spec vem primeiro e o comando depois (`mysp
 
 ### `myspec list` (`listar`)
 
-Lista todas as specs em ordem numérica, uma por linha no formato `NNN - título`. Usa o título de `spec.md` ou, quando ele falta, o nome da pasta sem o prefixo numérico.
+Lista todas as specs em ordem numérica, uma por linha no formato `NNN - título [status]`. Usa o título de `spec.md` ou, quando ele falta, o nome da pasta sem o prefixo numérico. `myspec listar` exibe os estados do manifesto em português, como `proposta`, `ativa`, `finalizada` e `descartada`, e indica `sem registro` quando a spec ainda não consta no manifesto.
 
 ### `myspec approve <caminho>` (`aprovar`)
 
