@@ -9,14 +9,14 @@ CLI de desenvolvimento orientado a especificações (SDD) para agentes de códig
 Você precisa de Node.js 20 ou superior. Baixe o arquivo `myspec-<versão>.tgz` nos [assets da release](https://github.com/raelsonraujo/myspec/releases) e instale-o com o npm, na pasta em que salvou o arquivo:
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.23.tgz
+npm install -g --ignore-scripts ./myspec-0.7.24.tgz
 myspec --version
 ```
 
 Para conferir a origem e a integridade do arquivo antes de instalar, use a [CLI do GitHub](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.23 ./myspec-0.7.23.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.24 ./myspec-0.7.24.tgz --repo raelsonraujo/myspec
 ```
 
 ## Configurando um repositório: `myspec install`
@@ -138,13 +138,14 @@ myspec 1 ler
 myspec 1 ler -s
 ```
 
-### `myspec <spec> inspection [--status | -s]` (`inspecao` ou `inspeção`)
+### `myspec <spec> inspection [--status | -s | --findings | -f]` (`inspecao` ou `inspeção`)
 
-Imprime no terminal a inspeção mais recente da spec sem precisar procurar o maior número em `inspecoes/`. Com `--status` (ou `-s`), retorna apenas o veredito (`Apta`, `Apta com ressalvas`, `Bloqueada`, etc.).
+Imprime no terminal a inspeção mais recente da spec sem precisar procurar o maior número em `inspecoes/`. Com `--status` (ou `-s`), retorna apenas o veredito (`Apta`, `Apta com ressalvas`, `Bloqueada`, etc.). Com `--findings` (ou `-f`), imprime apenas a seção `Achados` (`Findings`).
 
 ```bash
 myspec 1 inspecao
 myspec 1 inspecao -s
+myspec 1 inspecao -f
 ```
 
 ### `myspec rule [<nome>] [--full | -f]` (`regra`)

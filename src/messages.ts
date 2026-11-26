@@ -168,6 +168,7 @@ const en = {
   // read / inspection
   noSmokeSection: (path: string) => `No smoke section found in ${path}.`,
   noSpecInspections: (id: string) => `No inspections found for spec "${id}".`,
+  noFindingsSection: (path: string) => `No findings section found in ${path}.`,
 
   // rule / metric
   noRulesFound: (folders: string[]) => `No rules found under ${folders.join(' or ')}.`,
@@ -347,6 +348,7 @@ const pt: Messages = {
 
   noSmokeSection: (path) => `Nenhuma seção de smoke encontrada em ${path}.`,
   noSpecInspections: (id) => `Nenhuma inspeção encontrada para a spec "${id}".`,
+  noFindingsSection: (path) => `Nenhuma seção de achados encontrada em ${path}.`,
 
   noRulesFound: (folders) => `Nenhuma regra encontrada em ${folders.join(' ou ')}.`,
   noMetricsFound: (folder) => `Nenhuma métrica encontrada em ${folder}.`,

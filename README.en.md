@@ -9,14 +9,14 @@ A spec-driven development (SDD) CLI for coding agents (Codex, Claude Code, and G
 You need Node.js 20 or later. Download the `myspec-<version>.tgz` file from the [release assets](https://github.com/raelsonraujo/myspec/releases) and install it with npm, from the folder where you saved it:
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.23.tgz
+npm install -g --ignore-scripts ./myspec-0.7.24.tgz
 myspec --version
 ```
 
 To check the file's origin and integrity before installing, use the [GitHub CLI](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.23 ./myspec-0.7.23.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.24 ./myspec-0.7.24.tgz --repo raelsonraujo/myspec
 ```
 
 ## Setting up a repository: `myspec install`
@@ -138,13 +138,14 @@ myspec 1 read
 myspec 1 read -s
 ```
 
-### `myspec <spec> inspection [--status | -s]` (`inspecao` or `inspeção`)
+### `myspec <spec> inspection [--status | -s | --findings | -f]` (`inspecao` or `inspeção`)
 
-Prints the spec's latest inspection in the terminal without having to look up the highest-numbered file in `inspections/`. With `--status` (or `-s`), prints only its verdict (`Ready`, `Ready with observations`, `Blocked`, etc.).
+Prints the spec's latest inspection in the terminal without having to look up the highest-numbered file in `inspections/`. With `--status` (or `-s`), prints only its verdict (`Ready`, `Ready with observations`, `Blocked`, etc.). With `--findings` (or `-f`), prints only its `Findings` section.
 
 ```bash
 myspec 1 inspection
 myspec 1 inspection -s
+myspec 1 inspection -f
 ```
 
 ### `myspec rule [<name>] [--full | -f]` (`regra`)
