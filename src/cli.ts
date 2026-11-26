@@ -26,6 +26,10 @@ const toolingList = () =>
     .map((template) => `  ${template.id.padEnd(19)}${template.description.en}`)
     .join('\n') || '  (none)';
 
+const READ_OPTIONS = '[--file-tree | -ft] [--smoke | -s | --historico | -h] [-d <dir>]';
+const INSPECTION_OPTIONS = '[--status | -s | --findings | -f | --historico | -h] [-d <dir>]';
+const CONTRACT_OPTIONS = '[<name> | --full | -f] [--historico | -h] [-d <dir>]';
+
 const help = () => `myspec ${VERSION} - spec-driven development skills and deterministic gates for AI coding agents
 
 Usage:
@@ -37,10 +41,10 @@ Usage:
   myspec check-patch [--limit <N>] [--base <ref>] [--json] [-d <dir>]
   myspec <spec> open [--file-tree | -ft] [-d <dir>]
   myspec <spec> criteria [<N>] [-d <dir>]
-  myspec <spec> read [--smoke | -s] [-d <dir>]
-  myspec <spec> inspection [--status | -s | --findings | -f] [-d <dir>]
-  myspec rule [<name>] [--full | -f] [-d <dir>]
-  myspec metric [<name>] [--full | -f] [-d <dir>]
+  myspec <spec> read ${READ_OPTIONS}
+  myspec <spec> inspection ${INSPECTION_OPTIONS}
+  myspec rule ${CONTRACT_OPTIONS}
+  myspec metric ${CONTRACT_OPTIONS}
 
 Commands:
   install            Install the Myspec skills and the workspace (my-specs, or minhas-specs in pt)
@@ -51,7 +55,7 @@ Commands:
   check-patch        Check whether current git changes are eligible for patching (limit & finished specs)
   open               Open a spec's spec.md (or its file tree with --file-tree) in VS Code
   criteria           List a spec's acceptance criteria (ID and title), or show criterion <N> in full
-  read               Print a spec's spec.md to the terminal (or only its smoke section with --smoke)
+  read               Print a spec's spec.md or file tree to the terminal
   inspection         Print a spec's latest inspection (or only its status with -s, or findings with -f)
   rule               List rule files (coding practices & general guidelines), show one, or print all (--full)
   metric             List metric files, show one, or print all (--full)
@@ -68,7 +72,7 @@ Install options:
   -l, --language     Skill language: en (eng) or pt
   -t, --tooling      Initial quality tooling template to generate. Repeatable.
   -d, --dir          Target repository (default: current directory)
-  -h, --help         Show this help
+  --help             Show this help (-h on commands without a history option)
   -v, --version      Show the version
 
 Workflow options:
@@ -83,13 +87,15 @@ Workflow options:
   --limit            Maximum changed file count for \`check-patch\` (default: 5)
   --base             Base git ref for \`check-patch\`
   --json             Output machine-readable JSON for \`gate\` or \`check-patch\`
-  -ft, --file-tree   In \`open\`, open the spec's file tree instead of spec.md
+  -ft, --file-tree   In \`open\` or \`read\`, select the spec's file tree instead of spec.md
                      (\`open\` runs \`code\`; set MYSPEC_EDITOR to use another editor command)
   <N>                In \`criteria\`, the exact criterion number to show in full (5, 05, or AC-05)
   -s, --smoke        In \`read\`, print only the smoke section of spec.md
   -s, --status       In \`inspection\`, print only the status/verdict of the latest inspection
   -f, --findings     In \`inspection\`, print only the Findings section of the latest inspection
-  -f, --full         In \`rule\` or \`metric\`, print the full content of every matching document
+  -f, --full         In \`rule\` or \`metric\`, print every matching document without its history
+  -h, --historico    In \`read\`, \`inspection\`, \`rule\`, or \`metric\`, print only the history normally omitted
+                     (all documents for \`rule\` or \`metric\` when no name is given)
 
 When the repository already has a Myspec workspace, -p and -l default to the installed values.
 Switching languages renames the workspace folders and files to the new language.
@@ -115,6 +121,7 @@ Examples:
   myspec 1 criteria 5
   myspec 1 read
   myspec 1 read -s
+  myspec 1 read -ft -h
   myspec 1 inspection
   myspec 1 inspection -s
   myspec 1 inspection -f
@@ -167,6 +174,7 @@ const ENGLISH_ALIASES: Record<string, string> = {
 /** Commands that take a spec, written before them: `myspec 1 gate`. */
 const SPEC_COMMANDS = new Set(['activate', 'gate', 'finish', 'open', 'criteria', 'read', 'inspection']);
 const COMMANDS = new Set([...SPEC_COMMANDS, 'install', 'approve', 'check-patch', 'rule', 'metric']);
+const HISTORY_COMMANDS = new Set(['read', 'inspection', 'rule', 'metric']);
 
 function commandOf(word: string | undefined): string | undefined {
   if (word === undefined) return undefined;
@@ -202,6 +210,7 @@ const OPTIONS = {
   status: { type: 'boolean' },
   findings: { type: 'boolean' },
   full: { type: 'boolean' },
+  historico: { type: 'boolean' },
   '_short-s': { type: 'boolean' },
   '_short-f': { type: 'boolean' },
   help: { type: 'boolean', short: 'h' },
@@ -209,10 +218,11 @@ const OPTIONS = {
 } as const;
 
 async function main(argv: string[]): Promise<number> {
-  const { values, positionals } = parseArgs({
+  const { values, positionals, tokens } = parseArgs({
     args: argv.map((arg) => FLAG_ALIASES[arg] ?? arg),
     allowPositionals: true,
     options: OPTIONS,
+    tokens: true,
   });
 
   if (values.version) {
@@ -227,10 +237,16 @@ async function main(argv: string[]): Promise<number> {
     [typedCommand, ...rest] = rest;
   }
   const command = typedCommand && (commandOf(typedCommand) ?? typedCommand);
-  if (values.help || !command) {
+  const supportsHistory = HISTORY_COMMANDS.has(command ?? '');
+  const wantsHelp = values.help && (!supportsHistory || tokens.some((token) =>
+    token.kind === 'option' && token.rawName === '--help',
+  ));
+  if (wantsHelp || !command) {
     console.log(help());
-    return command || values.help ? 0 : 2;
+    return command || wantsHelp ? 0 : 2;
   }
+  if (values.historico && !supportsHistory) throw new UsageError(`Option --historico is unavailable for "${typedCommand}".`);
+  const historyOnly = Boolean(values.historico || (supportsHistory && values.help));
 
   const root = resolve(values.dir ?? process.cwd());
 
@@ -351,26 +367,28 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'read') {
-    if (!spec || rest.length > 0) throw specUsage('[--smoke | -s] [-d <dir>]');
-    const result = readSpec({ root, specId: spec, smoke: Boolean(values.smoke || values['_short-s']), language });
-    process.stdout.write(result.content.endsWith('\n') ? result.content : `${result.content}\n`);
+    const smoke = Boolean(values.smoke || values['_short-s']);
+    const fileTree = values['file-tree'];
+    if (!spec || rest.length > 0 || (smoke && (fileTree || historyOnly))) throw specUsage(READ_OPTIONS);
+    const { content } = readSpec({ root, specId: spec, smoke, fileTree, historyOnly, language });
+    if (content || !historyOnly) process.stdout.write(content.endsWith('\n') ? content : `${content}\n`);
     return 0;
   }
 
   if (command === 'inspection') {
     const wantStatus = Boolean(values.status || values['_short-s']);
     const wantFindings = Boolean(values.findings || values['_short-f']);
-    if (!spec || rest.length > 0 || (wantStatus && wantFindings)) {
-      throw specUsage('[--status | -s | --findings | -f] [-d <dir>]');
+    if (!spec || rest.length > 0 || (wantStatus && wantFindings) || (historyOnly && (wantStatus || wantFindings))) {
+      throw specUsage(INSPECTION_OPTIONS);
     }
-    const result = readLatestInspection({ root, specId: spec, language });
+    const result = readLatestInspection({ root, specId: spec, historyOnly, language });
     if (wantStatus) {
       if (!result.verdict) throw new Error(t.verdictUnknown(result.path));
       console.log(result.verdict);
     } else if (wantFindings) {
       if (result.findings === undefined) throw new UsageError(t.noFindingsSection(result.path));
       process.stdout.write(`${result.findings}\n`);
-    } else {
+    } else if (result.content || !historyOnly) {
       process.stdout.write(result.content.endsWith('\n') ? result.content : `${result.content}\n`);
     }
     return 0;
@@ -379,9 +397,9 @@ async function main(argv: string[]): Promise<number> {
   if (command === 'rule' || command === 'metric') {
     const full = Boolean(values.full || values['_short-f']);
     if (rest.length > 1) throw new UsageError(t.unexpectedArgument(rest[1]));
-    if (full && rest.length > 0) throw usage('[<name>] [--full | -f] [-d <dir>]');
+    if (full && rest.length > 0) throw usage(CONTRACT_OPTIONS);
     const result = readContractDocs({ root, kind: command, name: rest[0], language });
-    process.stdout.write(formatContractDocs(result, full));
+    process.stdout.write(formatContractDocs(result, full, historyOnly));
     return 0;
   }
 

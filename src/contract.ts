@@ -8,6 +8,7 @@ import {
 } from './lifecycle.js';
 import { messages, type MessageLanguage } from './messages.js';
 import { UsageError } from './providers.js';
+import { selectDocumentContent } from './read.js';
 
 export type ContractDocKind = 'rule' | 'metric';
 export type { ContractDoc };
@@ -73,17 +74,19 @@ export function readContractDocs(options: ReadContractDocsOptions): ReadContract
 }
 
 /** Formats the command output: a single doc's content, all docs concatenated with file headers (`--full`), or one file path per line. */
-export function formatContractDocs(result: ReadContractDocsResult, full = false): string {
+export function formatContractDocs(result: ReadContractDocsResult, full = false, historyOnly = false): string {
   if (result.selected) {
-    const { content } = result.selected;
+    const content = selectDocumentContent(result.selected.content, historyOnly);
+    if (historyOnly && !content) return '';
     return content.endsWith('\n') ? content : `${content}\n`;
   }
-  if (full) {
-    const blocks = result.docs.map((doc) => {
-      const content = readFileSync(doc.absolute, 'utf8').trimEnd();
-      return `<!-- ${doc.path} -->\n${content}`;
-    });
-    return `${blocks.join('\n\n')}\n`;
+  if (full || historyOnly) {
+    const blocks: string[] = [];
+    for (const doc of result.docs) {
+      const content = selectDocumentContent(readFileSync(doc.absolute, 'utf8'), historyOnly).trimEnd();
+      if (!historyOnly || content) blocks.push(`<!-- ${doc.path} -->\n${content}`);
+    }
+    return blocks.length ? `${blocks.join('\n\n')}\n` : '';
   }
   return `${result.docs.map((doc) => doc.relPath).join('\n')}\n`;
 }

@@ -59,7 +59,15 @@ Um ciclo típico após a configuração:
 prescrever > implementar (conferência da árvore ou automático opcional) > implementar > inspecionar (`myspec gate`) > `myspec finish` > prescrever (próxima spec)
 ```
 
-Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Comandos determinísticos da CLI apoiam o fluxo: `myspec approve <caminho>` aprova documentos do contrato com identidade Git, `myspec <id> activate` ativa a spec registrando `commitBase`, `myspec [<id>] gate [--project]` executa build/testes, leitores estruturados de métricas e verificação de desvio da árvore, `myspec <id> finish` valida a última inspeção apta e a base Git antes de finalizar, `myspec check-patch` valida a elegibilidade de correções, `myspec <id> criterio [<N>]` lista os critérios da spec (ID e título) ou mostra um deles por completo, `myspec <id> ler [--smoke | -s]` imprime o `spec.md` (ou apenas a seção de smoke), `myspec <id> inspecao [--status | -s | --findings | -f]` imprime a inspeção mais recente, o veredito ou os achados e `myspec regra` / `myspec metrica` listam, leem ou imprimem por completo (`-f`) as regras e métricas do repositório. Cada comando também aceita o nome em português, que responde em português: `aprovar`, `ativar`, `portao`, `finalizar`, `conferir-correcao`, `abre`, `ler`, `inspecao`, `regra` e `metrica`. Prefira implementar a corrigir quando a mudança exceder o limite de arquivos aplicável ou afetar spec `proposta` ou sem `arvore-de-arquivos.md`.
+Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Prefira implementar a corrigir quando a mudança exceder o limite de arquivos aplicável ou afetar spec `proposta` ou sem `arvore-de-arquivos.md`.
+
+- `myspec aprovar <caminho>` aprova documentos do contrato com identidade Git. `myspec <id> ativar` ativa a spec e registra `commitBase`.
+- `myspec [<id>] portao [--project]` executa builds, testes, verificações estruturadas de métricas e verificação de desvio da árvore. `myspec <id> finalizar` valida a última inspeção apta e a base Git antes de finalizar. `myspec conferir-correcao` valida a elegibilidade de correções.
+- `myspec <id> criterio [<N>]` lista os critérios ou mostra um deles por completo. `myspec <id> ler` imprime o `spec.md`, a seção de smoke com `-s` ou a árvore de arquivos com `-ft`.
+- `myspec <id> inspecao` imprime a inspeção mais recente, o veredito com `-s` ou os achados atuais com `-f`.
+- `myspec regra` e `myspec metrica` listam documentos do contrato, imprimem o documento indicado pelo nome ou imprimem todos da categoria com `-f`.
+
+`ler`, `inspecao`, `regra` e `metrica` omitem as seções de histórico por padrão. Use `-h` ou `--historico` para imprimir apenas o histórico, como `Histórico de revisões` em specs, `Histórico de aprovação` em documentos do contrato e `Achados anteriores` em inspeções. Use `myspec <id> ler -ft -h` para consultar o histórico da árvore de arquivos, quando existir, e `--help` para ver a ajuda.
 
 Invoque um skill com `$nome` no Codex ou `/nome` no Claude Code e no Gemini (Antigravity / Gemini CLI), por exemplo `$myspec-configurar` ou `/myspec-configurar`.
 

@@ -2,49 +2,20 @@ import { existsSync, readFileSync } from 'node:fs';
 import { listSpecInspections, parseInspectionSummary, resolveSpecFile, resolveWorkspace } from './lifecycle.js';
 import { messages, type MessageLanguage } from './messages.js';
 import { UsageError } from './providers.js';
+import { extractMarkdownSection, selectDocumentContent } from './read.js';
 
-const HEADING = /^(#{1,6})\s+(.+?)\s*$/;
 const FINDINGS_TITLE = /^(?:(?:open\s+)?findings|achados(?:\s+abertos)?)$/i;
-const FENCE = /^\s*(```|~~~)/;
+const PREVIOUS_FINDINGS_TITLES = ['previous findings', 'achados anteriores'];
 
 /** Extracts the `## Findings` / `## Achados` section (heading + body, including nested subheadings), ignoring fenced code blocks. */
 export function extractFindingsSection(content: string): string | undefined {
-  const lines = content.split(/\r?\n/);
-  let inFence = false;
-  let start = -1;
-  let level = 0;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (FENCE.test(line)) {
-      inFence = !inFence;
-      continue;
-    }
-    if (inFence) continue;
-    const match = line.match(HEADING);
-    if (!match) continue;
-    const headingLevel = match[1].length;
-    const title = match[2];
-
-    if (start !== -1) {
-      if (headingLevel <= level) {
-        return lines.slice(start, i).join('\n').trimEnd();
-      }
-      continue;
-    }
-
-    if (headingLevel >= 2 && FINDINGS_TITLE.test(title)) {
-      start = i;
-      level = headingLevel;
-    }
-  }
-
-  return start !== -1 ? lines.slice(start).join('\n').trimEnd() : undefined;
+  return extractMarkdownSection(content, (title) => FINDINGS_TITLE.test(title));
 }
 
 export interface ReadInspectionOptions {
   root: string;
   specId: string;
+  historyOnly?: boolean;
   language?: MessageLanguage;
 }
 
@@ -70,7 +41,7 @@ export function readLatestInspection(options: ReadInspectionOptions): ReadInspec
     throw new UsageError(t.noSpecInspections(specId));
   }
   const latest = inspections.at(-1)!;
-  const content = readFileSync(latest.absolute, 'utf8');
+  const content = selectDocumentContent(readFileSync(latest.absolute, 'utf8'), options.historyOnly, PREVIOUS_FINDINGS_TITLES);
   const { verdict } = parseInspectionSummary(content);
   const findings = extractFindingsSection(content);
   return { specId, sequence: latest.sequence, path: latest.path, content, verdict, findings };

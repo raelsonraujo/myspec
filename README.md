@@ -6,17 +6,17 @@ CLI de desenvolvimento orientado a especificações (SDD) para agentes de códig
 
 ## Instalação
 
-Você precisa de Node.js 20 ou superior. Baixe o pacote da versão 0.7.24 e rode os comandos abaixo na pasta onde salvou o arquivo. [Baixar myspec-0.7.24.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.24/myspec-0.7.24.tgz)
+Você precisa de Node.js 20 ou superior. Baixe o pacote da versão 0.7.25 e rode os comandos abaixo na pasta onde salvou o arquivo. [Baixar myspec-0.7.25.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.25/myspec-0.7.25.tgz)
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.24.tgz
+npm install -g --ignore-scripts ./myspec-0.7.25.tgz
 myspec --version
 ```
 
 Para conferir a origem e a integridade do arquivo antes de instalar, use a [CLI do GitHub](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.24 ./myspec-0.7.24.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.25 ./myspec-0.7.25.tgz --repo raelsonraujo/myspec
 ```
 
 ## Configurando um repositório: `myspec install`
@@ -65,6 +65,8 @@ Depois de atualizar a CLI, rode `myspec install` em cada repositório para atual
 ## Comandos
 
 Nos comandos que recebem uma spec, a spec vem primeiro e o comando depois (`myspec 1 portao`). `<spec>` aceita o nome da pasta (`001-cancelar-pedido`) ou só o número (`1` ou `001`). Todos aceitam `-d <dir>` para apontar outro repositório. Chamados pelo nome em português, os comandos respondem em português; a saída `--json` mantém as chaves em inglês, para scripts e CI.
+
+`ler`, `inspecao`, `regra` e `metrica` omitem as seções de histórico por padrão. Use `-h` ou `--historico` nesses comandos para imprimir apenas essas seções. Use `--help` para consultar a ajuda.
 
 ### `myspec approve <caminho>` (`aprovar`)
 
@@ -129,43 +131,49 @@ myspec 1 criterio 5      # CA-05 com a descrição
 
 O número precisa ser exato: `5`, `05` e `CA-05` levam ao mesmo critério.
 
-### `myspec <spec> read [--smoke | -s]` (`ler`)
+### `myspec <spec> read` (`ler`)
 
-Imprime o `spec.md` da spec direto no terminal, para agentes e desenvolvedores lerem a especificação sem navegar pelas pastas do workspace. Com `--smoke` (ou `-s`), imprime apenas a seção de smoke da spec.
+Imprime o `spec.md` no terminal. Use `--file-tree` (`-ft`) para imprimir a árvore de arquivos ou `--smoke` (`-s`) para ler só a seção de smoke da spec. `-h` pode ser combinado com `-ft` para consultar o histórico de revisões da árvore, quando existir.
 
 ```bash
 myspec 1 ler
 myspec 1 ler -s
+myspec 1 ler --historico
+myspec 1 ler -ft
+myspec 1 ler -ft -h
 ```
 
-### `myspec <spec> inspection [--status | -s | --findings | -f]` (`inspecao` ou `inspeção`)
+### `myspec <spec> inspection` (`inspecao` ou `inspeção`)
 
-Imprime no terminal a inspeção mais recente da spec sem precisar procurar o maior número em `inspecoes/`. Com `--status` (ou `-s`), retorna apenas o veredito (`Apta`, `Apta com ressalvas`, `Bloqueada`, etc.). Com `--findings` (ou `-f`), imprime apenas a seção `Achados` (`Findings`).
+Imprime a inspeção mais recente da spec. Use `--status` (`-s`) para ver apenas o veredito, `--findings` (`-f`) para ver os achados atuais ou `--historico` (`-h`) para consultar `Achados anteriores` e outras seções de histórico presentes na inspeção.
 
 ```bash
 myspec 1 inspecao
 myspec 1 inspecao -s
 myspec 1 inspecao -f
+myspec 1 inspecao -h
 ```
 
 ### `myspec rule [<nome>] [--full | -f]` (`regra`)
 
-Lista todos os arquivos de regra em `praticas-de-codigo/` e `orientacoes-gerais/`. Passe o nome (ou caminho relativo) de uma regra para imprimir seu conteúdo Markdown, ou `--full` (`-f`) para imprimir todas as práticas de código e orientações gerais.
+Lista os arquivos em `praticas-de-codigo/` e `orientacoes-gerais/`. Passe um nome ou caminho relativo para ler uma regra ou use `--full` (`-f`) para imprimir todas. Para consultar apenas o `Histórico de aprovação`, use `-h` com o nome da regra ou sem nome para consultar todas.
 
 ```bash
 myspec regra
 myspec regra codigo-limpo
 myspec regra -f
+myspec regra codigo-limpo -h
 ```
 
 ### `myspec metric [<nome>] [--full | -f]` (`metrica` ou `métrica`)
 
-Lista todos os arquivos de métrica em `metricas/`. Passe o nome (ou caminho relativo) de uma métrica para imprimir seu conteúdo Markdown, ou `--full` (`-f`) para imprimir todas as métricas.
+Lista os arquivos em `metricas/`. Passe um nome ou caminho relativo para ler uma métrica ou use `--full` (`-f`) para imprimir todas. Para consultar apenas o `Histórico de aprovação`, use `-h` com o nome da métrica ou sem nome para consultar todas.
 
 ```bash
 myspec metrica
 myspec metrica crap-score
 myspec metrica -f
+myspec metrica -h
 ```
 
 ## Licença
