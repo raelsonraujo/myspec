@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { LANGUAGES } from './languages.js';
-import { resolveSpecFile, resolveWorkspace } from './lifecycle.js';
+import { readSpecManifest, resolveSpecFile, resolveWorkspace } from './lifecycle.js';
 import { messages, type MessageLanguage } from './messages.js';
 import { UsageError } from './providers.js';
 
@@ -73,12 +73,33 @@ export function extractSmokeSection(content: string): string | undefined {
   return extractMarkdownSection(content, (title) => SMOKE_TITLE.test(title) && !CRITERION_TITLE.test(title));
 }
 
-export function listSpecs(root: string, language?: MessageLanguage): { number: string; title: string }[] {
-  const ws = resolveWorkspace(root, messages(language));
+interface ListedSpec {
+  number: string;
+  title: string;
+  status: string;
+}
+
+export function listSpecs(root: string, language: MessageLanguage = 'en'): ListedSpec[] {
+  const t = messages(language);
+  const ws = resolveWorkspace(root, t);
   const specsDir = join(ws.workspaceDir, ws.layout.specs);
   if (!existsSync(specsDir)) return [];
 
-  const specs: { number: string; title: string }[] = [];
+  const statuses = new Map<string, string>();
+  const manifestName = [ws.layout.specManifest.fileName, LANGUAGES.en.workspace.specManifest.fileName]
+    .find((name) => existsSync(join(specsDir, name)));
+  if (manifestName) {
+    const manifestPath = `${ws.layout.dir}/${ws.layout.specs}/${manifestName}`;
+    const { format, entries } = readSpecManifest(manifestPath, join(specsDir, manifestName), t);
+    const displayStatuses = LANGUAGES[language].workspace.specManifest.statuses;
+    for (const entry of entries) {
+      const statusIndex = format.statuses.indexOf(entry[format.status] as string);
+      statuses.set(entry[format.id] as string, displayStatuses[statusIndex]);
+    }
+  }
+
+  const unregistered = language === 'pt' ? 'sem registro' : 'unregistered';
+  const specs: ListedSpec[] = [];
   for (const folder of readdirSync(specsDir).sort()) {
     const numbered = /^(\d{3})-(.+)$/.exec(folder);
     if (!numbered) continue;
@@ -93,7 +114,7 @@ export function listSpecs(root: string, language?: MessageLanguage): { number: s
         break;
       }
     }
-    specs.push({ number: numbered[1], title });
+    specs.push({ number: numbered[1], title, status: statuses.get(folder) ?? unregistered });
   }
   return specs;
 }

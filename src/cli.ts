@@ -49,7 +49,7 @@ Usage:
 
 Commands:
   install            Install the Myspec skills and the workspace (my-specs, or minhas-specs in pt)
-  list               List every numbered spec as NNN - title
+  list               List every numbered spec as NNN - title [status]
   approve            Approve a metric, coding-practice, or general-guideline document using Git identity
   activate           Transition a proposed spec to active in the manifest and record its git baseCommit
   gate               Run build/tests and approved metrics, check file-tree drift, and evaluate thresholds
@@ -278,7 +278,7 @@ async function main(argv: string[]): Promise<number> {
 
   if (command === 'list') {
     if (rest.length > 0) throw usage('[-d <dir>]');
-    for (const { number, title } of listSpecs(root, language)) console.log(`${number} - ${title}`);
+    for (const { number, title, status } of listSpecs(root, language)) console.log(`${number} - ${title} [${status}]`);
     return 0;
   }
 
