@@ -3,6 +3,45 @@ import { listSpecInspections, parseInspectionSummary, resolveSpecFile, resolveWo
 import { messages, type MessageLanguage } from './messages.js';
 import { UsageError } from './providers.js';
 
+const HEADING = /^(#{1,6})\s+(.+?)\s*$/;
+const FINDINGS_TITLE = /^(?:(?:open\s+)?findings|achados(?:\s+abertos)?)$/i;
+const FENCE = /^\s*(```|~~~)/;
+
+/** Extracts the `## Findings` / `## Achados` section (heading + body, including nested subheadings), ignoring fenced code blocks. */
+export function extractFindingsSection(content: string): string | undefined {
+  const lines = content.split(/\r?\n/);
+  let inFence = false;
+  let start = -1;
+  let level = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (FENCE.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    const match = line.match(HEADING);
+    if (!match) continue;
+    const headingLevel = match[1].length;
+    const title = match[2];
+
+    if (start !== -1) {
+      if (headingLevel <= level) {
+        return lines.slice(start, i).join('\n').trimEnd();
+      }
+      continue;
+    }
+
+    if (headingLevel >= 2 && FINDINGS_TITLE.test(title)) {
+      start = i;
+      level = headingLevel;
+    }
+  }
+
+  return start !== -1 ? lines.slice(start).join('\n').trimEnd() : undefined;
+}
+
 export interface ReadInspectionOptions {
   root: string;
   specId: string;
@@ -17,9 +56,10 @@ export interface ReadInspectionResult {
   path: string;
   content: string;
   verdict?: string;
+  findings?: string;
 }
 
-/** Resolves the spec (folder name or number) and returns its latest inspection content and parsed verdict. */
+/** Resolves the spec (folder name or number) and returns its latest inspection content, verdict, and findings section. */
 export function readLatestInspection(options: ReadInspectionOptions): ReadInspectionResult {
   const t = messages(options.language);
   const ws = resolveWorkspace(options.root, t);
@@ -32,5 +72,6 @@ export function readLatestInspection(options: ReadInspectionOptions): ReadInspec
   const latest = inspections.at(-1)!;
   const content = readFileSync(latest.absolute, 'utf8');
   const { verdict } = parseInspectionSummary(content);
-  return { specId, sequence: latest.sequence, path: latest.path, content, verdict };
+  const findings = extractFindingsSection(content);
+  return { specId, sequence: latest.sequence, path: latest.path, content, verdict, findings };
 }

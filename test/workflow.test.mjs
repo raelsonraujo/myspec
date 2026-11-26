@@ -610,35 +610,50 @@ describe('myspec read and inspection', () => {
     assert.equal(missingSpec.status, 2);
     assert.match(missingSpec.stderr, /Spec not found: my-specs\/specs\/999-missing\/spec\.md/);
 
-    const inspection1 = '# Inspection 001\n\n`2026-11-23` · Baseline `abc1234` · Previous `None`\n\n## Verdict\n\n**Blocked** — Missing test.\n';
-    const inspection2 = '# Inspection 002\n\n`2026-11-24` · Baseline `def5678` · Previous `001`\n\n## Verdict\n\n**Ready with observations** — Minor note.\n';
+    const inspection1 = '# Inspection 001\n\n`2026-11-23` · Baseline `abc1234` · Previous `None`\n\n## Verdict\n\n**Blocked** — Missing test.\n\n## Findings\n\n- **F-001** · Blocking · `AC-01` — Missing unit test.\n\n## Previous Findings\n\n- None.\n';
+    const inspection2 = '# Inspection 002\n\n`2026-11-24` · Baseline `def5678` · Previous `001`\n\n## Verdict\n\n**Ready with observations** — Minor note.\n\n## Findings\n\n- **F-002** · Attention · `coding-practices/style.md` — Minor naming note.\n\n## Previous Findings\n\n| Finding | Status | Evidence |\n| --- | --- | --- |\n| `F-001` | Resolved | Added test |\n';
     writeFileSync(join(dir, 'my-specs/specs/001-cancel-order/inspections/inspection-001.md'), inspection1);
     assert.equal(runOk('1', 'inspection', '-d', dir).stdout, inspection1);
     assert.equal(runOk('1', 'inspection', '-s', '-d', dir).stdout, 'Blocked\n');
+    assert.equal(
+      runOk('1', 'inspection', '-f', '-d', dir).stdout,
+      '## Findings\n\n- **F-001** · Blocking · `AC-01` — Missing unit test.\n',
+    );
 
     writeFileSync(join(dir, 'my-specs/specs/001-cancel-order/inspections/inspection-002.md'), inspection2);
     assert.equal(runOk('1', 'inspection', '-d', dir).stdout, inspection2);
     assert.equal(runOk('001-cancel-order', 'inspection', '--status', '-d', dir).stdout, 'Ready with observations\n');
     assert.equal(runOk('001', 'inspection', '-s', '-d', dir).stdout, 'Ready with observations\n');
+    assert.equal(
+      runOk('1', 'inspection', '--findings', '-d', dir).stdout,
+      '## Findings\n\n- **F-002** · Attention · `coding-practices/style.md` — Minor naming note.\n',
+    );
 
-    // Inspection without a parseable verdict fails when --status is requested, but full output still works.
+    // Passing both -s and -f is rejected with usage.
+    assert.equal(run('1', 'inspection', '-s', '-f', '-d', dir).status, 2);
+
+    // Inspection without a parseable verdict or findings fails for -s / -f, while full output still works.
     const noVerdict = '# Inspection 003\n\nNo verdict section here.\n';
     writeFileSync(join(dir, 'my-specs/specs/001-cancel-order/inspections/inspection-003.md'), noVerdict);
     assert.equal(runOk('1', 'inspection', '-d', dir).stdout, noVerdict);
     const badStatus = run('1', 'inspection', '-s', '-d', dir);
     assert.equal(badStatus.status, 1);
     assert.match(badStatus.stderr, /Could not determine verdict from my-specs\/specs\/001-cancel-order\/inspections\/inspection-003\.md/);
+    const noFindings = run('1', 'inspection', '-f', '-d', dir);
+    assert.equal(noFindings.status, 2);
+    assert.match(noFindings.stderr, /No findings section found in my-specs\/specs\/001-cancel-order\/inspections\/inspection-003\.md/);
 
     // Wrong order is rejected with usage.
-    assert.match(run('inspection', '1', '-d', dir).stderr, /Usage: myspec <spec> inspection \[--status \| -s\]/);
+    assert.match(run('inspection', '1', '-d', dir).stderr, /Usage: myspec <spec> inspection \[--status \| -s \| --findings \| -f\]/);
 
     // Portuguese workspace and Portuguese aliases (`inspecao` / `inspeção`).
     runOk('install', '-d', dir, '-l', 'pt');
-    const ptInspection = '# Inspeção 004\n\n`2026-11-25` · Base `1112223` · Anterior `003`\n\n## Parecer\n\n**Apta** — Tudo conferido.\n';
+    const ptInspection = '# Inspeção 004\n\n`2026-11-25` · Base `1112223` · Anterior `003`\n\n## Parecer\n\n**Apta** — Tudo conferido.\n\n## Achados\n\n- Nenhum.\n\n## Achados anteriores\n\n- Nenhum.\n';
     writeFileSync(join(dir, 'minhas-specs/specs/001-cancel-order/inspecoes/inspecao-004.md'), ptInspection);
     assert.equal(runOk('1', 'inspecao', '-d', dir).stdout, ptInspection);
     assert.equal(runOk('1', 'inspeção', '-s', '-d', dir).stdout, 'Apta\n');
-    assert.match(run('inspecao', '1', '-d', dir).stderr, /Uso: myspec <spec> inspecao \[--status \| -s\]/);
+    assert.equal(runOk('1', 'inspeção', '-f', '-d', dir).stdout, '## Achados\n\n- Nenhum.\n');
+    assert.match(run('inspecao', '1', '-d', dir).stderr, /Uso: myspec <spec> inspecao \[--status \| -s \| --findings \| -f\]/);
     mkdirSync(join(dir, 'minhas-specs/specs/002-sem-inspecao'), { recursive: true });
     writeFileSync(join(dir, 'minhas-specs/specs/002-sem-inspecao/spec.md'), '# Sem inspeção\n');
     assert.match(run('2', 'inspecao', '-d', dir).stderr, /Nenhuma inspeção encontrada para a spec "002-sem-inspecao"/);

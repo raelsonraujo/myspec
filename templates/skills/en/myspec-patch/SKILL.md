@@ -10,7 +10,7 @@ Make a small, bounded change without creating a new spec or file tree, provided 
 ## Guidance & Scope Gates
 
 1. Read every rule under `my-specs/coding-practices/` and `my-specs/general-guidelines/` (run `myspec rule -f`). Treat applicable `Status: Approved` documents as mandatory; check whether an approved general guideline overrides the default 5-file limit.
-2. Read `my-specs/specs/manifest.json` (reconcile via `{{skill:myspec-setup}}` if missing/inconsistent) and inspect affected specs (`myspec <spec-id> read`, `file-tree.md`, `myspec <spec-id> inspection` or `-s` for its verdict). Scan a spec's criteria with `myspec <spec-id> criteria` and read only the relevant ones with `myspec <spec-id> criteria <N>` before reading the whole spec.
+2. Read `my-specs/specs/manifest.json` (reconcile via `{{skill:myspec-setup}}` if missing/inconsistent) and inspect affected specs (`myspec <spec-id> read`, `file-tree.md`, `myspec <spec-id> inspection -f` for findings, `-s` for verdict, or `myspec <spec-id> inspection` in full). Scan a spec's criteria with `myspec <spec-id> criteria` and read only the relevant ones with `myspec <spec-id> criteria <N>` before reading the whole spec.
 3. Check eligibility before editing (and verify again after editing with **`myspec check-patch`** — pass `--limit <N>` if an approved guideline overrides 5):
    - **Finished spec boundary:** If the change can impact any `finished` spec's behavior or implementation—even a small fix or refactor—stop and recommend `{{skill:myspec-prescribe}}` for a new spec.
    - **File limit:** If the change exceeds the applicable file limit (default 5, including tests), recommend `{{skill:myspec-implement}}` (if an active spec covers it) or `{{skill:myspec-prescribe}}`.

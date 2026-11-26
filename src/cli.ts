@@ -38,7 +38,7 @@ Usage:
   myspec <spec> open [--file-tree | -ft] [-d <dir>]
   myspec <spec> criteria [<N>] [-d <dir>]
   myspec <spec> read [--smoke | -s] [-d <dir>]
-  myspec <spec> inspection [--status | -s] [-d <dir>]
+  myspec <spec> inspection [--status | -s | --findings | -f] [-d <dir>]
   myspec rule [<name>] [--full | -f] [-d <dir>]
   myspec metric [<name>] [--full | -f] [-d <dir>]
 
@@ -52,7 +52,7 @@ Commands:
   open               Open a spec's spec.md (or its file tree with --file-tree) in VS Code
   criteria           List a spec's acceptance criteria (ID and title), or show criterion <N> in full
   read               Print a spec's spec.md to the terminal (or only its smoke section with --smoke)
-  inspection         Print a spec's latest inspection to the terminal (or only its status with --status)
+  inspection         Print a spec's latest inspection (or only its status with -s, or findings with -f)
   rule               List rule files (coding practices & general guidelines), show one, or print all (--full)
   metric             List metric files, show one, or print all (--full)
 
@@ -88,6 +88,7 @@ Workflow options:
   <N>                In \`criteria\`, the exact criterion number to show in full (5, 05, or AC-05)
   -s, --smoke        In \`read\`, print only the smoke section of spec.md
   -s, --status       In \`inspection\`, print only the status/verdict of the latest inspection
+  -f, --findings     In \`inspection\`, print only the Findings section of the latest inspection
   -f, --full         In \`rule\` or \`metric\`, print the full content of every matching document
 
 When the repository already has a Myspec workspace, -p and -l default to the installed values.
@@ -116,6 +117,7 @@ Examples:
   myspec 1 read -s
   myspec 1 inspection
   myspec 1 inspection -s
+  myspec 1 inspection -f
   myspec rule
   myspec rule -f
   myspec metric crap-score
@@ -173,10 +175,11 @@ function commandOf(word: string | undefined): string | undefined {
   return COMMANDS.has(id) ? id : undefined;
 }
 
-/** Short flags rewritten before `parseArgs` (`-ft` would split into `-f -t`; `-s` is shared by `--smoke` and `--status`). */
+/** Short flags rewritten before `parseArgs` (`-ft` would split into `-f -t`; `-s` and `-f` are shared across commands). */
 const FLAG_ALIASES: Record<string, string> = {
   '-ft': '--file-tree',
   '-s': '--_short-s',
+  '-f': '--_short-f',
 };
 
 const OPTIONS = {
@@ -197,8 +200,10 @@ const OPTIONS = {
   'file-tree': { type: 'boolean' },
   smoke: { type: 'boolean' },
   status: { type: 'boolean' },
-  full: { type: 'boolean', short: 'f' },
+  findings: { type: 'boolean' },
+  full: { type: 'boolean' },
   '_short-s': { type: 'boolean' },
+  '_short-f': { type: 'boolean' },
   help: { type: 'boolean', short: 'h' },
   version: { type: 'boolean', short: 'v' },
 } as const;
@@ -353,11 +358,18 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'inspection') {
-    if (!spec || rest.length > 0) throw specUsage('[--status | -s] [-d <dir>]');
+    const wantStatus = Boolean(values.status || values['_short-s']);
+    const wantFindings = Boolean(values.findings || values['_short-f']);
+    if (!spec || rest.length > 0 || (wantStatus && wantFindings)) {
+      throw specUsage('[--status | -s | --findings | -f] [-d <dir>]');
+    }
     const result = readLatestInspection({ root, specId: spec, language });
-    if (values.status || values['_short-s']) {
+    if (wantStatus) {
       if (!result.verdict) throw new Error(t.verdictUnknown(result.path));
       console.log(result.verdict);
+    } else if (wantFindings) {
+      if (result.findings === undefined) throw new UsageError(t.noFindingsSection(result.path));
+      process.stdout.write(`${result.findings}\n`);
     } else {
       process.stdout.write(result.content.endsWith('\n') ? result.content : `${result.content}\n`);
     }
@@ -365,10 +377,11 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (command === 'rule' || command === 'metric') {
+    const full = Boolean(values.full || values['_short-f']);
     if (rest.length > 1) throw new UsageError(t.unexpectedArgument(rest[1]));
-    if (values.full && rest.length > 0) throw usage('[<name>] [--full | -f] [-d <dir>]');
+    if (full && rest.length > 0) throw usage('[<name>] [--full | -f] [-d <dir>]');
     const result = readContractDocs({ root, kind: command, name: rest[0], language });
-    process.stdout.write(formatContractDocs(result, values.full));
+    process.stdout.write(formatContractDocs(result, full));
     return 0;
   }
 
