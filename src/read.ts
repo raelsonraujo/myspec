@@ -1,46 +1,75 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { LANGUAGES } from './languages.js';
 import { resolveSpecFile, resolveWorkspace } from './lifecycle.js';
 import { messages, type MessageLanguage } from './messages.js';
 import { UsageError } from './providers.js';
 
-const HEADING = /^(#{1,6})\s+(.+?)\s*$/;
 const SMOKE_TITLE = /\b(?:smoke|fuma[cç]a)\b/i;
 const CRITERION_TITLE = /^(?:AC|CA)-\d+\b/i;
-const FENCE = /^\s*(```|~~~)/;
 
-/** Extracts the smoke section (heading + body, including nested subheadings) from `spec.md`, ignoring fenced code blocks. */
-export function extractSmokeSection(content: string): string | undefined {
-  const lines = content.split(/\r?\n/);
-  let inFence = false;
-  let start = -1;
-  let level = 0;
+const HISTORY_TITLES = Object.values(LANGUAGES).flatMap(({ workspace: { labels } }) =>
+  [labels.revisionHistory, labels.approvalHistory].map((heading) => heading.replace(/^#+\s+/, '').toLowerCase()),
+);
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (FENCE.test(line)) {
-      inFence = !inFence;
+function* markdownHeadings(lines: readonly string[]) {
+  let fence: string | undefined;
+  for (const [index, sourceLine] of lines.entries()) {
+    const line = sourceLine.replace(/\r?\n$/, '');
+    const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    if (fence) {
+      if (marker && marker[1].startsWith(fence) && !marker[2].trim()) fence = undefined;
       continue;
     }
-    if (inFence) continue;
-    const match = line.match(HEADING);
-    if (!match) continue;
-    const headingLevel = match[1].length;
-    const title = match[2];
-
-    if (start !== -1) {
-      if (headingLevel <= level) {
-        return lines.slice(start, i).join('\n').trimEnd();
-      }
+    if (marker && (marker[1][0] === '~' || !marker[2].includes('`'))) {
+      fence = marker[1];
       continue;
     }
+    const heading = /^ {0,3}(#{1,6})(?:[ \t]+(.*)|$)/.exec(line);
+    if (!heading) continue;
+    const title = (heading[2] ?? '').replace(/[ \t]+#+[ \t]*$/, '').trim();
+    yield { index, level: heading[1].length, title };
+  }
+}
 
-    if (headingLevel >= 2 && SMOKE_TITLE.test(title) && !CRITERION_TITLE.test(title)) {
-      start = i;
-      level = headingLevel;
+/** Selects Markdown with or without history sections, keeping fenced examples intact. */
+export function selectDocumentContent(content: string, historyOnly = false, extraTitles: readonly string[] = []): string {
+  const titles = new Set([...HISTORY_TITLES, ...extraTitles]);
+  const lines = content.split(/(?<=\n)/);
+  const parts: string[] = [];
+  let start = 0;
+  let historyLevel: number | undefined;
+  for (const { index, level, title } of markdownHeadings(lines)) {
+    if (historyLevel !== undefined && level <= historyLevel) {
+      if (historyOnly) parts.push(lines.slice(start, index).join(''));
+      start = index;
+      historyLevel = undefined;
+    }
+    if (historyLevel === undefined && titles.has(title.normalize('NFC').toLowerCase())) {
+      if (!historyOnly) parts.push(lines.slice(start, index).join(''));
+      start = index;
+      historyLevel = level;
     }
   }
+  if (historyOnly === (historyLevel !== undefined)) parts.push(lines.slice(start).join(''));
+  return parts.join('');
+}
 
-  return start !== -1 ? lines.slice(start).join('\n').trimEnd() : undefined;
+/** Extracts the first matching Markdown section, including its heading and subsections. */
+export function extractMarkdownSection(content: string, matchesTitle: (title: string) => boolean): string | undefined {
+  const lines = content.split(/\r?\n/);
+  let start: { index: number; level: number } | undefined;
+  for (const heading of markdownHeadings(lines)) {
+    if (start) {
+      if (heading.level <= start.level) return lines.slice(start.index, heading.index).join('\n').trimEnd();
+    } else if (heading.level >= 2 && matchesTitle(heading.title)) {
+      start = heading;
+    }
+  }
+  return start && lines.slice(start.index).join('\n').trimEnd();
+}
+
+export function extractSmokeSection(content: string): string | undefined {
+  return extractMarkdownSection(content, (title) => SMOKE_TITLE.test(title) && !CRITERION_TITLE.test(title));
 }
 
 export interface ReadSpecOptions {
@@ -48,6 +77,8 @@ export interface ReadSpecOptions {
   specId: string;
   /** Return only the smoke section of `spec.md`. */
   smoke?: boolean;
+  fileTree?: boolean;
+  historyOnly?: boolean;
   language?: MessageLanguage;
 }
 
@@ -58,15 +89,18 @@ export interface ReadSpecResult {
   content: string;
 }
 
-/** Resolves the spec (folder name or number) and returns its `spec.md` content (or just its smoke section). */
+/** Resolves a spec by folder name or number and reads its spec or file tree. */
 export function readSpec(options: ReadSpecOptions): ReadSpecResult {
   const t = messages(options.language);
   const ws = resolveWorkspace(options.root, t);
-  const { specId, path, absolute } = resolveSpecFile(ws, options.specId, 'spec.md', t);
-  if (!existsSync(absolute)) throw new UsageError(t.specNotFound(path));
-  const raw = readFileSync(absolute, 'utf8');
-  if (!options.smoke) return { specId, path, content: raw };
-  const smoke = extractSmokeSection(raw);
+  const fileName = options.fileTree ? ws.layout.fileTree : 'spec.md';
+  const { specId, path, absolute } = resolveSpecFile(ws, options.specId, fileName, t);
+  if (!existsSync(absolute)) {
+    throw new UsageError(options.fileTree ? t.fileTreeNotFound(path) : t.specNotFound(path));
+  }
+  const content = selectDocumentContent(readFileSync(absolute, 'utf8'), options.historyOnly);
+  if (!options.smoke) return { specId, path, content };
+  const smoke = extractSmokeSection(content);
   if (smoke === undefined) throw new UsageError(t.noSmokeSection(path));
   return { specId, path, content: smoke };
 }

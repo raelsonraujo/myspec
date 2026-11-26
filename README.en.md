@@ -6,17 +6,17 @@ A spec-driven development (SDD) CLI for coding agents (Codex, Claude Code, and G
 
 ## Installation
 
-You need Node.js 20 or later. Download the 0.7.24 package and run the commands below from the folder where you saved it. [Download myspec-0.7.24.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.24/myspec-0.7.24.tgz)
+You need Node.js 20 or later. Download the 0.7.25 package and run the commands below from the folder where you saved it. [Download myspec-0.7.25.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.25/myspec-0.7.25.tgz)
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.24.tgz
+npm install -g --ignore-scripts ./myspec-0.7.25.tgz
 myspec --version
 ```
 
 To check the file's origin and integrity before installing, use the [GitHub CLI](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.24 ./myspec-0.7.24.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.25 ./myspec-0.7.25.tgz --repo raelsonraujo/myspec
 ```
 
 ## Setting up a repository: `myspec install`
@@ -65,6 +65,8 @@ After upgrading the CLI, run `myspec install` in each repository to refresh the 
 ## Commands
 
 In commands that take a spec, the spec comes first and the command after it (`myspec 1 gate`). `<spec>` accepts the folder name (`001-cancel-order`) or just the number (`1` or `001`). All commands accept `-d <dir>` to target another repository. Every command also has a Portuguese name; called by it, the command answers in Portuguese. `--json` output keeps its keys in English, for scripts and CI.
+
+`read`, `inspection`, `rule`, and `metric` omit history sections by default. Use `-h` or `--historico` with these commands to print only the history. Use `--help` to see usage.
 
 ### `myspec approve <path>` (`aprovar`)
 
@@ -129,43 +131,49 @@ myspec 1 criteria 5      # AC-05 with its description
 
 The number must be exact: `5`, `05`, and `AC-05` all point to the same criterion.
 
-### `myspec <spec> read [--smoke | -s]` (`ler`)
+### `myspec <spec> read` (`ler`)
 
-Prints the spec's `spec.md` directly in the terminal, so agents and developers can read it without navigating the workspace folders. With `--smoke` (or `-s`), prints only the spec's smoke section.
+Prints `spec.md` in the terminal. Use `--file-tree` (`-ft`) to print the file tree or `--smoke` (`-s`) to read only the spec's smoke section. Combine `-h` with `-ft` to read the file tree's revision history when it has one.
 
 ```bash
 myspec 1 read
 myspec 1 read -s
+myspec 1 read --historico
+myspec 1 read -ft
+myspec 1 read -ft -h
 ```
 
-### `myspec <spec> inspection [--status | -s | --findings | -f]` (`inspecao` or `inspeção`)
+### `myspec <spec> inspection` (`inspecao` or `inspeção`)
 
-Prints the spec's latest inspection in the terminal without having to look up the highest-numbered file in `inspections/`. With `--status` (or `-s`), prints only its verdict (`Ready`, `Ready with observations`, `Blocked`, etc.). With `--findings` (or `-f`), prints only its `Findings` section.
+Prints the spec's latest inspection. Use `--status` (`-s`) for the verdict, `--findings` (`-f`) for current findings, or `--historico` (`-h`) for `Previous Findings` and any other history sections in the inspection.
 
 ```bash
 myspec 1 inspection
 myspec 1 inspection -s
 myspec 1 inspection -f
+myspec 1 inspection -h
 ```
 
 ### `myspec rule [<name>] [--full | -f]` (`regra`)
 
-Lists every rule file under `coding-practices/` and `general-guidelines/`. Pass a rule name (or relative path) to print its Markdown content, or `--full` (`-f`) to print every coding practice and general guideline in full.
+Lists the files under `coding-practices/` and `general-guidelines/`. Pass a name or relative path to read one rule or use `--full` (`-f`) to print every rule. Use `-h` to read only the `Approval History` for a named rule, or omit the name to read the approval histories of all rules.
 
 ```bash
 myspec rule
 myspec rule clean-code
 myspec rule -f
+myspec rule clean-code -h
 ```
 
 ### `myspec metric [<name>] [--full | -f]` (`metrica` or `métrica`)
 
-Lists every metric file under `metrics/`. Pass a metric name (or relative path) to print its Markdown content, or `--full` (`-f`) to print every metric in full.
+Lists the files under `metrics/`. Pass a name or relative path to read one metric or use `--full` (`-f`) to print every metric. Use `-h` to read only the `Approval History` for a named metric, or omit the name to read the approval histories of all metrics.
 
 ```bash
 myspec metric
 myspec metric crap-score
 myspec metric -f
+myspec metric -h
 ```
 
 ## License
