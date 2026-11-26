@@ -6,7 +6,7 @@ CLI de desenvolvimento orientado a especificações (SDD) para agentes de códig
 
 ## Instalação
 
-Você precisa de Node.js 20 ou superior. Baixe o arquivo `myspec-<versão>.tgz` nos [assets da release](https://github.com/raelsonraujo/myspec/releases) e instale-o com o npm, na pasta em que salvou o arquivo:
+Você precisa de Node.js 20 ou superior. Baixe o pacote da versão 0.7.24 e rode os comandos abaixo na pasta onde salvou o arquivo. [Baixar myspec-0.7.24.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.24/myspec-0.7.24.tgz)
 
 ```bash
 npm install -g --ignore-scripts ./myspec-0.7.24.tgz
@@ -60,7 +60,7 @@ E instala estas skills:
 
 Chame uma skill com `$myspec-configurar` no Codex ou `/myspec-configurar` no Claude Code e no Gemini. Depois de instalar, comece pela skill de configuração e, em seguida, prescreva a primeira spec.
 
-Rodar `myspec install` de novo atualiza as skills sem tocar no conteúdo do workspace. Sem `-p`/`-l`, ele reaproveita os valores já instalados; providers se acumulam, e trocar o idioma renomeia o workspace para o novo idioma. Com `-t dotnet-quality`, a CLI também gera scripts de medição para .NET (cobertura, complexidade, CRAP, acoplamento, mutação e performance) e uma proposta de métricas para revisão; ela não instala dependências, apenas traz um README com os comandos para isso.
+Depois de atualizar a CLI, rode `myspec install` em cada repositório para atualizar as skills e o README padrão do workspace. A atualização preserva as specs, os documentos do contrato e os READMEs personalizados. Sem `-p` ou `-l`, o comando reaproveita os valores já instalados. Os providers se acumulam, e trocar o idioma renomeia o workspace para o novo idioma. Com `-t dotnet-quality`, a CLI também gera scripts de medição para .NET (cobertura, complexidade, CRAP, acoplamento, mutação e performance), uma proposta de métricas para revisão e um README com os comandos de instalação das dependências.
 
 ## Comandos
 
@@ -167,3 +167,7 @@ myspec metrica
 myspec metrica crap-score
 myspec metrica -f
 ```
+
+## Licença
+
+[MIT](LICENSE)

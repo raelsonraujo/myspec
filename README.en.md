@@ -6,7 +6,7 @@ A spec-driven development (SDD) CLI for coding agents (Codex, Claude Code, and G
 
 ## Installation
 
-You need Node.js 20 or later. Download the `myspec-<version>.tgz` file from the [release assets](https://github.com/raelsonraujo/myspec/releases) and install it with npm, from the folder where you saved it:
+You need Node.js 20 or later. Download the 0.7.24 package and run the commands below from the folder where you saved it. [Download myspec-0.7.24.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.24/myspec-0.7.24.tgz)
 
 ```bash
 npm install -g --ignore-scripts ./myspec-0.7.24.tgz
@@ -60,7 +60,7 @@ And installs these skills:
 
 Invoke a skill with `$myspec-setup` in Codex or `/myspec-setup` in Claude Code and Gemini. After installing, start with the setup skill, then prescribe your first spec.
 
-Running `myspec install` again updates the skills without touching the workspace content. Without `-p`/`-l`, it reuses the installed values; providers accumulate, and switching the language renames the workspace to the new language. With `-t dotnet-quality`, the CLI also generates .NET measurement scripts (coverage, complexity, CRAP, coupling, mutation, and performance) and a proposed set of metrics for review; it does not install dependencies, but ships a README with the commands to do so.
+After upgrading the CLI, run `myspec install` in each repository to refresh the skills and the default workspace README. The update preserves specs, contract documents, and customized READMEs. Without `-p` or `-l`, the command reuses the installed values. Providers accumulate, and switching the language renames the workspace to the new language. With `-t dotnet-quality`, the CLI also generates .NET measurement scripts (coverage, complexity, CRAP, coupling, mutation, and performance), a proposed set of metrics for review, and a README with commands to install the dependencies.
 
 ## Commands
 
@@ -167,3 +167,7 @@ myspec metric
 myspec metric crap-score
 myspec metric -f
 ```
+
+## License
+
+[MIT](LICENSE)
