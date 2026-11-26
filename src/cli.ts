@@ -7,7 +7,7 @@ import { formatGateMarkdown, runGate } from './gate.js';
 import { install, type InstallResult } from './install.js';
 import { openSpec } from './open.js';
 import { formatCriteria, readCriteria } from './criteria.js';
-import { readSpec } from './read.js';
+import { listSpecs, readSpec } from './read.js';
 import { readLatestInspection } from './inspection.js';
 import { formatContractDocs, readContractDocs } from './contract.js';
 import { LANGUAGES, parseLanguage, type LanguageId } from './languages.js';
@@ -34,6 +34,7 @@ const help = () => `myspec ${VERSION} - spec-driven development skills and deter
 
 Usage:
   myspec install -p <provider> -l <language> [-t <tooling>] [-d <dir>]
+  myspec list [-d <dir>]
   myspec approve <path> [-c <context>] [--by <identity>] [-d <dir>]
   myspec <spec> activate [-d <dir>]
   myspec [<spec>] gate [--project] [--skip-run] [--skip-build] [--json] [-d <dir>]
@@ -48,6 +49,7 @@ Usage:
 
 Commands:
   install            Install the Myspec skills and the workspace (my-specs, or minhas-specs in pt)
+  list               List every numbered spec as NNN - title
   approve            Approve a metric, coding-practice, or general-guideline document using Git identity
   activate           Transition a proposed spec to active in the manifest and record its git baseCommit
   gate               Run build/tests and approved metrics, check file-tree drift, and evaluate thresholds
@@ -62,7 +64,7 @@ Commands:
 
   Portuguese names: aprovar (approve), ativar (activate), portao or portão (gate), finalizar (finish),
   conferir-correcao (check-patch), abre or abrir (open), criterio or critério (criteria), ler (read),
-  inspecao or inspeção (inspection), regra (rule), metrica or métrica (metric);
+  inspecao or inspeção (inspection), regra (rule), metrica or métrica (metric), listar (list);
   called by these names, the commands answer in Portuguese.
 
   The spec always comes before the command: myspec 1 gate, never myspec gate 1.
@@ -162,6 +164,7 @@ const COMMAND_ALIASES: Record<string, string> = {
   'métrica': 'metric',
   metricas: 'metric',
   'métricas': 'metric',
+  listar: 'list',
 };
 
 /** English names besides the canonical ones. */
@@ -173,7 +176,7 @@ const ENGLISH_ALIASES: Record<string, string> = {
 
 /** Commands that take a spec, written before them: `myspec 1 gate`. */
 const SPEC_COMMANDS = new Set(['activate', 'gate', 'finish', 'open', 'criteria', 'read', 'inspection']);
-const COMMANDS = new Set([...SPEC_COMMANDS, 'install', 'approve', 'check-patch', 'rule', 'metric']);
+const COMMANDS = new Set([...SPEC_COMMANDS, 'install', 'approve', 'check-patch', 'rule', 'metric', 'list']);
 const HISTORY_COMMANDS = new Set(['read', 'inspection', 'rule', 'metric']);
 
 function commandOf(word: string | undefined): string | undefined {
@@ -272,6 +275,12 @@ async function main(argv: string[]): Promise<number> {
   const t = messages(language);
   const usage = (options: string) => new UsageError(t.usage(`myspec ${typedCommand} ${options}`));
   const specUsage = (options: string) => new UsageError(t.usage(`myspec <spec> ${typedCommand} ${options}`));
+
+  if (command === 'list') {
+    if (rest.length > 0) throw usage('[-d <dir>]');
+    for (const { number, title } of listSpecs(root, language)) console.log(`${number} - ${title}`);
+    return 0;
+  }
 
   if (command === 'approve') {
     if (rest.length !== 1) throw usage('<path> [-c <context>] [--by <identity>] [-d <dir>]');

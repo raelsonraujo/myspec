@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { LANGUAGES } from './languages.js';
 import { resolveSpecFile, resolveWorkspace } from './lifecycle.js';
 import { messages, type MessageLanguage } from './messages.js';
@@ -70,6 +71,31 @@ export function extractMarkdownSection(content: string, matchesTitle: (title: st
 
 export function extractSmokeSection(content: string): string | undefined {
   return extractMarkdownSection(content, (title) => SMOKE_TITLE.test(title) && !CRITERION_TITLE.test(title));
+}
+
+export function listSpecs(root: string, language?: MessageLanguage): { number: string; title: string }[] {
+  const ws = resolveWorkspace(root, messages(language));
+  const specsDir = join(ws.workspaceDir, ws.layout.specs);
+  if (!existsSync(specsDir)) return [];
+
+  const specs: { number: string; title: string }[] = [];
+  for (const folder of readdirSync(specsDir).sort()) {
+    const numbered = /^(\d{3})-(.+)$/.exec(folder);
+    if (!numbered) continue;
+    const specPath = join(specsDir, folder, 'spec.md');
+    if (!existsSync(specPath) || !statSync(specPath).isFile()) continue;
+
+    let title = numbered[2].replaceAll('-', ' ');
+    const lines = readFileSync(specPath, 'utf8').replace(/^\uFEFF/, '').split(/\r?\n/);
+    for (const heading of markdownHeadings(lines)) {
+      if (heading.level === 1 && heading.title) {
+        title = heading.title;
+        break;
+      }
+    }
+    specs.push({ number: numbered[1], title });
+  }
+  return specs;
 }
 
 export interface ReadSpecOptions {
