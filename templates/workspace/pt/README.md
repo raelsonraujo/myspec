@@ -63,7 +63,7 @@ Repita implementar ou corrigir seguido de inspecionar quantas vezes precisar. Pr
 
 - `myspec aprovar <caminho>` aprova documentos do contrato com identidade Git. `myspec <id> ativar` ativa a spec e registra `commitBase`.
 - `myspec [<id>] portao [--project]` executa builds, testes, verificações estruturadas de métricas e verificação de desvio da árvore. `myspec <id> finalizar` valida a última inspeção apta e a base Git antes de finalizar. `myspec conferir-correcao` valida a elegibilidade de correções.
-- `myspec listar` imprime todas as specs em ordem numérica, no formato `NNN - título [status]`. Specs que ainda não constam no manifesto aparecem como `sem registro`.
+- `myspec listar` imprime todas as specs em ordem numérica, no formato `NNN - título [status]`. Specs que ainda não constam no manifesto aparecem como `sem registro`. Use `--filter` ou `-f` com os status separados por vírgula, como em `myspec listar -f ativa,finalizada`.
 - `myspec <id> criterio [<N>]` lista os critérios ou mostra um deles por completo. `myspec <id> ler` imprime o `spec.md`, a seção de smoke com `-s` ou a árvore de arquivos com `-ft`.
 - `myspec <id> inspecao` imprime a inspeção mais recente, o veredito com `-s` ou os achados atuais com `-f`.
 - `myspec regra` e `myspec metrica` listam documentos do contrato, imprimem o documento indicado pelo nome ou imprimem todos da categoria com `-f`.

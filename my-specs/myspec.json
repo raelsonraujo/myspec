@@ -1,5 +1,5 @@
 {
-  "version": "0.7.27",
+  "version": "0.7.28",
   "language": "en",
   "providers": [
     "gemini"
@@ -23,5 +23,5 @@
     ".agents/skills/myspec-setup/SKILL.md"
   ],
   "tooling": [],
-  "installedAt": "2026-11-26T12:50:44.694Z"
+  "installedAt": "2026-11-26T12:59:25.260Z"
 }
