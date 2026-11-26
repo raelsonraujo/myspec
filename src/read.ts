@@ -79,7 +79,30 @@ interface ListedSpec {
   status: string;
 }
 
-export function listSpecs(root: string, language: MessageLanguage = 'en'): ListedSpec[] {
+const LIST_STATUSES = {
+  en: [...LANGUAGES.en.workspace.specManifest.statuses, 'unregistered'],
+  pt: [...LANGUAGES.pt.workspace.specManifest.statuses, 'sem registro'],
+};
+
+function parseListStatusFilter(filter: string, language: MessageLanguage): Set<string> {
+  const statuses = LIST_STATUSES[language];
+  const selected = new Set<string>();
+  for (const item of filter.split(',')) {
+    const name = item.trim().toLowerCase();
+    const index = LIST_STATUSES.en.findIndex((status, i) => status === name || LIST_STATUSES.pt[i] === name);
+    if (index === -1) {
+      throw new UsageError(language === 'pt'
+        ? `Status inválido no filtro: ${JSON.stringify(item.trim())}. Use ${statuses.join(', ')}.`
+        : `Invalid filter status: ${JSON.stringify(item.trim())}. Use ${statuses.join(', ')}.`);
+    }
+    selected.add(statuses[index]);
+  }
+  return selected;
+}
+
+export function listSpecs(root: string, language: MessageLanguage = 'en', filter?: string): ListedSpec[] {
+  const selected = filter === undefined ? undefined : parseListStatusFilter(filter, language);
+  const displayStatuses = LIST_STATUSES[language];
   const t = messages(language);
   const ws = resolveWorkspace(root, t);
   const specsDir = join(ws.workspaceDir, ws.layout.specs);
@@ -91,18 +114,19 @@ export function listSpecs(root: string, language: MessageLanguage = 'en'): Liste
   if (manifestName) {
     const manifestPath = `${ws.layout.dir}/${ws.layout.specs}/${manifestName}`;
     const { format, entries } = readSpecManifest(manifestPath, join(specsDir, manifestName), t);
-    const displayStatuses = LANGUAGES[language].workspace.specManifest.statuses;
     for (const entry of entries) {
       const statusIndex = format.statuses.indexOf(entry[format.status] as string);
       statuses.set(entry[format.id] as string, displayStatuses[statusIndex]);
     }
   }
 
-  const unregistered = language === 'pt' ? 'sem registro' : 'unregistered';
+  const unregistered = displayStatuses[displayStatuses.length - 1];
   const specs: ListedSpec[] = [];
   for (const folder of readdirSync(specsDir).sort()) {
     const numbered = /^(\d{3})-(.+)$/.exec(folder);
     if (!numbered) continue;
+    const status = statuses.get(folder) ?? unregistered;
+    if (selected && !selected.has(status)) continue;
     const specPath = join(specsDir, folder, 'spec.md');
     if (!existsSync(specPath) || !statSync(specPath).isFile()) continue;
 
@@ -114,7 +138,7 @@ export function listSpecs(root: string, language: MessageLanguage = 'en'): Liste
         break;
       }
     }
-    specs.push({ number: numbered[1], title, status: statuses.get(folder) ?? unregistered });
+    specs.push({ number: numbered[1], title, status });
   }
   return specs;
 }

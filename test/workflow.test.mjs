@@ -530,6 +530,7 @@ it('lists numbered specs by title across workspace languages and lifecycle statu
   const dir = gitRepo();
   runOk('install', '-d', dir, '-p', 'gemini', '-l', 'en');
   assert.equal(runOk('list', '-d', dir).stdout, '');
+  assert.equal(runOk('list', '--filter', 'proposed', '-d', dir).stdout, '');
 
   const specsDir = join(dir, 'my-specs/specs');
   for (const [folder, content] of [
@@ -573,6 +574,21 @@ it('lists numbered specs by title across workspace languages and lifecycle statu
   ].join('\n') + '\n';
   assert.equal(runOk('list', '-d', dir).stdout, expectedEn);
   assert.equal(runOk('listar', '-d', dir).stdout, expectedPt);
+  assert.equal(
+    runOk('list', '--filter=finished,ACTIVE', '-d', dir).stdout,
+    '003 - Revisar autenticação [active]\n020 - Cancelar pedidos [finished]\n',
+  );
+  assert.equal(
+    runOk('-d', dir, 'listar', '-f', ' proposed, sem registro, proposta ').stdout,
+    '005 - Alertas de estoque [proposta]\n008 - Rascunho local [sem registro]\n',
+  );
+  assert.equal(runOk('list', '-f', 'descartada', '-d', dir).stdout, '011 - old flow [discarded]\n');
+  const invalidFilter = run('listar', '--filter', 'ativa,rascunho', '-d', dir);
+  assert.equal(invalidFilter.status, 2);
+  assert.equal(invalidFilter.stdout, '');
+  assert.match(invalidFilter.stderr, /Status inválido no filtro: "rascunho"/);
+  assert.equal(run('list', '--filter=active,', '-d', dir).status, 2);
+  assert.equal(run('-d', dir, 'list', '-f').status, 2);
   assert.equal(run('list', '1', '-d', dir).status, 2);
   runOk('install', '-d', dir, '-l', 'pt');
   assert.equal(runOk('list', '-d', dir).stdout, expectedEn);

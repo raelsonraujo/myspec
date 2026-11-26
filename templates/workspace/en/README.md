@@ -63,7 +63,7 @@ Repeat implement or patch followed by inspect as often as needed. Prefer impleme
 
 - `myspec approve <path>` approves contract documents with Git identity. `myspec <id> activate` activates a spec and records `baseCommit`.
 - `myspec [<id>] gate [--project]` runs builds, tests, structured metric checks, and file-tree drift checks. `myspec <id> finish` verifies the latest passing inspection and Git baseline before finalizing. `myspec check-patch` validates patch eligibility.
-- `myspec list` prints all numbered specs in order as `NNN - title [status]`. Specs without a manifest entry appear as `unregistered`.
+- `myspec list` prints all numbered specs in order as `NNN - title [status]`. Specs without a manifest entry appear as `unregistered`. Use `--filter` or `-f` with comma-separated statuses, such as `myspec list -f active,finished`.
 - `myspec <id> criteria [<N>]` lists criteria or prints one in full. `myspec <id> read` prints `spec.md`, its smoke section with `-s`, or the file tree with `-ft`.
 - `myspec <id> inspection` prints the latest inspection, its verdict with `-s`, or its current findings with `-f`.
 - `myspec rule` and `myspec metric` list contract documents, print a named document, or print all documents in that category with `-f`.

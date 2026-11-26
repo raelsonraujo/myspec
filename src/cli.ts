@@ -29,12 +29,13 @@ const toolingList = () =>
 const READ_OPTIONS = '[--file-tree | -ft] [--smoke | -s | --historico | -h] [-d <dir>]';
 const INSPECTION_OPTIONS = '[--status | -s | --findings | -f | --historico | -h] [-d <dir>]';
 const CONTRACT_OPTIONS = '[<name> | --full | -f] [--historico | -h] [-d <dir>]';
+const LIST_OPTIONS = '[--filter <status,...> | -f <status,...>] [-d <dir>]';
 
 const help = () => `myspec ${VERSION} - spec-driven development skills and deterministic gates for AI coding agents
 
 Usage:
   myspec install -p <provider> -l <language> [-t <tooling>] [-d <dir>]
-  myspec list [-d <dir>]
+  myspec list ${LIST_OPTIONS}
   myspec approve <path> [-c <context>] [--by <identity>] [-d <dir>]
   myspec <spec> activate [-d <dir>]
   myspec [<spec>] gate [--project] [--skip-run] [--skip-build] [--json] [-d <dir>]
@@ -96,6 +97,7 @@ Workflow options:
   -s, --status       In \`inspection\`, print only the status/verdict of the latest inspection
   -f, --findings     In \`inspection\`, print only the Findings section of the latest inspection
   -f, --full         In \`rule\` or \`metric\`, print every matching document without its history
+  -f, --filter       In \`list\`, show only the comma-separated statuses (English or Portuguese)
   -h, --historico    In \`read\`, \`inspection\`, \`rule\`, or \`metric\`, print only the history normally omitted
                      (all documents for \`rule\` or \`metric\` when no name is given)
 
@@ -111,6 +113,7 @@ Examples:
   myspec install -p claude -l pt -t dotnet-quality
   myspec install -p gemini -l en
   myspec install -p codex,claude,gemini -l en -d ../my-repo
+  myspec list -f active,finished
   myspec approve my-specs/metrics/crap-score.md -c "Initial approval"
   myspec 001-cancel-order activate
   myspec 1 gate
@@ -213,6 +216,7 @@ const OPTIONS = {
   status: { type: 'boolean' },
   findings: { type: 'boolean' },
   full: { type: 'boolean' },
+  filter: { type: 'string' },
   historico: { type: 'boolean' },
   '_short-s': { type: 'boolean' },
   '_short-f': { type: 'boolean' },
@@ -221,12 +225,17 @@ const OPTIONS = {
 } as const;
 
 async function main(argv: string[]): Promise<number> {
-  const { values, positionals, tokens } = parseArgs({
-    args: argv.map((arg) => FLAG_ALIASES[arg] ?? arg),
-    allowPositionals: true,
-    options: OPTIONS,
-    tokens: true,
-  });
+  const args = argv.map((arg) => FLAG_ALIASES[arg] ?? arg);
+  const config = { args, allowPositionals: true, options: OPTIONS, tokens: true } as const;
+  let parsed = parseArgs(config);
+  // Only `list` takes a value after `-f`; other commands use it as a switch.
+  if (parsed.values['_short-f'] && commandOf(parsed.positionals[0]) === 'list') {
+    for (const token of parsed.tokens) {
+      if (token.kind === 'option' && token.name === '_short-f') args[token.index] = '--filter';
+    }
+    parsed = parseArgs(config);
+  }
+  const { values, positionals, tokens } = parsed;
 
   if (values.version) {
     console.log(VERSION);
@@ -249,6 +258,7 @@ async function main(argv: string[]): Promise<number> {
     return command || wantsHelp ? 0 : 2;
   }
   if (values.historico && !supportsHistory) throw new UsageError(`Option --historico is unavailable for "${typedCommand}".`);
+  if (values.filter !== undefined && command !== 'list') throw new UsageError(`Option --filter is unavailable for "${typedCommand}".`);
   const historyOnly = Boolean(values.historico || (supportsHistory && values.help));
 
   const root = resolve(values.dir ?? process.cwd());
@@ -277,8 +287,10 @@ async function main(argv: string[]): Promise<number> {
   const specUsage = (options: string) => new UsageError(t.usage(`myspec <spec> ${typedCommand} ${options}`));
 
   if (command === 'list') {
-    if (rest.length > 0) throw usage('[-d <dir>]');
-    for (const { number, title, status } of listSpecs(root, language)) console.log(`${number} - ${title} [${status}]`);
+    if (rest.length > 0) throw usage(LIST_OPTIONS);
+    for (const { number, title, status } of listSpecs(root, language, values.filter)) {
+      console.log(`${number} - ${title} [${status}]`);
+    }
     return 0;
   }
 
