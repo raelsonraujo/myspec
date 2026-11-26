@@ -526,6 +526,40 @@ describe('myspec criteria', () => {
   });
 });
 
+it('lists numbered specs by title across workspace languages and lifecycle statuses', () => {
+  const dir = gitRepo();
+  runOk('install', '-d', dir, '-p', 'gemini', '-l', 'en');
+  assert.equal(runOk('list', '-d', dir).stdout, '');
+
+  const specsDir = join(dir, 'my-specs/specs');
+  for (const [folder, content] of [
+    ['020-orders', '\uFEFF# Cancelar pedidos\r\n'],
+    ['003-auth', '```md\n# Exemplo de título\n```\n\n# Revisar autenticação ##\n'],
+    ['011-old-flow', '## Contexto de uma spec sem título principal\n'],
+    ['005-draft', '# Alertas de estoque\n'],
+    ['notes', '# Not a numbered spec\n'],
+  ]) {
+    mkdirSync(join(specsDir, folder));
+    writeFileSync(join(specsDir, folder, 'spec.md'), content);
+  }
+  mkdirSync(join(specsDir, '002-empty'));
+  mkdirSync(join(specsDir, '012-directory/spec.md'), { recursive: true });
+  writeFileSync(join(specsDir, 'manifest.json'), JSON.stringify({
+    version: 1,
+    specs: [
+      { id: '003-auth', status: 'active', completionInspection: null },
+      { id: '020-orders', status: 'finished', completionInspection: '001' },
+      { id: '011-old-flow', status: 'discarded', completionInspection: null },
+    ],
+  }));
+
+  const expected = '003 - Revisar autenticação\n005 - Alertas de estoque\n011 - old flow\n020 - Cancelar pedidos\n';
+  assert.equal(runOk('list', '-d', dir).stdout, expected);
+  assert.equal(run('list', '1', '-d', dir).status, 2);
+  runOk('install', '-d', dir, '-l', 'pt');
+  assert.equal(runOk('listar', '-d', dir).stdout, expected);
+});
+
 describe('myspec read and inspection', () => {
   it('prints a spec or its smoke section to stdout with `myspec <spec> read [--smoke|-s]` and `ler`', () => {
     const dir = gitRepo();

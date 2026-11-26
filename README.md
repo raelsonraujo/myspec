@@ -6,17 +6,17 @@ CLI de desenvolvimento orientado a especificações (SDD) para agentes de códig
 
 ## Instalação
 
-Você precisa de Node.js 20 ou superior. Baixe o pacote da versão 0.7.25 e rode os comandos abaixo na pasta onde salvou o arquivo. [Baixar myspec-0.7.25.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.25/myspec-0.7.25.tgz)
+Você precisa de Node.js 20 ou superior. Baixe o pacote da versão 0.7.26 e rode os comandos abaixo na pasta onde salvou o arquivo. [Baixar myspec-0.7.26.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.26/myspec-0.7.26.tgz)
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.25.tgz
+npm install -g --ignore-scripts ./myspec-0.7.26.tgz
 myspec --version
 ```
 
 Para conferir a origem e a integridade do arquivo antes de instalar, use a [CLI do GitHub](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.25 ./myspec-0.7.25.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.26 ./myspec-0.7.26.tgz --repo raelsonraujo/myspec
 ```
 
 ## Configurando um repositório: `myspec install`
@@ -67,6 +67,10 @@ Depois de atualizar a CLI, rode `myspec install` em cada repositório para atual
 Nos comandos que recebem uma spec, a spec vem primeiro e o comando depois (`myspec 1 portao`). `<spec>` aceita o nome da pasta (`001-cancelar-pedido`) ou só o número (`1` ou `001`). Todos aceitam `-d <dir>` para apontar outro repositório. Chamados pelo nome em português, os comandos respondem em português; a saída `--json` mantém as chaves em inglês, para scripts e CI.
 
 `ler`, `inspecao`, `regra` e `metrica` omitem as seções de histórico por padrão. Use `-h` ou `--historico` nesses comandos para imprimir apenas essas seções. Use `--help` para consultar a ajuda.
+
+### `myspec list` (`listar`)
+
+Lista todas as specs em ordem numérica, uma por linha no formato `NNN - título`. Usa o título de `spec.md` ou, quando ele falta, o nome da pasta sem o prefixo numérico.
 
 ### `myspec approve <caminho>` (`aprovar`)
 

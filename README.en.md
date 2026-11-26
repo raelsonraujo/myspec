@@ -6,17 +6,17 @@ A spec-driven development (SDD) CLI for coding agents (Codex, Claude Code, and G
 
 ## Installation
 
-You need Node.js 20 or later. Download the 0.7.25 package and run the commands below from the folder where you saved it. [Download myspec-0.7.25.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.25/myspec-0.7.25.tgz)
+You need Node.js 20 or later. Download the 0.7.26 package and run the commands below from the folder where you saved it. [Download myspec-0.7.26.tgz](https://github.com/raelsonraujo/myspec/releases/download/v0.7.26/myspec-0.7.26.tgz)
 
 ```bash
-npm install -g --ignore-scripts ./myspec-0.7.25.tgz
+npm install -g --ignore-scripts ./myspec-0.7.26.tgz
 myspec --version
 ```
 
 To check the file's origin and integrity before installing, use the [GitHub CLI](https://cli.github.com/manual/gh_release_verify-asset):
 
 ```bash
-gh release verify-asset v0.7.25 ./myspec-0.7.25.tgz --repo raelsonraujo/myspec
+gh release verify-asset v0.7.26 ./myspec-0.7.26.tgz --repo raelsonraujo/myspec
 ```
 
 ## Setting up a repository: `myspec install`
@@ -67,6 +67,10 @@ After upgrading the CLI, run `myspec install` in each repository to refresh the 
 In commands that take a spec, the spec comes first and the command after it (`myspec 1 gate`). `<spec>` accepts the folder name (`001-cancel-order`) or just the number (`1` or `001`). All commands accept `-d <dir>` to target another repository. Every command also has a Portuguese name; called by it, the command answers in Portuguese. `--json` output keeps its keys in English, for scripts and CI.
 
 `read`, `inspection`, `rule`, and `metric` omit history sections by default. Use `-h` or `--historico` with these commands to print only the history. Use `--help` to see usage.
+
+### `myspec list` (`listar`)
+
+Lists all specs in numeric order, one per line as `NNN - title`. It uses the title from `spec.md` or falls back to the folder name without its numeric prefix.
 
 ### `myspec approve <path>` (`aprovar`)
 
